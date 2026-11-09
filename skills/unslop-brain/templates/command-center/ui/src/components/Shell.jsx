@@ -14,7 +14,7 @@ export function Rail({ route, apps, app, onSearch, onTheme, onReload }) {
       <a className="logo" href="#/apps" aria-label="Command Center"><Icon name="route" size={24} /></a>
       {AREAS.map((a) => (
         <a key={a.key} className="rail-btn" href={areaHref(a.key, app)} title={a.label} aria-current={current === a.key ? 'page' : undefined}>
-          <span className="rail-ic"><Icon name={a.icon} size={26} active={current === a.key} />{count[a.key] > 0 && <span className="badge cnt">{count[a.key]}</span>}</span>
+          <span className="rail-ic"><Icon name={a.icon} size={26} active={current === a.key} />{count[a.key] > 0 && <span className="badge cnt" role="img" aria-label={a.key === 'findings' ? `${count[a.key]} offene Blocker` : `${count[a.key]} offene Entscheidungen`} title={a.key === 'findings' ? `${count[a.key]} offene Blocker` : `${count[a.key]} offene Entscheidungen`}>{count[a.key]}</span>}</span>
           <span className="rail-lbl">{a.label}</span>
         </a>
       ))}
@@ -43,7 +43,7 @@ export function Context({ area, apps, app }) {
       })}
       <div className="info">
         <div className="row"><span className="muted">Abdeckung</span><b className="num">{pct(t.coverage)}</b></div>
-        <div className="meter" role="progressbar" aria-label="Abdeckung" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round((t.coverage || 0) * 100)}><i style={{ width: `${Math.min(100, Math.max(0, Math.round((t.coverage || 0) * 100)))}%` }} /></div>
+        <div className="meter" role="progressbar" aria-label="Abdeckung" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round((t.coverage || 0) * 100)}><span className="meter-fill" style={{ width: `${Math.min(100, Math.max(0, Math.round((t.coverage || 0) * 100)))}%` }} /></div>
         <div className="row"><span className="muted">Flows</span><b className="num">{t.flows}</b></div>
         <div className="row"><span className="muted">Blocker</span><b className="num">{t.blockers}</b></div>
       </div>
@@ -55,9 +55,9 @@ export function Window({ title, sub, actions, children }) {
   const { ctxOpen, toggle } = useShell();
   return (
     <main className="window">
+      <button type="button" className="edge-toggle" aria-label={ctxOpen ? 'Seitenleiste einklappen' : 'Seitenleiste ausklappen'} aria-expanded={ctxOpen} title={ctxOpen ? 'Seitenleiste einklappen' : 'Seitenleiste ausklappen'} onClick={toggle}><Icon name={ctxOpen ? 'caret-l' : 'caret-r'} size={16} /></button>
       <header className="window-head">
         <div className="flex items-center gap-3 min-w-0">
-          <Button variant="ghost" size="sm" className="ctx-toggle" aria-label={ctxOpen ? 'Seitenleiste einklappen' : 'Seitenleiste ausklappen'} onPress={toggle}><Icon name="sidebar" size={22} />{ctxOpen ? 'Einklappen' : 'Apps'}</Button>
           <div className="min-w-0"><h1 className="truncate">{title}</h1>{sub && <div className="sub-t">{sub}</div>}</div>
         </div>
         <div className="tools">{actions}</div>

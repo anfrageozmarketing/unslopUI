@@ -11,7 +11,7 @@ const ICON = {
   key: P.Key, flag: P.Flag, route: P.Path, sliders: P.SlidersHorizontal, server: P.HardDrives, search: P.MagnifyingGlass, refresh: P.ArrowsClockwise,
   plus: P.Plus, edit: P.PencilSimple, archive: P.Archive, undo: P.ArrowUUpLeft, check: P.Check, close: P.X, alert: P.Warning, question: P.Question,
   bolt: P.Lightning, 'zoom-in': P.MagnifyingGlassPlus, 'zoom-out': P.MagnifyingGlassMinus, fit: P.CornersOut, grid: P.SquaresFour, 'link-out': P.ArrowSquareOut,
-  chevron: P.CaretRight, command: P.Command, contrast: P.CircleHalf, sidebar: P.SidebarSimple, trash: P.Trash, back: P.ArrowLeft, next: P.ArrowRight,
+  chevron: P.CaretRight, command: P.Command, contrast: P.CircleHalf, sidebar: P.SidebarSimple, 'caret-l': P.CaretLeft, 'caret-r': P.CaretRight, trash: P.Trash, back: P.ArrowLeft, next: P.ArrowRight,
   expand: P.ArrowsOutSimple, link: P.Link, fork: P.GitFork, sliders2: P.Faders,
 };
 ICON.flows = ICON.route; ICON.attention = ICON.bolt; ICON.findings = ICON.alert; ICON.decisions = ICON.question;

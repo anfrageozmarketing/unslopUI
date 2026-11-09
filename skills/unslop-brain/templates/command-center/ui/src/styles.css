@@ -77,7 +77,7 @@ a { color: inherit; text-decoration: none; }
 .rail-btn[aria-current="page"]::before { content: ""; position: absolute; left: -14px; top: 13px; bottom: 13px; width: 4px; border-radius: 0 4px 4px 0; background: var(--accent); }
 .rail-ic { position: relative; display: grid; place-items: center; }
 .rail-lbl { font-size: 12px; font-weight: 700; letter-spacing: -.005em; line-height: 1.1; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.rail-btn .cnt { position: absolute; top: -6px; right: -12px; }
+.rail-btn .cnt { position: absolute; top: -8px; right: -18px; box-shadow: 0 0 0 3px var(--shell); }
 .rail .sp { flex: 1; }
 .ctx { display: flex; flex-direction: column; gap: 4px; padding: 14px 12px 4px 4px; min-width: 0; overflow-y: auto; }
 .ctx h2 { font-size: 20px; padding: 4px 12px 14px; }
@@ -91,8 +91,11 @@ a { color: inherit; text-decoration: none; }
 .badge { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--bad); color: var(--bg); font: 800 11px/20px var(--font-sans); text-align: center; }
 .info { margin-top: auto; display: grid; gap: 10px; padding: 14px 16px; border-radius: 18px; background: color-mix(in srgb, var(--ink) 6%, transparent); font-size: 13px; }
 .info .row { display: flex; justify-content: space-between; gap: 8px; }
-.meter { height: 8px; border-radius: 4px; background: color-mix(in srgb, var(--ink) 22%, transparent); overflow: hidden; }
-.meter i { display: block; height: 100%; min-width: 8px; border-radius: 4px; background: var(--accent); }
+.meter { position: relative; display: block; width: 100%; height: 10px; border-radius: 5px; background: color-mix(in srgb, var(--ink) 22%, transparent); overflow: hidden; }
+.meter-fill { position: absolute; left: 0; top: 0; bottom: 0; min-width: 10px; border-radius: 5px; background: var(--accent-text); }
+.edge-toggle { position: absolute; z-index: 5; left: 0; top: 50%; width: 20px; height: 64px; margin-top: -32px; display: grid; place-items: center; border-radius: 0 14px 14px 0; background: var(--surface-2); color: var(--ink-muted); opacity: .55; cursor: pointer; transition: opacity var(--dur-2), background var(--dur-2), width var(--dur-2); }
+.edge-toggle:hover, .edge-toggle:focus-visible { opacity: 1; width: 26px; background: var(--accent-soft); color: var(--ink); }
+@media (max-width: 760px) { .edge-toggle { display: none; } }
 .window { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; background: var(--window); border-radius: 28px; box-shadow: var(--lift); overflow: hidden; }
 .window-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 22px 32px 10px; }
 .window-head h1 { font-size: clamp(26px, 3vw, 34px); }
