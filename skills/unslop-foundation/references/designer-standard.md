@@ -27,7 +27,7 @@ On a phone: the rail becomes a bottom bar, the menu column a title row with a sw
 
 Three patterns seen in current product design, written as our own rules:
 
-- **Tile**: an outer container in a light gray tone (surface-2) with a large radius (24-28), an **inset preview** of the real object with a smaller radius inside it, and the **caption below the tile** (small icon or avatar, name, one-line subtitle). No border. On hover a round arrow button appears at the tile edge. Use it for apps, flows, documents, anything that has a picture.
+- **Tile**: an outer container in a light gray tone (surface-2) with a large radius (24-28), an **inset preview** of the real object with a smaller radius inside it, and the **caption below the tile**: the name only. Counts, strips and summaries belong in the workspace, not on the preview tile; add a subtitle only when it changes which tile you pick. No border. On hover a round arrow button appears at the tile edge. Use it for apps, flows, documents, anything that has a picture.
 - **Layered background**: supplementary elements are integrated behind and around the main object instead of sitting in separate boxes: floating chips or stickers on soft curved tracks, scattered small cards with soft shadows, a faint radial glow or pattern at low contrast. Rules: the elements are **real data** (the flows, findings, statuses of the thing shown), not stock decoration; at most five to seven; they stay below the text in contrast; one pattern per screen; static unless motion carries meaning.
 - **Inversion**: one emphasised element flips the tone (a dark tile in a light interface, a light one in a dark interface) to mark the most important or most urgent thing. One or two per screen.
 

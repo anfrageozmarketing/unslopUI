@@ -10,6 +10,7 @@ Every item below was a real defect found in a built UI. Read this list before wr
 - Side panels (properties, details) dock next to the stage on wide screens and refit the content; they never cover it. Overlay only on phones.
 
 ## Badges, counts, bars
+- Preview tiles carry the picture and the name only. No strips, no summary sentences, no counts on the tile; details live one click deeper.
 - Count badges are perfect circles (equal width and height), 16-17 px, 10 px figures, "9+" above nine, beside the icon not on it, with a ring in the background colour. Label says whose count it is.
 - Progress bars: fixed height (8-10 px), track at least 3:1 against its surround, fill absolutely positioned inside, minimum visible fill above 0, clamped to 100 %, aligned to the same left and right edges as the text above and below, `role="progressbar"` with values.
 - Info cards reset inherited row padding so bars and text share one column.

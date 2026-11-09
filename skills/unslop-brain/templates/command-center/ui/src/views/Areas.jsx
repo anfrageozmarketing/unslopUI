@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Button, Dropdown, Label, ToggleButton, ToggleButtonGroup } from '@heroui/react';
 import { useActions, useData, useFresh } from '../lib/hooks.jsx';
 import { AREA_ORDER, SEVERITIES, STATUS, SEV_RANK } from '../lib/constants.js';
-import { areasOf, blockersOf, nextFlows, noteHref, openDecisionsOf, summaryParts } from '../lib/model.js';
+import { areasOf, blockersOf, nextFlows, noteHref, openDecisionsOf } from '../lib/model.js';
 import { EmptyState, Icon, Portrait, QuickAdd, Segmented, StatusMark, Strip } from '../components/ui.jsx';
 import RouteMap from '../components/RouteMap.jsx';
 import { OpenApp, Window } from '../components/Shell.jsx';
@@ -17,7 +17,7 @@ export function AppsView() {
         {data.apps.map((a) => (
           <a key={a.name} className="card" href={`#/flows/${encodeURIComponent(a.name)}`}>
             <Portrait app={a} width={900} height={420} />
-            <div className="glass panel"><h2>{a.name}</h2><Strip app={a} size="lg" /><span className="text-sm">{summaryParts(a).join(' · ')}</span></div>
+            <div className="glass panel"><h2>{a.name}</h2></div>
           </a>
         ))}
       </div>
