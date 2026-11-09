@@ -4,6 +4,9 @@
   "private": true,
   "description": "Skill pack that turns vibecoded apps into complete, deliberate products",
   "type": "commonjs",
-  "scripts": { "test": "node --test tests/", "validate": "bash scripts/validate.sh" },
+  "scripts": {
+    "test": "node --test tests/ skills/unslop-brain/templates/command-center/ui/src/lib/",
+    "validate": "bash scripts/validate.sh"
+  },
   "license": "MIT"
 }

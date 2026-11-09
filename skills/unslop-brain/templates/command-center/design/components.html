@@ -70,9 +70,9 @@
   <section class="sec" id="s-loading"><header><h2>Laden</h2><p>Platzhalter im endgültigen Layout. Die Bewegung läuft nur, solange geladen wird.</p></header><div class="skeletons" id="skeletons"></div></section>
 </div>
 
-<script src="icons.js"></script>
-<script src="illustrations.js"></script>
-<script>
+<script type="module">
+import { ICONS as CC_ICONS, icon as CC_ICON } from "./icons.mjs";
+import { art as CC_ART, portrait as CC_PORTRAIT } from "./illustrations.mjs";
 (function () {
   var $ = function (id) { return document.getElementById(id); };
   var I = CC_ICON, S = { missing: 'Fehlt', partial: 'Teilweise', exists: 'Vorhanden', built: 'Gebaut', na: 'Nicht nötig' };

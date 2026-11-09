@@ -3,7 +3,7 @@
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
-import { mkdtempSync, cpSync, readFileSync, readdirSync } from 'node:fs';
+import { mkdtempSync, cpSync, readFileSync, readdirSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -15,7 +15,7 @@ const BASE = `http://127.0.0.1:${PORT}`;
 const PW = 'correct-horse-battery';
 const auth = 'Basic ' + Buffer.from(`anna:${PW}`).toString('base64');
 const FLOW = 'Apps/Demo-App/Flows/Zugang/Login.md';
-let tmp, child, userLine;
+let tmp, child, userLine, pub;
 
 const get = (p, headers = { authorization: auth }) => fetch(BASE + p, { headers });
 const patch = (body, extra = {}) => fetch(BASE + '/api/note', {
@@ -27,10 +27,13 @@ const patch = (body, extra = {}) => fetch(BASE + '/api/note', {
 before(async () => {
   tmp = mkdtempSync(join(tmpdir(), 'cc-'));
   cpSync(join(ROOT, 'examples/demo-vault'), join(tmp, 'vault'), { recursive: true });
+  pub = join(tmp, 'public'); mkdirSync(join(pub, 'assets'), { recursive: true });
+  writeFileSync(join(pub, 'index.html'), '<!doctype html><title>t</title><script type="module" src="./assets/app-abc.js"></script>');
+  writeFileSync(join(pub, 'assets', 'app-abc.js'), 'console.log(1)'); writeFileSync(join(pub, 'assets', 'secret.map'), 'x');
   const h = spawnSync('node', [join(CC, 'hash-password.mjs'), 'anna'], { env: { ...process.env, CC_PASSWORD: PW }, encoding: 'utf8' });
   userLine = h.stdout.trim();
   child = spawn('node', [join(CC, 'server.mjs')], {
-    env: { ...process.env, VAULT_DIR: join(tmp, 'vault'), CC_USERS: userLine, PORT: String(PORT), HOST: '127.0.0.1' },
+    env: { ...process.env, VAULT_DIR: join(tmp, 'vault'), PUBLIC_DIR: pub, CC_USERS: userLine, PORT: String(PORT), HOST: '127.0.0.1' },
     stdio: 'ignore',
   });
   for (let i = 0; i < 50; i++) {
@@ -58,13 +61,18 @@ test('requires authentication', async () => {
   assert.equal((await get('/healthz', {})).status, 200);
 });
 
-test('serves UI with security headers', async () => {
-  for (const p of ['/', '/app.js', '/style.css']) {
-    const r = await get(p);
-    assert.equal(r.status, 200, p);
-    assert.equal(r.headers.get('x-content-type-options'), 'nosniff');
-    assert.match(r.headers.get('content-security-policy'), /default-src 'none'/);
+test('serves the built UI with strict headers; blocks traversal and unknown types', async () => {
+  const idx = await get('/');
+  assert.equal(idx.status, 200); assert.match(idx.headers.get('content-type'), /text\/html/); assert.equal(idx.headers.get('cache-control'), 'no-store');
+  assert.match(idx.headers.get('content-security-policy'), /default-src 'none'; script-src 'self';/);
+  assert.ok(!/jsdelivr|unpkg|cdn/.test(idx.headers.get('content-security-policy')), 'no CDN in CSP');
+  assert.equal(idx.headers.get('x-content-type-options'), 'nosniff');
+  const js = await get('/assets/app-abc.js');
+  assert.equal(js.status, 200); assert.match(js.headers.get('content-type'), /javascript/); assert.match(js.headers.get('cache-control'), /immutable/);
+  for (const p of ['/assets/secret.map', '/server.mjs', '/assets/../../server.mjs', '/%2e%2e/server.mjs', '/assets/nope.js', '/..%2fserver.mjs']) {
+    const r = await get(p); assert.ok([400, 404].includes(r.status), `${p} -> ${r.status}`);
   }
+  assert.equal((await get('/', {})).status, 401);
 });
 
 test('index summarizes the demo vault', async () => {

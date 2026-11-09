@@ -5,7 +5,7 @@
 // Usage: node scripts/dev-preview.mjs            (runs until stopped)
 //        node scripts/dev-preview.mjs --selftest (starts, checks, exits 0/1)
 import { spawn, spawnSync } from 'node:child_process';
-import { mkdtempSync, cpSync } from 'node:fs';
+import { mkdtempSync, cpSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -16,10 +16,17 @@ const CC = join(ROOT, 'skills/unslop-brain/templates/command-center');
 const PW = 'demo-preview-only-123';
 const APP_PORT = Number(process.env.APP_PORT || 18090);
 const PROXY_PORT = Number(process.env.PREVIEW_PORT || 18091);
+// The UI is a Vite build (ui/dist). Build it when missing or when asked (--build).
+const UI = join(CC, 'ui');
+if (process.argv.includes('--build') || !existsSync(join(UI, 'dist', 'index.html'))) {
+  if (!existsSync(join(UI, 'node_modules'))) spawnSync('npm', ['ci'], { cwd: UI, stdio: 'inherit' });
+  const b = spawnSync('npm', ['run', 'build'], { cwd: UI, stdio: 'inherit' });
+  if (b.status !== 0) { console.error('UI build failed'); process.exit(1); }
+}
 const tmp = mkdtempSync(join(tmpdir(), 'cc-preview-'));
 cpSync(join(ROOT, 'examples/demo-vault'), join(tmp, 'vault'), { recursive: true });
 const user = spawnSync('node', [join(CC, 'hash-password.mjs'), 'demo'], { env: { ...process.env, CC_PASSWORD: PW }, encoding: 'utf8' }).stdout.trim();
-const app = spawn('node', [join(CC, 'server.mjs')], { env: { ...process.env, VAULT_DIR: join(tmp, 'vault'), CC_USERS: user, PORT: String(APP_PORT), HOST: '127.0.0.1' }, stdio: 'ignore' });
+const app = spawn('node', [join(CC, 'server.mjs')], { env: { ...process.env, VAULT_DIR: join(tmp, 'vault'), PUBLIC_DIR: join(UI, 'dist'), CC_USERS: user, PORT: String(APP_PORT), HOST: '127.0.0.1' }, stdio: 'ignore' });
 const auth = 'Basic ' + Buffer.from(`demo:${PW}`).toString('base64');
 const proxy = http.createServer((req, res) => {
   const up = http.request({ host: '127.0.0.1', port: APP_PORT, path: req.url, method: req.method, headers: { ...req.headers, authorization: auth } }, (r) => { res.writeHead(r.statusCode, r.headers); r.pipe(res); });

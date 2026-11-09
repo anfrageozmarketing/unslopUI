@@ -3,12 +3,13 @@
 // Fails closed: refuses to start without users. Writes only whitelisted frontmatter fields.
 import http from 'node:http';
 import crypto from 'node:crypto';
-import { readFile, writeFile, readdir, mkdir, rename } from 'node:fs/promises';
-import { join, resolve, relative, sep, basename } from 'node:path';
+import { readFile, writeFile, readdir, mkdir, rename, stat } from 'node:fs/promises';
+import { join, resolve, relative, sep, basename, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const HERE = fileURLToPath(new URL('.', import.meta.url));
 const VAULT = resolve(process.env.VAULT_DIR || join(HERE, 'vault'));
+const PUBLIC_DIR = resolve(process.env.PUBLIC_DIR || join(HERE, 'ui', 'dist'));
 const PORT = Number(process.env.PORT || 8080);
 const HOST = process.env.HOST || '127.0.0.1';
 const TRUST_PROXY = process.env.TRUST_PROXY === '1';
@@ -251,7 +252,7 @@ export function refreshOverviews() {
 }
 
 /* ---------- http ---------- */
-const CSP = "default-src 'none'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
+const CSP = "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
 function send(res, code, body, type = 'application/json; charset=utf-8', extra = {}) {
   res.writeHead(code, { 'content-type': type, 'cache-control': 'no-store', 'x-content-type-options': 'nosniff',
     'referrer-policy': 'no-referrer', 'content-security-policy': CSP, ...extra });
@@ -285,11 +286,23 @@ async function resolveNote(path) {
   return abs;
 }
 
-const STATIC = {
-  '/': ['index.html', 'text/html; charset=utf-8'],
-  '/app.js': ['app.js', 'text/javascript; charset=utf-8'],
-  '/style.css': ['style.css', 'text/css; charset=utf-8'],
-};
+const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.svg': 'image/svg+xml', '.png': 'image/png', '.ico': 'image/x-icon', '.woff2': 'font/woff2', '.json': 'application/json; charset=utf-8', '.txt': 'text/plain; charset=utf-8' };
+// Serves the built UI. Only known file types, only inside PUBLIC_DIR; hashed assets are cached, the entry page is not.
+async function serveStatic(pathname, res) {
+  let rel;
+  try { rel = decodeURIComponent(pathname); } catch { return send(res, 400, 'bad request', 'text/plain; charset=utf-8'); }
+  if (rel === '/') rel = '/index.html';
+  const abs = resolve(PUBLIC_DIR, '.' + rel);
+  const type = MIME[extname(abs).toLowerCase()];
+  if (!type || !abs.startsWith(PUBLIC_DIR + sep)) return send(res, 404, { error: 'not found' });
+  let st; try { st = await stat(abs); } catch { st = null; }
+  if (!st?.isFile()) {
+    if (rel === '/index.html') return send(res, 503, 'The UI is not built. Run: cd ui && npm ci && npm run build', 'text/plain; charset=utf-8');
+    return send(res, 404, { error: 'not found' });
+  }
+  const immutable = rel.startsWith('/assets/');
+  return send(res, 200, await readFile(abs), type, immutable ? { 'cache-control': 'public, max-age=31536000, immutable' } : {});
+}
 
 const server = http.createServer(async (req, res) => {
   try {
@@ -298,10 +311,6 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === '/healthz') return send(res, 200, 'ok', 'text/plain; charset=utf-8');
     if (!authenticate(req, res)) return;
 
-    if (req.method === 'GET' && STATIC[url.pathname]) {
-      const [file, type] = STATIC[url.pathname];
-      return send(res, 200, await readFile(join(HERE, 'public', file)), type);
-    }
     if (req.method === 'GET' && url.pathname === '/api/index') return send(res, 200, await scan());
     if (req.method === 'GET' && url.pathname === '/api/note') {
       const abs = await resolveNote(url.searchParams.get('path'));
@@ -419,6 +428,7 @@ const server = http.createServer(async (req, res) => {
         });
       }
     }
+    if (req.method === 'GET' && !url.pathname.startsWith('/api/')) return serveStatic(url.pathname, res);
     return send(res, 404, { error: 'not found' });
   } catch (err) {
     console.error(err);

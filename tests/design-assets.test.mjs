@@ -1,15 +1,13 @@
 // Command Center design assets: icon set, illustrations, motion, component sheet.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createRequire } from 'node:module';
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const D = join(dirname(fileURLToPath(import.meta.url)), '..', 'skills/unslop-brain/templates/command-center/design');
-const require = createRequire(import.meta.url);
-const { ICONS, icon } = require(join(D, 'icons.js'));
-const { art, portrait } = require(join(D, 'illustrations.js'));
+const { ICONS, icon } = await import(join(D, 'icons.mjs'));
+const { art, portrait } = await import(join(D, 'illustrations.mjs'));
 const PATH = /^[MmLlHhVvCcSsQqTtAaZz0-9eE.,\s-]+$/;
 
 test('icon set: complete, valid path data, one drawing language', () => {
@@ -53,9 +51,11 @@ test('portrait: deterministic, differs per app, numbers only', () => {
 
 test('component sheet loads existing files and its script parses', () => {
   const html = readFileSync(join(D, 'components.html'), 'utf8');
-  for (const m of html.matchAll(/(?:href|src)="([^"#]+\.(?:css|js))"/g)) assert.ok(existsSync(join(D, m[1])), m[1]);
-  const script = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]).join('\n');
-  assert.doesNotThrow(() => new Function(script), 'inline script parses');
+  for (const m of html.matchAll(/(?:href|src)="([^"#]+\.(?:css|js|mjs))"/g)) assert.ok(existsSync(join(D, m[1])), m[1]);
+  const script = [...html.matchAll(/<script type="module">([\s\S]*?)<\/script>/g)].map((m) => m[1]);
+  assert.equal(script.length, 1, 'one module script');
+  for (const m of script[0].matchAll(/from "\.\/([^"]+)"/g)) assert.ok(existsSync(join(D, m[1])), m[1]);
+  assert.doesNotThrow(() => new Function(script[0].replace(/^import .*$/gm, '')), 'inline script parses');
   for (const id of ['s-icons', 's-status', 's-buttons', 's-segment', 's-rows', 's-quick', 's-glass', 's-empty', 's-hero', 's-route', 's-loading']) assert.ok(html.includes(`id="${id}"`), id);
 });
 

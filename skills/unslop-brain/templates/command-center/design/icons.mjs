@@ -1,9 +1,7 @@
-/* Command Center icon set. Own drawing, 24px grid, one stroke weight (2.6), round caps and joins, duotone:
+/* Command Center icon set (ES module). Own drawing, 24px grid, one stroke weight (2.6), round caps and joins, duotone:
    a soft shape offset by 1.6px behind the line, like a slightly off-register print. Colours come from tokens only.
-   Browser: globalThis.CC_ICONS / CC_ICON(name, opts). Node: module.exports. */
-(function () {
-  // l = line path (stroked with currentColor), f = soft shape path (filled with --icon-soft)
-  var ICONS = {
+   l = line path (stroked with currentColor), f = soft shape path (filled with --icon-soft). */
+export const ICONS = {
     key:       { l: 'M12 15a4 4 0 1 1-8 0 4 4 0 0 1 8 0ZM11 12 20 3M16.5 6.5 19 9M13.5 9.5 15.5 11.5', f: 'M12 15a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z' },
     flag:      { l: 'M6 21V3M6 4h12l-2.6 4.2L18 12H6', f: 'M6 4h12l-2.6 4.2L18 12H6Z' },
     route:     { l: 'M7.5 19H15a3.5 3.5 0 0 0 0-7H9a3.5 3.5 0 0 1 0-7h7.5M7.5 19a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0ZM21.5 5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z', f: 'M7.5 19a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0ZM21.5 5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z' },
@@ -27,19 +25,14 @@
     'link-out':{ l: 'M14 4h6v6M20 4 11 13M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4', f: 'M4 8a2 2 0 0 1 2-2h5v14H6a2 2 0 0 1-2-2Z' },
     chevron:   { l: 'M9 5l7 7-7 7', f: 'M9 5l7 7-7 7Z' },
     command:   { l: 'M9 9h6v6H9ZM9 9V6.5A2.5 2.5 0 1 0 6.5 9H9ZM15 9V6.5A2.5 2.5 0 1 1 17.5 9H15ZM9 15v2.5A2.5 2.5 0 1 1 6.5 15H9ZM15 15v2.5a2.5 2.5 0 1 0 2.5-2.5H15Z', f: 'M9 9h6v6H9Z' },
-  };
-  // aliases for areas and tabs
-  ICONS.flows = ICONS.route; ICONS.attention = ICONS.bolt; ICONS.findings = ICONS.alert; ICONS.decisions = ICONS.question;
-  ICONS.access = ICONS.key; ICONS.onboarding = ICONS.flag; ICONS.settings = ICONS.sliders; ICONS.system = ICONS.server;
+};
+// aliases for areas and tabs
+ICONS.flows = ICONS.route; ICONS.attention = ICONS.bolt; ICONS.findings = ICONS.alert; ICONS.decisions = ICONS.question;
+ICONS.access = ICONS.key; ICONS.onboarding = ICONS.flag; ICONS.settings = ICONS.sliders; ICONS.system = ICONS.server;
 
-  function icon(name, opts) {
-    var o = opts || {}; var d = ICONS[name]; if (!d) return '';
-    var size = Number(o.size) > 0 ? Number(o.size) : 24;
-    var label = o.label ? ' role="img" aria-label="' + String(o.label).replace(/[&<>"]/g, '') + '"' : ' aria-hidden="true"';
-    return '<svg class="ic" viewBox="0 0 24 24" width="' + size + '" height="' + size + '"' + label + ' focusable="false">' +
-      '<path class="ic-soft" d="' + d.f + '" transform="translate(1.6 1.6)"/><path class="ic-line" d="' + d.l + '"/></svg>';
-  }
-  var api = { ICONS: ICONS, icon: icon };
-  if (typeof module !== 'undefined' && module.exports) module.exports = api;
-  else { globalThis.CC_ICONS = ICONS; globalThis.CC_ICON = icon; }
-})();
+export function icon(name, opts = {}) {
+  const d = ICONS[name]; if (!d) return '';
+  const size = Number(opts.size) > 0 ? Number(opts.size) : 24;
+  const label = opts.label ? ` role="img" aria-label="${String(opts.label).replace(/[&<>"]/g, '')}"` : ' aria-hidden="true"';
+  return `<svg class="ic" viewBox="0 0 24 24" width="${size}" height="${size}"${label} focusable="false"><path class="ic-soft" d="${d.f}" transform="translate(1.6 1.6)"/><path class="ic-line" d="${d.l}"/></svg>`;
+}
