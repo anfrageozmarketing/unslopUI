@@ -7,7 +7,7 @@ import { mkdirSync, writeFileSync, existsSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
 const args = Object.fromEntries(process.argv.slice(2).reduce((a, v, i, all) => (v.startsWith('--') ? [...a, [v.slice(2), all[i + 1]]] : a), []));
-if (!args.url) { console.error('usage: node verify.mjs --url <base> --routes "/a,/b" --out <dir> [--widths 1280,360] [--themes light,dark] [--auth user:pass]'); process.exit(2); }
+if (!args.url) { console.error('usage: node verify.mjs --url <base> --routes "/a,/b" --out <dir> [--widths 1280,360] [--themes light,dark] [--auth user:pass] [--selector ".card"]'); process.exit(2); }
 
 // Runs inside the page. Returns a list of defects.
 export function inspect() {
@@ -95,6 +95,7 @@ async function main() {
       try { await page.goto(args.url.replace(/\/$/, '') + r, { waitUntil: 'networkidle', timeout: 20000 }); } catch (e) { lines.push(`- ${r} ${width} ${theme}: LOAD FAILED ${e.message}`); defects++; continue; }
       await page.waitForTimeout(400);
       await page.screenshot({ path: join(out, `${slug}-${width}-${theme}.png`), fullPage: true });
+      if (args.selector) { const el = page.locator(args.selector).first(); if (await el.count()) await el.screenshot({ path: join(out, `${slug}-element-${width}-${theme}.png`) }); }
       const found = await page.evaluate(inspect); defects += found.length;
       lines.push(`### ${r} · ${width}px · ${theme} · ${found.length ? found.length + ' findings' : 'clean'}`);
       for (const f of found.slice(0, 25)) lines.push(`- **${f.kind}**: ${f.msg}`);

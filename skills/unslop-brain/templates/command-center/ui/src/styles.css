@@ -92,7 +92,7 @@ a { color: inherit; text-decoration: none; }
 .sub a:hover { color: var(--ink); background: color-mix(in srgb, var(--ink) 6%, transparent); }
 .badge { min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: var(--bad); color: var(--bg); font: 800 10px/16px var(--font-sans); text-align: center; }
 .info { margin-top: auto; display: grid; gap: 10px; padding: 14px 16px; border-radius: 18px; background: color-mix(in srgb, var(--ink) 6%, transparent); font-size: 13px; }
-.info .row { display: flex; justify-content: space-between; gap: 8px; }
+.info .row { display: flex; justify-content: space-between; gap: 8px; padding: 0; min-height: 0; }
 .meter { position: relative; display: block; width: 100%; height: 10px; border-radius: 5px; background: color-mix(in srgb, var(--ink) 22%, transparent); overflow: hidden; }
 .meter-fill { position: absolute; left: 0; top: 0; bottom: 0; min-width: 10px; border-radius: 5px; background: var(--accent-text); }
 .edge-toggle { position: absolute; z-index: 5; left: 0; top: 50%; width: 20px; height: 64px; margin-top: -32px; display: grid; place-items: center; border-radius: 0 14px 14px 0; background: var(--surface-2); color: var(--ink-muted); opacity: .55; cursor: pointer; transition: opacity var(--dur-2), background var(--dur-2), width var(--dur-2); }
