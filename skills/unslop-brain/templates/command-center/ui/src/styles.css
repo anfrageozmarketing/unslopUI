@@ -427,3 +427,9 @@ a.row:hover, a.row:focus-visible { background: var(--surface-2); }
 .rich-bar button:hover { background: color-mix(in srgb, var(--ink) 10%, transparent); }
 .rich-area { min-height: 64px; outline: none; }
 .rich-area:focus, .rich-area:focus-visible { outline: none; box-shadow: none; }
+
+/* the title block takes all free width, so editing never shrinks the field */
+.window-head > div:first-child { flex: 1 1 0; min-width: 0; }
+.window-head .tools { flex: none; }
+.window-head h1 { min-width: 0; }
+.title-area { width: calc(100% + 16px); box-sizing: border-box; }

@@ -132,7 +132,7 @@ export function InlineTitle({ value, onSave, label = 'Titel' }) {
   const [editing, setEditing] = useState(false); const [v, setV] = useState(value || ''); const ref = useRef(null);
   useEffect(() => { if (!editing) setV(value || ''); }, [value, editing]);
   const grow = (t) => { if (t) { t.style.height = 'auto'; t.style.height = `${t.scrollHeight}px`; } };
-  useEffect(() => { if (editing && ref.current) { ref.current.focus(); ref.current.select(); grow(ref.current); } }, [editing]);
+  useEffect(() => { if (editing && ref.current) { ref.current.focus(); const n = ref.current.value.length; ref.current.setSelectionRange(n, n); grow(ref.current); } }, [editing]);
   const commit = () => { setEditing(false); const t = v.trim(); if (t && t !== (value || '')) onSave(t); else setV(value || ''); };
   if (!editing) return <span className="title-inline" role="button" tabIndex={0} aria-label={`${label} bearbeiten`} onClick={() => setEditing(true)} onKeyDown={(e) => { if (e.key === 'Enter') setEditing(true); }}>{value}</span>;
   return <textarea ref={ref} className="title-area" rows={1} value={v} aria-label={label} onChange={(e) => { setV(e.target.value.replace(/\n/g, ' ')); grow(e.target); }} onBlur={commit}
