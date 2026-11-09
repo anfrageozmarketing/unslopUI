@@ -9,7 +9,7 @@ Run this in a **local** session (Playwright MCP connected, `browser_navigate` av
 node scripts/dev-preview.mjs
 ```
 
-Keep it running (background) and open **`http://127.0.0.1:8091`** with the browser tool. The script copies the demo vault to a temp folder,
+Keep it running (background) and open **`http://127.0.0.1:18091`** with the browser tool. The script copies the demo vault to a temp folder,
 starts the Command Center and a tiny local proxy that adds the test login, so no credentials are needed in the URL
 (credentials in the URL break the page's `fetch` calls). `node scripts/dev-preview.mjs --selftest` checks that it starts and exits.
 Never use the real server, its URL or its password. On a server session the Playwright browser runs on the same machine, so `127.0.0.1` works.
