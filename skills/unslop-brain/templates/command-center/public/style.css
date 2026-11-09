@@ -81,3 +81,8 @@ th { color: var(--muted); font-weight: 500; }
 }
 @media (max-width: 560px) { .board { grid-template-columns: 1fr; } .top { padding: var(--s3) var(--s4); } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+.stats { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); margin-bottom: var(--s4); }
+.stat { padding: var(--s3) var(--s4); }
+.stat .big { font-size: 26px; font-weight: 650; line-height: 1.2; }
+.stat .big.blocker { color: var(--missing); }

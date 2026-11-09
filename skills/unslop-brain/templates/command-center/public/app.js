@@ -74,20 +74,14 @@ function crumbs(parts) {
 /* ---------- overview ---------- */
 function overview() {
   crumbs([]);
-  const open = data.apps.flatMap((a) => a.decisions.filter((d) => d.state === 'open').map((d) => ({ ...d, app: a.name })));
-  const blockers = data.apps.flatMap((a) => a.findings.filter((f) => f.severity === 'Blocker' && f.state === 'open').map((f) => ({ ...f, app: a.name })));
-  const root = h('div', {}, h('h1', {}, 'Apps'));
+  const root = h('div', {}, h('h1', {}, 'Apps'), h('p', { class: 'muted' }, 'Wähle eine App. Blocker, Entscheidungen und Flows findest du in ihrem Bereich.'));
   if (!data.apps.length) root.append(h('p', { class: 'empty' }, 'Noch keine Apps im Vault. Lege unter Apps/<Name>/ eine _App.md an.'));
   root.append(h('div', { class: 'grid' }, data.apps.map((a) =>
     h('a', { class: 'card', href: `#/app/${encodeURIComponent(a.name)}` },
       h('div', { class: 'row' }, h('h3', {}, a.name), a.score != null ? h('span', { class: 'badge num' }, `Score ${a.score}/32`) : null),
-      h('div', { class: 'muted' }, a.stack || ' '),
+      h('div', { class: 'muted' }, a.stack || '\u00a0'),
       a.total ? [statusBar(a.counts, a.total), legend(a.counts), h('p', { class: 'muted num' }, `Abdeckung ${pct(a.coverage)} · ${a.total} Flows`)] : h('p', { class: 'muted' }, 'Noch keine Flows'),
     ))));
-  root.append(h('h2', {}, `Blocker (${blockers.length})`));
-  root.append(blockers.length ? table(['App', 'Befund', 'Wo'], blockers.map((b) => [b.app, noteLink(b), b.where])) : h('p', { class: 'empty' }, 'Keine offenen Blocker.'));
-  root.append(h('h2', {}, `Offene Entscheidungen (${open.length})`));
-  root.append(open.length ? table(['App', 'Entscheidung', 'Frage'], open.map((d) => [d.app, noteLink(d), d.question])) : h('p', { class: 'empty' }, 'Keine offenen Entscheidungen.'));
   $view.replaceChildren(root);
 }
 function noteLink(n) { return h('a', { href: `#/note/${encodeURIComponent(n.path)}` }, n.title); }
@@ -96,42 +90,66 @@ function table(head, rows) {
 }
 
 /* ---------- app view ---------- */
-let appTab = 'board';
+// Each tab is one entry. To add a section later (Screens, API, Tests ...), add an entry here.
+const openBlockers = (a) => a.findings.filter((f) => f.severity === 'Blocker' && f.state === 'open');
+const openDecisions = (a) => a.decisions.filter((d) => d.state === 'open');
+const TABS = [
+  { key: 'overview', label: () => 'Überblick', render: (a, root) => {
+      const bl = openBlockers(a); const dc = openDecisions(a);
+      root.append(h('div', { class: 'grid stats' },
+        stat('Flows', a.total), stat('Abdeckung', pct(a.coverage)), stat('Offene Blocker', bl.length, bl.length ? 'blocker' : ''), stat('Offene Entscheidungen', dc.length)));
+      root.append(h('h2', {}, `Blocker (${bl.length})`),
+        bl.length ? table(['Befund', 'Wo'], bl.map((b) => [noteLink(b), b.where])) : h('p', { class: 'empty' }, 'Keine offenen Blocker.'));
+      root.append(h('h2', {}, `Offene Entscheidungen (${dc.length})`),
+        dc.length ? table(['Entscheidung', 'Frage'], dc.map((d) => [noteLink(d), d.question])) : h('p', { class: 'empty' }, 'Keine offenen Entscheidungen.'));
+      const next = a.flows.filter((f) => f.status === 'missing' || f.status === 'partial')
+        .sort((x, y) => ['MVP', 'V1', 'V2'].indexOf(x.prio) - ['MVP', 'V1', 'V2'].indexOf(y.prio)).slice(0, 8);
+      root.append(h('h2', {}, 'Nächste Flows (MVP zuerst)'),
+        next.length ? table(['Flow', 'Bereich', 'Prio', 'Status'], next.map((f) => [noteLink(f), f.area, f.prio, STATUS_LABEL[f.status]])) : h('p', { class: 'empty' }, 'Alles umgesetzt.'));
+  } },
+  { key: 'board', label: () => 'Board', filter: true, render: (a, root, name, flows) => {
+      if (!flows.length) root.append(h('p', { class: 'empty' }, 'Keine Flows in dieser Auswahl.'));
+      root.append(h('div', { class: 'board' }, STATUS.map(([k, l]) => {
+        const items = flows.filter((f) => f.status === k).sort((x, y) => x.prio.localeCompare(y.prio));
+        return h('section', { class: 'col', 'aria-label': l }, h('h3', {}, h('span', {}, l), h('span', { class: 'num' }, items.length)), items.map((f) => flowCard(f, name)));
+      })));
+  } },
+  { key: 'areas', label: () => 'Bereiche', filter: true, render: (a, root, name, flows, areas) => {
+      for (const ar of areas.filter((x) => !areaFilter || x === areaFilter)) {
+        const fl = a.flows.filter((f) => f.area === ar);
+        const c = { missing: 0, partial: 0, exists: 0, built: 0 }; fl.forEach((f) => c[f.status]++);
+        root.append(h('h2', {}, `${ar} · ${fl.length}`), statusBar(c, fl.length), table(['Flow', 'Status', 'Prio', 'Screens', 'Endpoints'], fl.map((f) => [noteLink(f), STATUS_LABEL[f.status] || f.status, f.prio, f.screens.join(', '), f.endpoints.join(', ')])));
+      }
+  } },
+  { key: 'findings', label: (a) => `Befunde (${a.findings.length})`, render: (a, root, name) => {
+      const fs = [...a.findings].sort((x, y) => (SEVERITY_RANK[x.severity] ?? 9) - (SEVERITY_RANK[y.severity] ?? 9));
+      root.append(fs.length ? table(['Schwere', 'Befund', 'Wo', 'Status'], fs.map((f) => [h('span', { class: `badge ${f.severity === 'Blocker' ? 'blocker' : ''}` }, f.severity), noteLink(f), f.where, select(f, 'state', ['open', 'fixed', 'wontfix'], name)])) : h('p', { class: 'empty' }, 'Keine Befunde.'));
+  } },
+  { key: 'decisions', label: (a) => `Entscheidungen (${a.decisions.length})`, render: (a, root, name) => {
+      root.append(a.decisions.length ? table(['Entscheidung', 'Frage', 'Antwort', 'Status'], a.decisions.map((d) => [noteLink(d), d.question, d.answer, select(d, 'state', ['open', 'decided'], name)])) : h('p', { class: 'empty' }, 'Keine Entscheidungen.'));
+  } },
+];
+function stat(label, value, cls = '') {
+  return h('div', { class: 'card stat' }, h('div', { class: `big num ${cls}` }, String(value ?? '–')), h('div', { class: 'muted' }, label));
+}
+let appTab = 'overview';
 let areaFilter = '';
+let lastApp = null;
 function appView(name) {
   const a = data.apps.find((x) => x.name === name);
   if (!a) { $view.replaceChildren(h('p', { class: 'empty' }, 'App nicht gefunden.')); return; }
+  if (lastApp !== name) { lastApp = name; appTab = 'overview'; areaFilter = ''; }
   crumbs([{ label: 'Apps', href: '#/' }, { label: a.name }]);
   const areas = [...new Set(a.flows.map((f) => f.area))].sort((x, y) => (AREA_ORDER.indexOf(x) + 1 || 99) - (AREA_ORDER.indexOf(y) + 1 || 99));
   const appUrl = safeUrl(a.url);
-  const root = h('div', {}, h('div', { class: 'row' }, h('h1', {}, a.name), h('span', { class: 'row' }, h('span', { class: 'muted num' }, `Abdeckung ${pct(a.coverage)}`), appUrl ? h('a', { class: 'btn-open', href: appUrl, target: '_blank', rel: 'noopener noreferrer' }, 'App öffnen ↗') : null)));
+  const root = h('div', {}, h('div', { class: 'row' }, h('h1', {}, a.name), h('span', { class: 'row' }, a.score != null ? h('span', { class: 'badge num' }, `Score ${a.score}/32`) : null, appUrl ? h('a', { class: 'btn-open', href: appUrl, target: '_blank', rel: 'noopener noreferrer' }, 'App öffnen ↗') : null)));
   if (a.total) root.append(statusBar(a.counts, a.total), legend(a.counts));
-
-  root.append(h('div', { class: 'tabs', style: 'margin-top:16px' }, [['board', 'Board'], ['areas', 'Bereiche'], ['findings', `Befunde (${a.findings.length})`], ['decisions', `Entscheidungen (${a.decisions.length})`]]
-    .map(([k, l]) => h('button', { type: 'button', 'aria-pressed': String(appTab === k), onclick: () => { appTab = k; appView(name); } }, l))));
-
-  if (appTab === 'board' || appTab === 'areas') {
-    root.append(h('div', { class: 'tabs' }, ['Alle', ...areas].map((ar) => h('button', { type: 'button', 'aria-pressed': String((areaFilter || 'Alle') === ar), onclick: () => { areaFilter = ar === 'Alle' ? '' : ar; appView(name); } }, ar))));
-  }
+  const tab = TABS.find((t) => t.key === appTab) || TABS[0];
+  root.append(h('div', { class: 'tabs', style: 'margin-top:16px' }, TABS.map((t) =>
+    h('button', { type: 'button', 'aria-pressed': String(t.key === tab.key), onclick: () => { appTab = t.key; appView(name); } }, t.label(a)))));
+  if (tab.filter) root.append(h('div', { class: 'tabs' }, ['Alle', ...areas].map((ar) => h('button', { type: 'button', 'aria-pressed': String((areaFilter || 'Alle') === ar), onclick: () => { areaFilter = ar === 'Alle' ? '' : ar; appView(name); } }, ar))));
   const flows = a.flows.filter((f) => !areaFilter || f.area === areaFilter);
-  if (appTab === 'board') {
-    if (!flows.length) root.append(h('p', { class: 'empty' }, 'Keine Flows in dieser Auswahl.'));
-    root.append(h('div', { class: 'board' }, STATUS.map(([k, l]) => {
-      const items = flows.filter((f) => f.status === k).sort((x, y) => x.prio.localeCompare(y.prio));
-      return h('section', { class: 'col', 'aria-label': l }, h('h3', {}, h('span', {}, l), h('span', { class: 'num' }, items.length)), items.map((f) => flowCard(f, name)));
-    })));
-  } else if (appTab === 'areas') {
-    for (const ar of areas.filter((x) => !areaFilter || x === areaFilter)) {
-      const fl = a.flows.filter((f) => f.area === ar);
-      const c = { missing: 0, partial: 0, exists: 0, built: 0 }; fl.forEach((f) => c[f.status]++);
-      root.append(h('h2', {}, `${ar} · ${fl.length}`), statusBar(c, fl.length), table(['Flow', 'Status', 'Prio', 'Screens', 'Endpoints'], fl.map((f) => [noteLink(f), STATUS_LABEL[f.status] || f.status, f.prio, f.screens.join(', '), f.endpoints.join(', ')])));
-    }
-  } else if (appTab === 'findings') {
-    const fs = [...a.findings].sort((x, y) => (SEVERITY_RANK[x.severity] ?? 9) - (SEVERITY_RANK[y.severity] ?? 9));
-    root.append(fs.length ? table(['Schwere', 'Befund', 'Wo', 'Status'], fs.map((f) => [h('span', { class: `badge ${f.severity === 'Blocker' ? 'blocker' : ''}` }, f.severity), noteLink(f), f.where, select(f, 'state', ['open', 'fixed', 'wontfix'], name)])) : h('p', { class: 'empty' }, 'Keine Befunde.'));
-  } else {
-    root.append(a.decisions.length ? table(['Entscheidung', 'Frage', 'Antwort', 'Status'], a.decisions.map((d) => [noteLink(d), d.question, d.answer, select(d, 'state', ['open', 'decided'], name)])) : h('p', { class: 'empty' }, 'Keine Entscheidungen.'));
-  }
+  tab.render(a, root, name, flows, areas);
   $view.replaceChildren(root);
 }
 function select(item, field, values, appName) {
