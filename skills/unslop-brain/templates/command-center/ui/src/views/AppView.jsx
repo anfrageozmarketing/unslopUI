@@ -117,7 +117,7 @@ export default function AppView({ name }) {
         </div>
       </section>
       <Tabs selectedKey={tab} onSelectionChange={(k) => setTab(String(k))}>
-        <Tabs.ListContainer>
+        <Tabs.ListContainer className="max-w-full overflow-x-auto">
           <Tabs.List aria-label="Bereiche">
             <Tabs.Tab id="flows">{tabLabel('flows', 'Flows', app.total)}<Tabs.Indicator /></Tabs.Tab>
             <Tabs.Tab id="attention">{tabLabel('attention', 'Aufmerksamkeit')}<Tabs.Indicator /></Tabs.Tab>

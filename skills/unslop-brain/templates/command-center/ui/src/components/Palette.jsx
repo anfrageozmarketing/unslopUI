@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Modal, SearchField, Kbd } from '@heroui/react';
+import { Modal, SearchField } from '@heroui/react';
 import { Icon } from './ui.jsx';
 import { filterPalette, paletteItems } from '../lib/model.js';
 
@@ -32,7 +32,7 @@ export default function Palette({ open, onOpenChange, apps }) {
               </button>
             ))}
           </div>
-          <div className="quiet mt-2 flex gap-3 px-1"><span><Kbd><Kbd.Content>↑↓</Kbd.Content></Kbd> wählen</span><span><Kbd><Kbd.Content>Enter</Kbd.Content></Kbd> öffnen</span><span><Kbd><Kbd.Content>Esc</Kbd.Content></Kbd> schließen</span></div>
+          <div className="quiet mt-2 flex gap-3 px-1"><span><span className="kbd">↑↓</span> wählen</span><span><span className="kbd">Enter</span> öffnen</span><span><span className="kbd">Esc</span> schließen</span></div>
         </Modal.Dialog>
       </Modal.Container>
     </Modal.Backdrop>

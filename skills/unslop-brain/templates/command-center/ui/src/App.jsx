@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Button, Kbd, Toast } from '@heroui/react';
+import { Button, Toast } from '@heroui/react';
 import { DataProvider, useData, useRoute } from './lib/hooks.jsx';
 import { appHref, blockersOf, safeUrl } from './lib/model.js';
 import { Icon, Strip } from './components/ui.jsx';
@@ -13,7 +13,7 @@ function Sidebar({ route, onSearch }) {
   return (
     <aside className="side">
       <a className="brand" href="#/"><span className="logo"><Icon name="route" size={20} onFill /></span>Command Center</a>
-      <Button variant="secondary" fullWidth onPress={onSearch}><Icon name="search" size={20} />Suchen<span className="ml-auto"><Kbd><Kbd.Abbr keyValue="command" /><Kbd.Content>K</Kbd.Content></Kbd></span></Button>
+      <Button variant="secondary" fullWidth onPress={onSearch}><Icon name="search" size={20} />Suchen<span className="kbd ml-auto">Strg K</span></Button>
       <nav aria-label="Apps" className="grid gap-1">
         <a className="nav-item" href="#/" aria-current={route.name === 'home' ? 'page' : undefined}><span className="nm"><span className="inline-flex items-center gap-2"><Icon name="grid" size={20} />Alle Apps</span></span></a>
         {data.apps.map((a) => {
