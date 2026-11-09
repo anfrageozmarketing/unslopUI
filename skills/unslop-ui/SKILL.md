@@ -22,7 +22,7 @@ AI-built apps fail in two ways. They **look** generic (glow, gradients, emoji la
 4. **Structure.** Use `unslop-structure` for screen map, navigation, deep links, settings layout, permissions.
 5. **States.** Use `unslop-states` so every screen has empty, loading, error, partial, offline, no-permission and limit states.
 6. **Copy.** Use `unslop-copy`. Replace slop phrases and raw backend errors. German copy rules are included.
-7. **Visuals.** Use `unslop-visual` last. If the separate `unslop` skill by Damir Sokolovsky (CC BY 4.0) is installed, hand the visual craft pass to it and keep this skill's checklist as the gate.
+7. **Components, then visuals.** Use `unslop-components` first: pick a signature component per screen from the shape of the data, no default table/KPI-card/form look. Then `unslop-visual` last. If the separate `unslop` skill by Damir Sokolovsky (CC BY 4.0) is installed, hand the visual craft pass to it and keep this skill's checklist as the gate.
 8. **Brain.** Update statuses in the vault (`unslop-brain`). `built` needs evidence.
 9. **Verify.** Build, run tests, open the screens at phone and desktop width, re-run the audit and report the score change.
 

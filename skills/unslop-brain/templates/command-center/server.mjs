@@ -15,17 +15,17 @@ const TRUST_PROXY = process.env.TRUST_PROXY === '1';
 const MAX_NOTE_BYTES = 512 * 1024;
 
 const ENUMS = {
-  status: ['missing', 'partial', 'exists', 'built'],
+  status: ['missing', 'partial', 'exists', 'built', 'na'],
   prio: ['MVP', 'V1', 'V2'],
   state: ['open', 'fixed', 'wontfix', 'decided'],
   severity: ['Blocker', 'Gap', 'Rough', 'Polish'],
 };
 const WRITABLE = {
-  flow: ['status', 'prio', 'screens', 'endpoints', 'evidence'],
+  flow: ['status', 'prio', 'screens', 'endpoints', 'evidence', 'reason'],
   finding: ['state', 'severity', 'where'],
   decision: ['state', 'answer', 'question'],
 };
-const FIELD_KIND = { screens: 'list', endpoints: 'list', evidence: 'text', answer: 'text', question: 'text', where: 'text' };
+const FIELD_KIND = { screens: 'list', endpoints: 'list', evidence: 'text', reason: 'text', answer: 'text', question: 'text', where: 'text' };
 const MANAGED = ['flow', 'finding', 'decision'];
 const MAX_BODY = 64 * 1024;
 const STATE_VALUES = { finding: ['open', 'fixed', 'wontfix'], decision: ['open', 'decided'] };
@@ -192,18 +192,62 @@ async function scan() {
     if (!app) { app = { name: an || '(ohne App)', path: null, score: null, stack: '', url: '', updated: '', flows: [], findings: [], decisions: [] }; apps.set(app.name, app); }
     const base = { path: n.path, title: n.title };
     if (t === 'flow') app.flows.push({ ...base, area: n.meta.area || 'Sonstiges', status: n.meta.status || 'missing',
-      prio: n.meta.prio || 'V1', screens: n.meta.screens || [], endpoints: n.meta.endpoints || [], evidence: n.meta.evidence || '', updated: n.meta.updated || '' });
+      prio: n.meta.prio || 'V1', screens: n.meta.screens || [], endpoints: n.meta.endpoints || [], evidence: n.meta.evidence || '', reason: n.meta.reason || '', updated: n.meta.updated || '' });
     if (t === 'finding') app.findings.push({ ...base, severity: n.meta.severity || 'Rough', state: n.meta.state || 'open', where: n.meta.where || '' });
     if (t === 'decision') app.decisions.push({ ...base, state: n.meta.state || 'open', question: n.meta.question || '', answer: n.meta.answer || '' });
   }
   const list = [...apps.values()].map((a) => {
-    const counts = { missing: 0, partial: 0, exists: 0, built: 0 };
+    const counts = { missing: 0, partial: 0, exists: 0, built: 0, na: 0 };
     for (const f of a.flows) if (f.status in counts) counts[f.status]++;
     const total = a.flows.length;
-    const coverage = total ? (counts.exists + counts.built + 0.5 * counts.partial) / total : null;
+    const relevant = total - counts.na; // flows marked "na" (not needed) do not count as gaps
+    const coverage = relevant ? (counts.exists + counts.built + 0.5 * counts.partial) / relevant : null;
     return { ...a, counts, total, coverage };
   }).sort((a, b) => a.name.localeCompare(b.name));
   return { apps: list, notes: notes.map((n) => n.path) };
+}
+
+/* ---------- per-app overview file for AI readers ---------- */
+const STATUS_DE = { missing: 'Fehlt', partial: 'Teilweise', exists: 'Vorhanden', built: 'Gebaut', na: 'Nicht nötig' };
+const AREA_ORDER = ['Zugang', 'Onboarding', 'Kernablauf', 'Einstellungen', 'System'];
+const cell = (v) => String(v ?? '').replace(/\|/g, '/').replace(/\s+/g, ' ').trim();
+export function renderOverview(a) {
+  const L = [];
+  const pct = a.coverage == null ? '–' : `${Math.round(a.coverage * 100)} %`;
+  L.push('---', 'type: overview', `app: ${a.name}`, '---', `# Übersicht: ${a.name}`, '',
+    '> Automatisch erzeugt aus den Notizen dieser App. Nicht bearbeiten, Änderungen gehen in den Einzelnotizen (`Flows/`, `Findings/`, `Entscheidungen/`).', '',
+    `Abdeckung ${pct} · Flows ${a.total} (Fehlt ${a.counts.missing}, Teilweise ${a.counts.partial}, Vorhanden ${a.counts.exists}, Gebaut ${a.counts.built}, Nicht nötig ${a.counts.na})${a.score != null && a.score !== '' ? ` · Audit-Score ${a.score}/36` : ''}`, '');
+  const blockers = a.findings.filter((f) => f.severity === 'Blocker' && f.state === 'open');
+  const open = a.findings.filter((f) => f.state === 'open' && f.severity !== 'Blocker');
+  const decisions = a.decisions.filter((d) => d.state === 'open');
+  L.push(`## Offene Blocker (${blockers.length})`, '', ...(blockers.length ? blockers.map((f) => `- ${f.title} (${cell(f.where)}) -> \`${f.path}\``) : ['- keine']), '');
+  L.push(`## Offene Entscheidungen (${decisions.length})`, '', ...(decisions.length ? decisions.map((d) => `- ${d.title}: ${cell(d.question)} -> \`${d.path}\``) : ['- keine']), '');
+  const areas = [...new Set(a.flows.map((f) => f.area))].sort((x, y) => (AREA_ORDER.indexOf(x) + 1 || 99) - (AREA_ORDER.indexOf(y) + 1 || 99) || x.localeCompare(y));
+  L.push('## Flows', '');
+  for (const ar of areas) {
+    L.push(`### ${ar}`, '', '| Flow | Status | Prio | Datei |', '|---|---|---|---|');
+    for (const f of a.flows.filter((x) => x.area === ar).sort((x, y) => x.title.localeCompare(y.title)))
+      L.push(`| ${cell(f.title)} | ${STATUS_DE[f.status] || f.status}${f.status === 'na' && f.reason ? ` (${cell(f.reason)})` : ''} | ${f.prio} | \`${f.path}\` |`);
+    L.push('');
+  }
+  if (!areas.length) L.push('Noch keine Flows.', '');
+  L.push(`## Weitere offene Befunde (${open.length})`, '', ...(open.length ? open.map((f) => `- [${f.severity}] ${f.title} (${cell(f.where)}) -> \`${f.path}\``) : ['- keine']), '');
+  return L.join('\n');
+}
+let overviewChain = Promise.resolve();
+export function refreshOverviews() {
+  overviewChain = overviewChain.then(async () => {
+    const { apps } = await scan();
+    for (const a of apps) {
+      if (!a.path) continue;
+      const file = resolve(VAULT, a.path.split('/').slice(0, -1).join('/'), '_Overview.md');
+      if (!file.startsWith(VAULT + sep)) continue;
+      const text = renderOverview(a);
+      let old = ''; try { old = await readFile(file, 'utf8'); } catch { /* new file */ }
+      if (old !== text) await writeFile(file, text, 'utf8');
+    }
+  }).catch((e) => { console.error('overview refresh failed:', e.code || e.message); });
+  return overviewChain;
 }
 
 /* ---------- http ---------- */
@@ -250,6 +294,7 @@ const STATIC = {
 const server = http.createServer(async (req, res) => {
   try {
     const url = new URL(req.url, 'http://x');
+    if (['PATCH', 'PUT', 'DELETE', 'POST'].includes(req.method)) res.on('finish', () => { if (res.statusCode < 300) refreshOverviews(); });
     if (url.pathname === '/healthz') return send(res, 200, 'ok', 'text/plain; charset=utf-8');
     if (!authenticate(req, res)) return;
 
@@ -382,5 +427,5 @@ const server = http.createServer(async (req, res) => {
 });
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  server.listen(PORT, HOST, () => console.log(`Command Center on http://${HOST}:${PORT} - vault ${VAULT}`));
+  server.listen(PORT, HOST, () => { console.log(`Command Center on http://${HOST}:${PORT} - vault ${VAULT}`); refreshOverviews(); });
 }

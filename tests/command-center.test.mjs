@@ -74,7 +74,7 @@ test('index summarizes the demo vault', async () => {
   assert.equal(a.name, 'Demo-App');
   assert.equal(a.score, 11);
   assert.equal(a.total, 7);
-  assert.deepEqual(a.counts, { missing: 4, partial: 1, exists: 1, built: 1 });
+  assert.deepEqual(a.counts, { missing: 4, partial: 1, exists: 1, built: 1, na: 0 });
   assert.equal(a.findings.length, 2);
   assert.equal(a.decisions.length, 2);
 });
@@ -190,6 +190,29 @@ test('create finding and decision; edit their text fields; validate', async () =
   assert.ok(app.findings.some((x) => x.title === 'Neuer Befund' && x.severity === 'Blocker' && x.where === 'lib/db.js'));
   assert.ok(app.decisions.some((x) => x.title === 'Neue Entscheidung' && x.state === 'decided' && x.question === 'Anders?'));
   assert.equal((await post('/api/decision', { app: 'Nope', title: 'X' })).status, 404);
+});
+
+test('"na" (not needed) with reason is not a gap; overview file is generated for AI readers', async () => {
+  const P = 'Apps/Demo-App/Flows/Einstellungen/Mail-Absender.md';
+  assert.equal((await post('/api/note', { path: P, field: 'status', value: 'na' }, 'PATCH')).status, 200);
+  assert.equal((await post('/api/note', { path: P, field: 'reason', value: 'Absender steht fest im Betrieb' }, 'PATCH')).status, 200);
+  const a = (await (await get('/api/index')).json()).apps[0];
+  assert.equal(a.counts.na, 1);
+  assert.equal(a.total, 7);
+  const c = a.counts;
+  assert.equal(a.coverage, (c.exists + c.built + 0.5 * c.partial) / (a.total - c.na), 'na is excluded from the coverage denominator');
+  const ov = 'Apps/Demo-App/_Overview.md';
+  let txt = '';
+  for (let i = 0; i < 30 && !txt.includes('Nicht nötig (Absender steht fest im Betrieb)'); i++) {
+    await new Promise((r) => setTimeout(r, 100));
+    try { txt = readVault(ov); } catch { /* not written yet */ }
+  }
+  assert.match(txt, /^type: overview$/m);
+  assert.match(txt, /Nicht nötig \(Absender steht fest im Betrieb\)/);
+  assert.match(txt, /### Zugang/);
+  assert.match(txt, /Offene Blocker \(\d+\)/);
+  // the overview is not editable through the API
+  assert.equal((await post('/api/note', { path: ov, field: 'status', value: 'built' }, 'PATCH')).status, 400);
 });
 
 test('state-changing calls need the header and JSON', async () => {

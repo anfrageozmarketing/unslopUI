@@ -14,6 +14,7 @@ Most "unslop" tools fix the surface: glow, gradients, emoji. AI-built apps are a
 | `unslop-structure` | Route map, navigation, deep links, list scaling, settings layout, permissions |
 | `unslop-states` | Empty, loading, partial, error, offline, no-permission, limit |
 | `unslop-copy` | Specific, calm copy; German rules and a German slop-phrase list |
+| `unslop-components` | Picks a signature component per screen from the shape of the data; bans the default table / KPI-card / form look |
 | `unslop-visual` | Last-layer visual gate: tokens, quiet chrome, one focal element, mobile |
 | `unslop-brain` | Sets up a **private** Obsidian vault (one note per flow) and a self-hosted **Command Center** web app that shows all apps, flows, status and open decisions |
 

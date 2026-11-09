@@ -29,7 +29,7 @@ Zu dieser App gibt es ein privates Wissens-Vault (Markdown, Obsidian-kompatibel)
 - Schema der Notizen: \`$vault/Schema.md\`${url:+
 - Übersicht im Browser (Passwort-geschützt): $url}
 
-**Vor der Arbeit:** \`_App.md\`, die betroffenen Flow-Notizen, offene Befunde und offene Entscheidungen lesen. Offene Entscheidungen nicht stillschweigend selbst treffen, sondern nachfragen.
+**Vor der Arbeit:** Zuerst \`Apps/$app_name/_Overview.md\` lesen (automatisch erzeugtes Gesamtbild: Blocker, offene Entscheidungen, alle Flows nach Bereich und Status). Dann nur die betroffenen Notizen. Flows mit Status \`na\` sind bewusst nicht nötig und werden nicht neu vorgeschlagen. Offene Entscheidungen nicht stillschweigend selbst treffen, sondern nachfragen.
 
 **Nach der Arbeit:** Im Frontmatter der betroffenen Flows \`status\` und \`updated\` pflegen. \`built\` nur setzen, wenn ein Test, Gate oder eine Prüfung bestanden hat, und diesen Nachweis in \`evidence\` eintragen. Neue Flows, Befunde oder Entscheidungen als neue Notiz nach dem Schema anlegen. Behobene Befunde auf \`state: fixed\` setzen.
 

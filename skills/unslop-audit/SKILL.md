@@ -1,6 +1,6 @@
 ---
 name: unslop-audit
-description: Scores an app 0-32 across eight dimensions (identity, onboarding, core loop, settings, states, structure, copy, visuals), lists "AI-structure tells" with file evidence, and writes a prioritized report. Use first on any "check the app", "review this product", or "what is missing" request, and again after changes to show the score change.
+description: Scores an app 0-36 across nine dimensions (identity, onboarding, core loop, settings, states, structure, copy, visuals, components), lists "AI-structure tells" with file evidence, and writes a prioritized report. Use first on any "check the app", "review this product", or "what is missing" request, and again after changes to show the score change.
 ---
 
 # unslop-audit
@@ -25,8 +25,9 @@ description: Scores an app 0-32 across eight dimensions (identity, onboarding, c
 | Structure | Real routes, deep links per entity, pagination, filters, consistent navigation |
 | Copy | Specific, human, no raw errors, no slop phrases, one voice |
 | Visuals | Tokens for space/color/type, quiet chrome, one deliberate focal element, mobile works |
+| Components | Each screen has a signature component chosen for its data shape; no table/KPI-card/form default; read-first with editing one step deeper |
 
-Total /32. Under 12: prototype. 12-20: usable internally. 21-27: shippable. 28+: deliberate.
+Total /36. Under 14: prototype. 14-23: usable internally. 24-31: shippable. 32+: deliberate.
 
 ## Structure tells (AI-built apps)
 
@@ -41,12 +42,13 @@ Total /32. Under 12: prototype. 12-20: usable internally. 21-27: shippable. 28+:
 - No 404/403/500 page; SPA fallback serves the shell for every path.
 - Outbound mail or webhooks with no preview, test send, history, rate limit or opt-out.
 - Dashboards of vanity cards with no action behind them.
+- Screens built from the default silhouette: title, row of KPI cards, table with edit controls in cells, form (see `unslop-components`).
 
 ## Report template
 
 ```
 # Audit: <app> - <date>
-Score: <n>/32  (<band>)
+Score: <n>/36  (<band>)
 ## Blockers
 - <finding> - <file/route> - <why it matters> - <smallest fix>
 ## Gaps

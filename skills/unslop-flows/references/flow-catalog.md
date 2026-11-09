@@ -1,5 +1,7 @@
 # Flow catalog
 
+**Applicability first.** The catalog is a checklist to think with, not a quota. Judge each row against the app's scale and purpose before proposing it: roles, invites and team settings mean nothing for a one-user tool; billing means nothing for an internal app; sign-up means nothing for a closed team. Record a conscious "not needed" as `status: na` with a `reason`.
+
 M = must, S = should, C = could. Columns: **Int** internal tool (one team), **B2B** SaaS with customers, **B2C** consumer app.
 
 ## Access
