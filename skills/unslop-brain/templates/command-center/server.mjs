@@ -64,7 +64,8 @@ function noteFail(ip) { (fails.get(ip) || fails.set(ip, []).get(ip)).push(Date.n
 
 function clientIp(req) {
   if (TRUST_PROXY) {
-    const xf = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim();
+    // Behind one trusted proxy the proxy appends the real client address, so the LAST entry is the one to trust.
+    const xf = String(req.headers['x-forwarded-for'] || '').split(',').map((x) => x.trim()).filter(Boolean).pop();
     if (xf) return xf;
   }
   return req.socket.remoteAddress || 'unknown';
