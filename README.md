@@ -32,6 +32,23 @@ claude mcp add playwright --scope user -- npx @playwright/mcp@latest
 
 **Where the session runs matters.** A stdio MCP starts on the machine that runs the session. In a **local** session (your laptop) Playwright works with its browser. In an **SSH/remote** session the desktop app hands the entry over from your laptop, and this hand-off can break (symptom: `ENOENT ... posix_spawn 'stdio'`, no `playwright` tools); the server also has no screen and usually no Playwright browser (`npx playwright install chromium`). So for UI work use a local session, and let it work on a clone of the repo; deploy to the server afterwards.
 
+**Server session instead:** put the server into a project file `/root/.mcp.json` (or the project folder's `.mcp.json`; approve it when the session asks) and use the Chrome that is already installed, headless:
+
+```json
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest", "--headless", "--no-sandbox", "--isolated",
+               "--browser", "chrome", "--executable-path", "/usr/bin/google-chrome",
+               "--viewport-size", "1280x900"]
+    }
+  }
+}
+```
+
+`--no-sandbox` is needed when running as root. Start a **new** session in that folder afterwards (MCP servers load at session start). Verified on a Linux server: 25 tools, `browser_navigate` and `browser_take_screenshot` work.
+
 The skills (`unslop-ui`, `unslop-components`, `unslop-visual`, `unslop-brain`) tell the AI to use it for the verify step. Without it, the AI can only say what it did not check.
 
 ## Install
