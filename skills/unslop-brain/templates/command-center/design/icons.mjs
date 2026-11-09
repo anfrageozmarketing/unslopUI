@@ -24,7 +24,8 @@ export const ICONS = {
     grid:      { l: 'M4 4h6v6H4ZM14 4h6v6h-6ZM4 14h6v6H4ZM14 14h6v6h-6Z', f: 'M14 14h6v6h-6Z' },
     'link-out':{ l: 'M14 4h6v6M20 4 11 13M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4', f: 'M4 8a2 2 0 0 1 2-2h5v14H6a2 2 0 0 1-2-2Z' },
     chevron:   { l: 'M9 5l7 7-7 7', f: 'M9 5l7 7-7 7Z' },
-    command:   { l: 'M9 9h6v6H9ZM9 9V6.5A2.5 2.5 0 1 0 6.5 9H9ZM15 9V6.5A2.5 2.5 0 1 1 17.5 9H15ZM9 15v2.5A2.5 2.5 0 1 1 6.5 15H9ZM15 15v2.5a2.5 2.5 0 1 0 2.5-2.5H15Z', f: 'M9 9h6v6H9Z' },
+    contrast:  { l: 'M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM12 3v18', f: 'M12 3a9 9 0 0 1 0 18Z' },
+  command:   { l: 'M9 9h6v6H9ZM9 9V6.5A2.5 2.5 0 1 0 6.5 9H9ZM15 9V6.5A2.5 2.5 0 1 1 17.5 9H15ZM9 15v2.5A2.5 2.5 0 1 1 6.5 15H9ZM15 15v2.5a2.5 2.5 0 1 0 2.5-2.5H15Z', f: 'M9 9h6v6H9Z' },
 };
 // aliases for areas and tabs
 ICONS.flows = ICONS.route; ICONS.attention = ICONS.bolt; ICONS.findings = ICONS.alert; ICONS.decisions = ICONS.question;

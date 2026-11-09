@@ -18,7 +18,7 @@ export function Rail({ route, apps, app, onSearch, onTheme, onReload }) {
       ))}
       <span className="sp" />
       <button type="button" className="rail-btn util" aria-label="Suchen (Strg K)" title="Suchen (Strg K)" onClick={onSearch}><Icon name="search" size={24} /></button>
-      <button type="button" className="rail-btn util" aria-label="Hell oder dunkel" title="Hell oder dunkel" onClick={onTheme}><Icon name="fit" size={24} /></button>
+      <button type="button" className="rail-btn util" aria-label="Hell oder dunkel" title="Hell oder dunkel" onClick={onTheme}><Icon name="contrast" size={24} /></button>
       <button type="button" className="rail-btn util" aria-label="Aktualisieren" title="Aktualisieren" onClick={onReload}><Icon name="refresh" size={24} /></button>
     </nav>
   );

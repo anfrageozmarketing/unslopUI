@@ -17,8 +17,7 @@ export function AppsView() {
         {data.apps.map((a) => (
           <a key={a.name} className="card" href={`#/flows/${encodeURIComponent(a.name)}`}>
             <Portrait app={a} width={900} height={420} />
-            <h2>{a.name}</h2>
-            <div className="glass panel"><Strip app={a} size="lg" /><span className="text-sm">{summaryParts(a).join(' · ')}</span></div>
+            <div className="glass panel"><h2>{a.name}</h2><Strip app={a} size="lg" /><span className="text-sm">{summaryParts(a).join(' · ')}</span></div>
           </a>
         ))}
       </div>
@@ -41,9 +40,9 @@ export function FlowsView({ app }) {
   return (
     <Window title={app.name} sub="Flows" actions={<OpenApp app={app} />}>
       <div className="grid gap-6">
-        <ToggleButtonGroup aria-label="Status filtern" selectionMode="multiple" size="sm" selectedKeys={active} onSelectionChange={(k) => setActive(new Set([...k].map(String)))}>
+        <div className="scroll-x"><ToggleButtonGroup aria-label="Status filtern" selectionMode="multiple" size="sm" selectedKeys={active} onSelectionChange={(k) => setActive(new Set([...k].map(String)))}>
           {STATUS.filter(([k]) => app.counts[k]).map(([k, l]) => <ToggleButton key={k} id={k}><StatusMark status={k} />{l}<span className="num muted">{app.counts[k]}</span></ToggleButton>)}
-        </ToggleButtonGroup>
+        </ToggleButtonGroup></div>
         <RouteMap app={app} active={active} />
         <QuickAdd placeholder="Neuer Flow" onSubmit={async (title) => { const r = await create('flow', { app: app.name, area, title, status: 'missing', prio: 'V1', screens: [], endpoints: [] }); if (r?.path) location.hash = noteHref({ path: r.path }); return !!r; }}>{pickArea(areas, area, setArea)}</QuickAdd>
       </div>

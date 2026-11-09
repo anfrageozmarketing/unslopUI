@@ -102,7 +102,7 @@ a { color: inherit; text-decoration: none; }
 .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
 .card { position: relative; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; isolation: isolate; min-height: 260px; padding: 20px; border-radius: 24px; background: var(--accent-soft); transition: transform var(--dur-2) var(--ease-out), box-shadow var(--dur-2); }
 .card:hover { transform: translateY(-3px); box-shadow: var(--lift); }
-.card h2 { font-size: 26px; }
+.card h2 { font-size: 24px; }
 .card .panel { display: grid; gap: 10px; padding: 14px 16px; margin-top: 12px; }
 
 /* route map (preview of flows): later replaced by the area map */
@@ -227,4 +227,18 @@ a { color: inherit; text-decoration: none; }
   .row { grid-template-columns: 34px minmax(0, 1fr) auto; } .row .acts { grid-column: 2 / -1; opacity: 1; }
   .row.f { grid-template-columns: 70px minmax(0, 1fr); }
   .node { width: 108px; }
+}
+
+/* nothing may be wider than the window */
+.scroll-x { overflow-x: auto; max-width: 100%; padding-bottom: 4px; scrollbar-width: none; }
+.scroll-x::-webkit-scrollbar { display: none; }
+.window, .window-body, .window-head { min-width: 0; max-width: 100%; }
+.window-body { overflow-x: clip; }
+@media (max-width: 900px) {
+  .window { overflow-x: clip; }
+  .quick { flex-wrap: wrap; row-gap: 0; }
+  .quick input { min-width: 40%; }
+  .window-head .tools { flex: none; }
+  html, body { overflow-x: hidden; max-width: 100vw; }
+  .app { max-width: 100vw; }
 }
