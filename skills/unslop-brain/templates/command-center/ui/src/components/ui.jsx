@@ -2,19 +2,24 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Button, Popover, ListBox, ToggleButton, ToggleButtonGroup, Input } from '@heroui/react';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
-import { ICONS } from '../../../design/icons.mjs';
+import * as P from '@phosphor-icons/react';
 import { portrait, art as ART } from '../../../design/illustrations.mjs';
 import { STATUS, STATUS_LABEL, PRIOS } from '../lib/constants.js';
 import { areasOf } from '../lib/model.js';
 
-export function Icon({ name, size = 24, label, onFill = false }) {
-  const d = ICONS[name]; if (!d) return null;
-  const a11y = label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true };
-  return (
-    <svg className={`ic${onFill ? ' on-fill' : ''}`} viewBox="0 0 24 24" width={size} height={size} focusable="false" {...a11y}>
-      <path className="ic-soft" d={d.f} transform="translate(1.6 1.6)" /><path className="ic-line" d={d.l} />
-    </svg>
-  );
+const ICON = {
+  key: P.Key, flag: P.Flag, route: P.Path, sliders: P.SlidersHorizontal, server: P.HardDrives, search: P.MagnifyingGlass, refresh: P.ArrowsClockwise,
+  plus: P.Plus, edit: P.PencilSimple, archive: P.Archive, undo: P.ArrowUUpLeft, check: P.Check, close: P.X, alert: P.Warning, question: P.Question,
+  bolt: P.Lightning, 'zoom-in': P.MagnifyingGlassPlus, 'zoom-out': P.MagnifyingGlassMinus, fit: P.CornersOut, grid: P.SquaresFour, 'link-out': P.ArrowSquareOut,
+  chevron: P.CaretRight, command: P.Command, contrast: P.CircleHalf, sidebar: P.SidebarSimple, trash: P.Trash, back: P.ArrowLeft, next: P.ArrowRight,
+  expand: P.ArrowsOutSimple, link: P.Link, fork: P.GitFork, sliders2: P.Faders,
+};
+ICON.flows = ICON.route; ICON.attention = ICON.bolt; ICON.findings = ICON.alert; ICON.decisions = ICON.question;
+
+// One icon library, one weight: Phosphor, bold (duotone for the selected state). Decorative unless a label is given.
+export function Icon({ name, size = 24, label, active = false }) {
+  const C = ICON[name]; if (!C) return null;
+  return <C size={size} weight={active ? 'duotone' : 'bold'} className="ic" {...(label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true })} />;
 }
 
 export const StatusMark = ({ status, size }) => <span className={`st${size === 'lg' ? ' lg' : ''}`} data-s={status} />;

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Local UI preview of the Command Center with DEMO data only (never a real vault).
+// Local UI preview of the Command Center. Demo data by default; --vault <dir> previews a COPY of another vault (never written).
 // Starts the app on a temp copy of examples/demo-vault plus a tiny proxy on 127.0.0.1 that adds the test login,
 // so a browser tool (Playwright) can open  http://127.0.0.1:8091  without credentials in the URL.
 // Usage: node scripts/dev-preview.mjs            (runs until stopped)
@@ -24,7 +24,10 @@ if (process.argv.includes('--build') || !existsSync(join(UI, 'dist', 'index.html
   if (b.status !== 0) { console.error('UI build failed'); process.exit(1); }
 }
 const tmp = mkdtempSync(join(tmpdir(), 'cc-preview-'));
-cpSync(join(ROOT, 'examples/demo-vault'), join(tmp, 'vault'), { recursive: true });
+const vi = process.argv.indexOf('--vault');
+const vaultSrc = vi > 0 ? process.argv[vi + 1] : join(ROOT, 'examples/demo-vault');
+cpSync(vaultSrc, join(tmp, 'vault'), { recursive: true }); // always a copy: the original vault is never written
+console.log(`vault copy: ${join(tmp, 'vault')}`);
 const user = spawnSync('node', [join(CC, 'hash-password.mjs'), 'demo'], { env: { ...process.env, CC_PASSWORD: PW }, encoding: 'utf8' }).stdout.trim();
 const app = spawn('node', [join(CC, 'server.mjs')], { env: { ...process.env, VAULT_DIR: join(tmp, 'vault'), PUBLIC_DIR: join(UI, 'dist'), CC_USERS: user, PORT: String(APP_PORT), HOST: '127.0.0.1' }, stdio: 'ignore' });
 const auth = 'Basic ' + Buffer.from(`demo:${PW}`).toString('base64');

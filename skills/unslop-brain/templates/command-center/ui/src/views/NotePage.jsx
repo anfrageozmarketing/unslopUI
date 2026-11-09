@@ -28,7 +28,7 @@ function TextEditor({ open, onOpenChange, initial, onSave }) {
 }
 
 // Every value of the note is editable where it stands. No form, no Save button.
-function Properties({ path, note }) {
+export function Properties({ path, note }) {
   const { change } = useActions(); const m = note.meta; const t = m.type;
   const set = (field, prev, label) => (v) => change(path, field, v, prev, label);
   return (
@@ -75,11 +75,12 @@ export default function NotePage({ path, appName }) {
   return (
     <Window title={title} sub={<a href={areaHref(kind, appName)} className="underline decoration-transparent hover:decoration-current">{appName}</a>}
       actions={managed && <>
-        <Button isIconOnly variant="ghost" aria-label="Text bearbeiten" onPress={() => setEditor(true)}><Icon name="edit" size={22} /></Button>
+        {isFlow && <Button variant="primary" size="sm" onPress={() => { location.hash = `#/workspace/${encodeURIComponent(path)}`; }}><Icon name="expand" size={18} />Workspace</Button>}
+        <Button variant="ghost" size="sm" onPress={() => setEditor(true)}><Icon name="edit" size={18} />Text</Button>
         <Button isIconOnly variant="ghost" aria-label="Archivieren" onPress={async () => { if (await archive(path)) location.hash = areaHref(kind, appName); }}><Icon name="archive" size={22} /></Button>
       </>}>
       <div className="grid gap-6">
-        {isFlow && <><FlowCanvas graph={parts.graph.g} onEdit={() => setEditor(true)} />{parts.graph.derived && parts.graph.g.nodes.length > 0 && <p className="quiet -mt-3">Aus „Soll“ abgeleitet</p>}</>}
+        {isFlow && <><div onDoubleClick={() => { location.hash = `#/workspace/${encodeURIComponent(path)}`; }}><FlowCanvas graph={parts.graph.g} onEdit={() => setEditor(true)} /></div>{parts.graph.derived && parts.graph.g.nodes.length > 0 && <p className="quiet -mt-3">Aus „Soll“ abgeleitet</p>}</>}
         {managed && <Properties path={path} note={note} />}
         {parts.rest.trim() && <Markdown text={parts.rest} />}
         {isFlow && pair.length > 0 && <div className="cols2">{pair.map((s) => <section key={s.title}><h2 className="mb-2 text-xl">{s.title}</h2><Markdown text={s.md} /></section>)}</div>}

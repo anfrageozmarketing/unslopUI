@@ -52,6 +52,7 @@ export function parseHash(hash) {
   const h = String(hash || '').replace(/^#\/?/, '');
   try {
     if (h === '_components') return { name: 'gallery', app: null };
+    if (h.startsWith('workspace/')) { const path = decodeURIComponent(h.slice(10)); const p = path.split('/'); return { name: 'workspace', path, app: p[0] === 'Apps' ? p[1] : null, kind: 'flows' }; }
     if (h.startsWith('note/')) { const path = decodeURIComponent(h.slice(5)); const p = path.split('/'); return { name: 'note', path, app: p[0] === 'Apps' ? p[1] : null, kind: { Flows: 'flows', Findings: 'findings', Entscheidungen: 'decisions' }[p[2]] || 'flows' }; }
     const m = h.match(/^(flows|focus|findings|decisions|app)\/(.+)$/);
     if (m) return { name: m[1] === 'app' ? 'flows' : m[1], app: decodeURIComponent(m[2]) };

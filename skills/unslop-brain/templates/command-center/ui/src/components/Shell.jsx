@@ -1,25 +1,27 @@
 import { Button } from '@heroui/react';
 import { AREAS, areaHref, appHref, blockersOf, openDecisionsOf, pct, safeUrl, totalsOf } from '../lib/model.js';
 import { Icon, Strip } from './ui.jsx';
+import { useShell } from '../lib/shell.jsx';
 
 // Rail (areas), context column (apps as folders, info at the bottom), window (the working surface).
 export function Rail({ route, apps, app, onSearch, onTheme, onReload }) {
   const blockers = apps.reduce((n, a) => n + blockersOf(a).length, 0);
   const decisions = apps.reduce((n, a) => n + openDecisionsOf(a).length, 0);
   const count = { findings: blockers, decisions };
-  const current = route.name === 'note' ? (route.kind || 'flows') : route.name;
+  const current = route.name === 'note' || route.name === 'workspace' ? (route.kind || 'flows') : route.name;
   return (
     <nav className="rail" aria-label="Bereiche">
-      <a className="logo" href="#/apps" aria-label="Command Center"><Icon name="route" size={24} onFill /></a>
+      <a className="logo" href="#/apps" aria-label="Command Center"><Icon name="route" size={24} /></a>
       {AREAS.map((a) => (
-        <a key={a.key} className="rail-btn" href={areaHref(a.key, app)} aria-label={a.label} title={a.label} aria-current={current === a.key ? 'page' : undefined}>
-          <Icon name={a.icon} size={26} />{count[a.key] > 0 && <span className="badge cnt">{count[a.key]}</span>}
+        <a key={a.key} className="rail-btn" href={areaHref(a.key, app)} title={a.label} aria-current={current === a.key ? 'page' : undefined}>
+          <span className="rail-ic"><Icon name={a.icon} size={26} active={current === a.key} />{count[a.key] > 0 && <span className="badge cnt">{count[a.key]}</span>}</span>
+          <span className="rail-lbl">{a.label}</span>
         </a>
       ))}
       <span className="sp" />
-      <button type="button" className="rail-btn util" aria-label="Suchen (Strg K)" title="Suchen (Strg K)" onClick={onSearch}><Icon name="search" size={24} /></button>
-      <button type="button" className="rail-btn util" aria-label="Hell oder dunkel" title="Hell oder dunkel" onClick={onTheme}><Icon name="contrast" size={24} /></button>
-      <button type="button" className="rail-btn util" aria-label="Aktualisieren" title="Aktualisieren" onClick={onReload}><Icon name="refresh" size={24} /></button>
+      <button type="button" className="rail-btn util" title="Suchen (Strg K)" onClick={onSearch}><span className="rail-ic"><Icon name="search" size={24} /></span><span className="rail-lbl">Suchen</span></button>
+      <button type="button" className="rail-btn util" title="Hell oder dunkel" onClick={onTheme}><span className="rail-ic"><Icon name="contrast" size={24} /></span><span className="rail-lbl">Design</span></button>
+      <button type="button" className="rail-btn util" title="Aktualisieren" onClick={onReload}><span className="rail-ic"><Icon name="refresh" size={24} /></span><span className="rail-lbl">Laden</span></button>
     </nav>
   );
 }
@@ -50,10 +52,14 @@ export function Context({ area, apps, app }) {
 }
 
 export function Window({ title, sub, actions, children }) {
+  const { ctxOpen, toggle } = useShell();
   return (
     <main className="window">
       <header className="window-head">
-        <div><h1>{title}</h1>{sub && <div className="sub-t">{sub}</div>}</div>
+        <div className="flex items-center gap-3 min-w-0">
+          <Button variant="ghost" size="sm" className="ctx-toggle" aria-label={ctxOpen ? 'Seitenleiste einklappen' : 'Seitenleiste ausklappen'} onPress={toggle}><Icon name="sidebar" size={22} />{ctxOpen ? 'Einklappen' : 'Apps'}</Button>
+          <div className="min-w-0"><h1 className="truncate">{title}</h1>{sub && <div className="sub-t">{sub}</div>}</div>
+        </div>
         <div className="tools">{actions}</div>
       </header>
       <div className="window-body">{children}</div>

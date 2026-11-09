@@ -15,8 +15,8 @@ Gilt, bis er bewusst geändert wird. Reihenfolge: Komponenten, dann Screens, dan
 ## 2. Shell und Screens
 
 **Shell** (Muster: `unslop-foundation/references/designer-standard.md`, App-Shell):
-- **Leiste** links (64 px): App-Icon oben. Darunter ein Knopf je Bereich: Apps, Flows, Fokus, Befunde, Entscheidungen. Unten: Suche, Hell/Dunkel, Aktualisieren. Aktiv: angehobene Kachel mit weichem Schatten und vollem Icon, dazu eine dünne Akzentlinie ganz am Rand. Inaktiv: graues Icon.
-- **Kontextspalte** (240 px): Titel des Bereichs, darunter die Apps als Unterordner (mit Streifen; bei Flows aufklappbar in Bereiche). Unten: Statusinfo (Vault, letzte Sicherung, Abdeckung).
+- **Leiste** links (rund 104 px): App-Icon oben. Darunter ein Knopf je Bereich **mit Beschriftung unter dem Icon**: Apps, Flows, Fokus, Befunde, Entscheidungen. Unten: Suche, Hell/Dunkel, Aktualisieren. Aktiv: angehobene Kachel mit weichem Schatten und vollem Icon, dazu eine dünne Akzentlinie ganz am Rand. Inaktiv: graues Icon.
+- **Kontextspalte** (240 px, einklappbar über einen Knopf in der Fensterkopfzeile, Zustand bleibt): Titel des Bereichs, darunter die Apps als Unterordner (mit Streifen; bei Flows aufklappbar in Bereiche). Unten: Statusinfo (Vault, letzte Sicherung, Abdeckung).
 - **Fenster**: abgerundeter Container (24 px) mit Abstand zum Rand, darin der Inhalt des Bereichs. Dunkel: Fenster deutlich heller als die Shell. Hell: Fenster weiß auf hellgrauer Shell.
 - **Handy:** Leiste wird untere Leiste, Kontextspalte wird eine Titelzeile mit App-Wechsel, Fenster randlos mit runden oberen Ecken.
 
@@ -45,6 +45,13 @@ Jeder Bereich hat zwei Ebenen. **Vorschau:** visuell auf einen Blick, kein Liste
 | Befunde | **Schwere-Landschaft:** Spalten Blocker, Gap, Rough, Polish, Höhe nach Anzahl, Karten im Stapel | **Board:** Spalten Offen, Behoben, Nicht beheben, Reihen nach Schwere | Karte auf eine Spalte ziehen setzt den Status; Karte anklicken öffnet das Panel |
 | Entscheidungen | **Gabelkarten:** Frage groß, Optionen als Chips, offen oder entschieden | **Entscheidungs-Workspace:** Optionen als Karten nebeneinander mit kurzem Pro und Contra | Karte wählen setzt die Antwort |
 
+**Workspace-Fenster** (Muster in `designer-standard.md`): großes abgerundetes Fenster über der abgedunkelten App. Oben links Titel mit Kontext ("Login in Demo-App"), in der Mitte der Modus-Umschalter **Ablauf | Text**, rechts Status, Rückgängig, Link kopieren und **Schließen** (Esc). Unten links "3 von 7 in Zugang", in der Mitte Textknöpfe (**Schritt hinzufügen**, **Einpassen**), rechts **Eigenschaften** (Panel von rechts, einklappbar). Pfeile links und rechts springen zum vorigen und nächsten Flow des Bereichs. Alle Knöpfe tragen Text. Autospeichern mit Anzeige "Gespeichert" und Rückgängig. Adresse: `#/workspace/<Pfad>`.
+
+**Gestaltungsmuster für die Vorschau** (siehe `designer-standard.md`): **Kachel** (graue, stark abgerundete Fläche, kleineres Vorschaubild darin, Beschriftung darunter), **Hintergrund-Ebene** (echte Daten als schwebende Sticker und Karten um das Hauptobjekt) und **Invertierung** (ein dunkles Element in der hellen Oberfläche für das Dringendste).
+- Apps: Kacheln mit Portrait als Vorschaubild, darunter Name und eine Zeile. Die App mit offenen Blockern ist invertiert.
+- Flows: die Bereiche als abgerundete Karten, die Flows als Sticker mit Status auf weichen Bahnen um die Karten.
+- Fokus: der dringendste Blocker invertiert, die übrigen Einträge als graue Kacheln.
+
 Grenze, ehrlich: Mermaid kennt keine Koordinaten. Knoten werden deshalb nicht frei verschoben, sondern automatisch angeordnet. Visuell bearbeitet wird die Struktur.
 
 ## 4. Bausteine
@@ -58,7 +65,8 @@ Grenze, ehrlich: Mermaid kennt keine Koordinaten. Knoten werden deshalb nicht fr
 | TokenFeld (Screens, Endpoints) | HeroUI Chip + Input | Tippen, Enter fügt hinzu, x entfernt |
 | Schnellanlegen | eigen + HeroUI Input | eine Zeile am Listenende |
 | Zeile (flach, ohne Linie) | eigen | Aktionen bei Hover, auf Touch sichtbar |
-| Leiste, Kontextspalte, Fenster (Shell) | eigen mit Tailwind | |
+| Leiste (Icon und Beschriftung), Kontextspalte (einklappbar), Fenster (Shell) | eigen mit Tailwind | |
+| Workspace-Fenster, Ablauf-Editor | eigen | Knoten wählen, umbenennen, Schritt anhängen, auf Kante einfügen, verbinden, löschen |
 | Tabs | entfallen (die Leiste trägt die Bereiche) | |
 | Streckenplan, Leinwand, Streifen, App-Bild | eigen | |
 | Leerer Zustand | Illustration + HeroUI Button | |

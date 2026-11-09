@@ -65,6 +65,7 @@ test('model helpers', () => {
   assert.deepEqual(parseHash('#/findings/X'), { name: 'findings', app: 'X' });
   assert.deepEqual(parseHash('#/decisions'), { name: 'decisions', app: null });
   assert.deepEqual(parseHash('#/_components'), { name: 'gallery', app: null });
+  assert.deepEqual(parseHash('#/workspace/Apps%2FD%2FFlows%2FA%2Fx.md'), { name: 'workspace', path: 'Apps/D/Flows/A/x.md', app: 'D', kind: 'flows' });
   assert.deepEqual(parseHash(''), { name: 'apps', app: null });
   assert.equal(parseHash('#/note/Apps%2FDemo%2FFlows%2Fa.md').app, 'Demo');
   assert.equal(parseHash('#/note/%E0%A4%A').name, 'apps');

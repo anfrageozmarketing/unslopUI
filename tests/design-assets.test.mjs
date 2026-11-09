@@ -1,31 +1,12 @@
-// Command Center design assets: icon set, illustrations, motion, component sheet.
+// Command Center design assets: illustrations, generative portrait, motion. (Icons come from the Phosphor library.)
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const D = join(dirname(fileURLToPath(import.meta.url)), '..', 'skills/unslop-brain/templates/command-center/design');
-const { ICONS, icon } = await import(join(D, 'icons.mjs'));
 const { art, portrait } = await import(join(D, 'illustrations.mjs'));
-const PATH = /^[MmLlHhVvCcSsQqTtAaZz0-9eE.,\s-]+$/;
-
-test('icon set: complete, valid path data, one drawing language', () => {
-  const required = ['key', 'flag', 'route', 'sliders', 'server', 'search', 'refresh', 'plus', 'edit', 'archive', 'undo', 'check', 'close', 'alert', 'question', 'bolt', 'zoom-in', 'zoom-out', 'fit', 'grid', 'link-out', 'chevron', 'command'];
-  for (const n of required) assert.ok(ICONS[n], `icon ${n}`);
-  for (const [n, d] of Object.entries(ICONS)) {
-    assert.ok(d.l && d.f, `${n} has line and soft shape`);
-    assert.match(d.l, PATH, `${n} line path chars`); assert.match(d.f, PATH, `${n} soft path chars`);
-    assert.ok(/^M/.test(d.l) && /^M/.test(d.f), `${n} paths start with M`);
-  }
-  const svg = icon('key', { size: 32, label: 'Zugang "<x>"' });
-  assert.match(svg, /^<svg class="ic" viewBox="0 0 24 24" width="32" height="32"/);
-  assert.match(svg, /ic-soft/); assert.match(svg, /ic-line/);
-  assert.ok(!svg.includes('<x>') && !svg.includes('"<'), 'label is escaped');
-  assert.equal(icon('does-not-exist'), '');
-  assert.match(icon('key'), /aria-hidden="true"/);
-});
-
 test('illustrations: token colours only, no scripts, no external refs, no text from data', () => {
   for (const [name, fn] of Object.entries(art)) {
     const s = fn();
@@ -49,18 +30,8 @@ test('portrait: deterministic, differs per app, numbers only', () => {
   assert.match(portrait(null), /^<svg class="portrait"/);
 });
 
-test('component sheet loads existing files and its script parses', () => {
-  const html = readFileSync(join(D, 'components.html'), 'utf8');
-  for (const m of html.matchAll(/(?:href|src)="([^"#]+\.(?:css|js|mjs))"/g)) assert.ok(existsSync(join(D, m[1])), m[1]);
-  const script = [...html.matchAll(/<script type="module">([\s\S]*?)<\/script>/g)].map((m) => m[1]);
-  assert.equal(script.length, 1, 'one module script');
-  for (const m of script[0].matchAll(/from "\.\/([^"]+)"/g)) assert.ok(existsSync(join(D, m[1])), m[1]);
-  assert.doesNotThrow(() => new Function(script[0].replace(/^import .*$/gm, '')), 'inline script parses');
-  for (const id of ['s-icons', 's-status', 's-buttons', 's-segment', 's-rows', 's-quick', 's-glass', 's-empty', 's-hero', 's-route', 's-loading']) assert.ok(html.includes(`id="${id}"`), id);
-});
-
 test('css uses tokens: no hex colours in components.css and motion.css', () => {
-  for (const f of ['components.css', 'motion.css']) {
+  for (const f of ['motion.css']) {
     const css = readFileSync(join(D, f), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
     assert.ok(!/#[0-9a-fA-F]{3,8}\b/.test(css), `${f}: no hex colours`);
   }

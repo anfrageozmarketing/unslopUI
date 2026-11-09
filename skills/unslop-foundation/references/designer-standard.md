@@ -21,6 +21,25 @@ Three layers, no separator lines:
 
 On a phone: the rail becomes a bottom bar, the context column a title row with a switcher, the window runs edge to edge with rounded top corners.
 
+## Tile pattern, layered backgrounds, inversion
+
+Three patterns seen in current product design, written as our own rules:
+
+- **Tile**: an outer container in a light gray tone (surface-2) with a large radius (24-28), an **inset preview** of the real object with a smaller radius inside it, and the **caption below the tile** (small icon or avatar, name, one-line subtitle). No border. On hover a round arrow button appears at the tile edge. Use it for apps, flows, documents, anything that has a picture.
+- **Layered background**: supplementary elements are integrated behind and around the main object instead of sitting in separate boxes: floating chips or stickers on soft curved tracks, scattered small cards with soft shadows, a faint radial glow or pattern at low contrast. Rules: the elements are **real data** (the flows, findings, statuses of the thing shown), not stock decoration; at most five to seven; they stay below the text in contrast; one pattern per screen; static unless motion carries meaning.
+- **Inversion**: one emphasised element flips the tone (a dark tile in a light interface, a light one in a dark interface) to mark the most important or most urgent thing. One or two per screen.
+
+## Workspace window (full-screen editing mode)
+
+A workspace is a large rounded window laid over the dimmed app (small margin on desktop, edge to edge on a phone), not a new page. Reference pattern from a shipped product's viewer, written in our own words:
+
+- **Top bar**: on the left the title with its context ("Login in Demo-App") and the context's small icon; in the middle a **labelled mode switch** (for example Ablauf | Text); on the right the status chip, undo, share link and a **Close** button (also Esc).
+- **Stage**: the editing surface gets all remaining space. Previous and next arrows at the left and right edge move to the neighbouring item without leaving the workspace.
+- **Bottom bar**: a position counter ("3 von 7 in Zugang") on the left, the primary actions as text buttons in the middle (for example Schritt hinzufügen, Einpassen), a labelled **Eigenschaften** button on the right that opens or closes the properties panel.
+- **Properties panel**: slides over the stage from the right, collapsible, never a form page.
+- Everything has a text label. Icon-only controls are limited to close, zoom and arrows, and carry tooltips and names.
+- Autosave with an unobtrusive "Gespeichert" indicator and Undo; leaving never loses work.
+
 ## Preview and workspace (two levels per area)
 
 Every area has a **preview** and a **workspace**.
