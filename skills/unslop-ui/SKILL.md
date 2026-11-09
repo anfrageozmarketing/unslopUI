@@ -42,3 +42,7 @@ If the user runs a private brain (`unslop-brain`), write audit, flows, findings 
 ## Stop conditions
 
 Stop and ask before: adding authentication to a running production system, changing the data model of live data, sending any real mail, or deleting anything.
+
+## Building
+
+When the task is to build or rebuild (not only audit), use `unslop-build`: spec first (colours, type, spacing, sizes), then flows, elements, screens, gate.
