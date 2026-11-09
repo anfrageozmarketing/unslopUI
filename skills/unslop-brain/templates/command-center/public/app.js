@@ -70,21 +70,21 @@ function strip(a, { compact = false } = {}) {
   return wrap;
 }
 // Route map: one lane per area, one node per flow. Marker shows status, size shows priority.
+function makeLane(a, ar, active, current) {
+  const flows = a.flows.filter((f) => f.area === ar).sort((x, y) => PRIOS.indexOf(x.prio) - PRIOS.indexOf(y.prio) || x.title.localeCompare(y.title));
+  const done = flows.filter((f) => f.status === 'built' || f.status === 'exists').length;
+  const track = h('div', { class: 'track' }, flows.map((f) => {
+    const dim = active.size && !active.has(f.status);
+    const cur = f.path === current;
+    return h('a', { class: `node p-${f.prio}${dim ? ' dim' : ''}${cur ? ' cur' : ''}`, 'data-s': f.status, 'aria-current': cur ? 'page' : null, href: noteHref(f), title: `${f.title} · ${LABEL[f.status]} · ${f.prio}${f.reason ? ` · ${f.reason}` : ''}` },
+      h('span', { class: 'mk', 'aria-hidden': 'true' }), h('span', { class: 'lbl' }, f.title), f.prio === 'MVP' ? h('span', { class: 'mvp' }, 'MVP') : null);
+  }));
+  return h('section', { class: 'lane', 'aria-label': ar }, h('header', {}, h('h3', {}, ar), h('span', { class: 'quiet num' }, `${done}/${flows.length}`)), track);
+}
 function routeMap(a, active) {
   const areas = areasOf(a);
   if (!areas.length) return h('p', { class: 'quiet' }, 'Noch keine Flows. Lege den ersten mit "+ Neuer Flow" an.');
-  const root = h('div', { class: 'map' });
-  for (const ar of areas) {
-    const flows = a.flows.filter((f) => f.area === ar).sort((x, y) => PRIOS.indexOf(x.prio) - PRIOS.indexOf(y.prio) || x.title.localeCompare(y.title));
-    const done = flows.filter((f) => f.status === 'built' || f.status === 'exists').length;
-    const track = h('div', { class: 'track' }, flows.map((f) => {
-      const dim = active.size && !active.has(f.status);
-      return h('a', { class: `node p-${f.prio}${dim ? ' dim' : ''}`, 'data-s': f.status, href: noteHref(f), title: `${f.title} · ${LABEL[f.status]} · ${f.prio}${f.reason ? ` · ${f.reason}` : ''}` },
-        h('span', { class: 'mk', 'aria-hidden': 'true' }), h('span', { class: 'lbl' }, f.title), f.prio === 'MVP' ? h('span', { class: 'mvp' }, 'MVP') : null);
-    }));
-    root.append(h('section', { class: 'lane', 'aria-label': ar }, h('header', {}, h('h3', {}, ar), h('span', { class: 'quiet num' }, `${done}/${flows.length}`)), track));
-  }
-  return root;
+  return h('div', { class: 'map' }, areas.map((ar) => makeLane(a, ar, active, null)));
 }
 function legend(a, active, onToggle) {
   return h('div', { class: 'legend', role: 'group', 'aria-label': 'Status filtern' }, STATUS.filter(([k]) => a.counts[k]).map(([k, l]) =>
@@ -268,24 +268,10 @@ function bodyEditor(path, note) {
   return h('div', {}, h('p', { class: 'quiet' }, 'Markdown. Diagramme als mermaid-Block. Die Eigenschaften bleiben unverändert.'), ta,
     h('div', { class: 'actions' }, save, h('button', { type: 'button', class: 'plain', onclick: () => { editBody = false; route(); } }, 'Abbrechen')));
 }
-async function noteView(path) {
-  if (lastNote !== path) { editBody = false; lastNote = path; }
-  const parts = path.split('/');
-  const appName = parts[0] === 'Apps' ? parts[1] : null;
-  crumbs([{ label: 'Apps', href: '#/' }, ...(appName ? [{ label: appName, href: `#/app/${encodeURIComponent(appName)}` }] : []), { label: parts.at(-1).replace(/\.md$/, '') }]);
-  $view.replaceChildren(h('p', { class: 'quiet' }, 'Lädt …'));
-  let note;
-  try { note = await api(`/api/note?path=${encodeURIComponent(path)}`); } catch (e) { $view.replaceChildren(h('p', { class: 'quiet' }, e.message)); return; }
-  const box = h('article', { class: 'note' });
-  const st = note.meta.status; const mp = managePanel(path, note, appName);
-  if (note.meta.type === 'flow') box.append(h('p', { class: 'flowmeta', 'data-s': st }, h('span', { class: 'mk', 'aria-hidden': 'true' }), `${LABEL[st] || st} · ${note.meta.area || ''} · ${note.meta.prio || ''}${note.meta.reason ? ` · ${note.meta.reason}` : ''}`));
-  if (mp) box.append(mp);
-  if (editBody && mp) { box.append(bodyEditor(path, note)); $view.replaceChildren(box); return; }
-  const body = note.body.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_, t, alias) => alias || t);
+async function renderMd(md) {
+  const holder = h('div', { class: 'md' });
   if (window.marked && window.DOMPurify) {
-    const holder = h('div', { class: 'md' });
-    holder.innerHTML = window.DOMPurify.sanitize(window.marked.parse(body, { gfm: true }));
-    box.append(holder);
+    holder.innerHTML = window.DOMPurify.sanitize(window.marked.parse(md, { gfm: true }));
     if (window.mermaid) {
       window.mermaid.initialize({ startOnLoad: false, securityLevel: 'strict', theme: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default' });
       const blocks = [...holder.querySelectorAll('pre > code.language-mermaid')];
@@ -298,8 +284,61 @@ async function noteView(path) {
       }
     }
   } else {
-    box.append(h('pre', {}, body));
+    holder.append(h('pre', {}, md));
   }
+  return holder;
+}
+function splitSections(md) {
+  const pre = []; const secs = []; let cur = null;
+  for (const l of md.split('\n')) {
+    const m = l.match(/^##\s+(.*)$/);
+    if (m) { cur = { title: m[1].trim(), lines: [] }; secs.push(cur); } else (cur ? cur.lines : pre).push(l);
+  }
+  return { pre: pre.join('\n').replace(/^\s*#\s+.*\n/, ''), secs: secs.map((s) => ({ title: s.title, md: s.lines.join('\n') })) };
+}
+// Flow page: facts first, the diagram as hero, "Soll" and "Lücken" side by side.
+async function flowPage(path, note, body, appName) {
+  const m = note.meta; const a = data.apps.find((x) => x.name === appName);
+  const page = h('div', { class: 'flowpage' });
+  page.append(h('header', { class: 'fp-head', 'data-s': m.status }, h('span', { class: 'mk big', 'aria-hidden': 'true' }),
+    h('div', {}, h('h1', {}, m.title || path.split('/').pop().replace(/\.md$/, '')),
+      h('p', { class: 'flowmeta' }, `${LABEL[m.status] || m.status} · ${m.area || ''} · ${m.prio || ''}${m.reason ? ` · ${m.reason}` : ''}`))));
+  const facts = [];
+  const tags = (label, list) => (list && list.length ? h('div', { class: 'fact' }, h('span', { class: 'quiet' }, label), h('span', { class: 'tags' }, list.map((x) => h('code', { class: 'tag' }, x)))) : null);
+  facts.push(tags('Screens', m.screens), tags('Endpoints', m.endpoints));
+  if (m.evidence) facts.push(h('div', { class: 'fact' }, h('span', { class: 'quiet' }, 'Nachweis'), h('span', {}, m.evidence)));
+  if (facts.some(Boolean)) page.append(h('div', { class: 'facts' }, facts));
+  if (a && m.area) page.append(h('div', { class: 'miniroute' }, makeLane(a, m.area, new Set(), path)));
+  return { page, ...splitSections(body) };
+}
+async function noteView(path) {
+  if (lastNote !== path) { editBody = false; lastNote = path; }
+  const parts = path.split('/');
+  const appName = parts[0] === 'Apps' ? parts[1] : null;
+  crumbs([{ label: 'Apps', href: '#/' }, ...(appName ? [{ label: appName, href: `#/app/${encodeURIComponent(appName)}` }] : []), { label: parts.at(-1).replace(/\.md$/, '') }]);
+  $view.replaceChildren(h('p', { class: 'quiet' }, 'Lädt …'));
+  let note;
+  try { note = await api(`/api/note?path=${encodeURIComponent(path)}`); } catch (e) { $view.replaceChildren(h('p', { class: 'quiet' }, e.message)); return; }
+  const box = h('article', { class: 'note' });
+  const mp = managePanel(path, note, appName);
+  const body = note.body.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_, t, alias) => alias || t);
+  if (note.meta.type === 'flow') {
+    const { page, pre, secs } = await flowPage(path, note, body, appName);
+    box.classList.add('wide');
+    box.append(page);
+    if (mp) box.append(mp);
+    if (editBody && mp) { box.append(bodyEditor(path, note)); $view.replaceChildren(box); return; }
+    if (pre.trim()) box.append(await renderMd(pre));
+    const want = (t) => /^(soll|l[uü]cken)/i.test(t);
+    const pair = secs.filter((s) => want(s.title)); const rest = secs.filter((s) => !want(s.title));
+    if (pair.length) box.append(h('div', { class: 'cols' }, await Promise.all(pair.map(async (s) => h('section', { class: 'col' }, h('h2', {}, s.title), await renderMd(s.md))))));
+    for (const s of rest) box.append(h('section', { class: 'sec' }, h('h2', {}, s.title), await renderMd(s.md)));
+    $view.replaceChildren(box);
+    return;
+  }
+  if (mp) box.append(mp);
+  if (editBody && mp) { box.append(bodyEditor(path, note)); $view.replaceChildren(box); return; }
+  box.append(await renderMd(body));
   $view.replaceChildren(box);
 }
 
