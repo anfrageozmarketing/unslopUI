@@ -1,4 +1,17 @@
-# Bold icon style (draw your own)
+# Icons
+
+Goal: icons that people recognise at once, that carry one consistent weight, and that suit the product.
+
+## Choose the source on purpose
+
+| Source | Use when | Notes |
+|---|---|---|
+| **A licensed library** (for example Phosphor, MIT, with Bold and Duotone weights) | Default for apps. Familiar metaphors, complete coverage, consistent weight | Pick one library and one weight for the whole product. Record the licence in `design/CREDITS.md`. A thin-stroke default (the most common AI-site look) is a tell: choose the weight deliberately, bold or duotone for a confident product |
+| **Own set** | The product has its own objects that no library draws well (a route, a constellation) | 3-5 signature icons own-drawn, the rest from the library, in the same weight |
+
+If people say they do not like the icons, switch the source instead of tweaking: drawn sets are the riskiest to get right.
+
+## Own drawing spec (when you draw)
 
 Goal: a small set (20-40 icons) that is recognisably yours, bold and friendly, readable at 16 px and striking at 48 px.
 

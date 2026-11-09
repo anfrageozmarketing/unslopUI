@@ -13,6 +13,8 @@ Most "unslop" tools fix the surface: glow, gradients, emoji. AI-built apps are a
 | `unslop-flows` | Builds the flows doc: login, reset, invite, onboarding, core loop, settings, export, legal, errors |
 | `unslop-structure` | Route map, navigation, deep links, list scaling, settings layout, permissions |
 | `unslop-states` | Empty, loading, partial, error, offline, no-permission, limit |
+| `unslop-layout` | Scales for space, type and radius with a rhythm, reflow across phone, tablet band and desktop, labelled navigation, collapsible panels, full-screen workspaces |
+| `unslop-human` | Measured contrast (with a checker script), focus and keyboard, states, affordances, reduced motion, 200 percent zoom |
 | `unslop-copy` | Specific, calm copy; German rules and a German slop-phrase list |
 | `unslop-foundation` | Starts every UI build: contrast-checked palette from one seed colour (`scripts/palette.mjs`), bold icon style, illustration and motion language, a designer-grade component sheet; inspiration from Streamline, Magic UI, Coolors and others for principles only, never copied |
 | `unslop-components` | Picks a signature component per screen from the shape of the data; bans the default table / KPI-card / form look |
@@ -88,6 +90,8 @@ The app is fail-closed (no users, no start), uses hashed passwords, rate-limits 
 [`examples/jobfinder-flows.md`](examples/jobfinder-flows.md) is real output of `unslop-flows` (German): a single-page job-discovery app with no identity, analyzed into roles, screens, flows, settings, data model, API additions and an MVP/V1/V2 plan.
 
 ## Credits
+
+The layout, human-friendliness and human-copywriting rules were written with the team's antislop skill set as a reference. They are rewritten in our own words and adapted to our products.
 
 Visual craft for AI-looking UI is the focus of the separate **unslop** skill by Damir Sokolovsky ([@heydamir](https://x.com/heydamir), CC BY 4.0). unslopUI does not copy it; `unslop-visual` is a checklist that can hand off to it. The structure, flows, states and German copy layers here are original.
 

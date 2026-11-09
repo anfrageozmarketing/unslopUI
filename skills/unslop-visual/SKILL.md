@@ -14,7 +14,7 @@ Run `unslop-foundation` (palette, icons, illustration, motion) and `unslop-compo
 1. **Space.** One scale (4/8/12/16/24/32/48). Replace ad-hoc values. Group by proximity before adding borders.
 2. **Color.** Tinted neutrals plus one accent. State colors (success, warning, danger) only for state. Check contrast ≥ 4.5:1 for text.
 3. **Type.** Two families at most, a modular scale, line length 55-75 characters, tabular numbers in tables.
-4. **Icons.** One set, one stroke weight, no emoji as icons.
+4. **Icons.** One set (a licensed library or an own drawing, chosen on purpose), one weight, relevant glyphs only, no emoji as icons. Navigation icons always carry a text label (`unslop-layout`).
 5. **Chrome.** Remove glows, blurred blobs, gradient text, stacked shadows, pulse animations, glass-on-glass. Borders 1px, radius from a short scale.
 6. **Focal element.** One thing per screen carries richness (a real chart, an object, a product image). Everything else stays quiet.
 7. **Layout.** Align to a grid, consistent page padding, 16px side gutter on phones, no horizontal scroll at 360px.
