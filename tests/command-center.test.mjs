@@ -223,6 +223,22 @@ test('"na" (not needed) with reason is not a gap; overview file is generated for
   assert.equal((await post('/api/note', { path: ov, field: 'status', value: 'built' }, 'PATCH')).status, 400);
 });
 
+test('archive returns a restore token and the note comes back', async () => {
+  const c = await post('/api/flow', { app: 'Demo-App', area: 'System', title: 'Zz Restore Test' });
+  const { path } = await c.json();
+  const a = await post('/api/note', { path }, 'DELETE'); const ab = await a.json();
+  assert.equal(a.status, 200); assert.match(ab.restore.from, /^Apps\/Demo-App\/_Archiv\/.+Zz Restore Test\.md$/); assert.equal(ab.restore.to, path);
+  assert.equal((await get('/api/note?path=' + encodeURIComponent(path))).status, 404);
+  assert.equal((await post('/api/restore', { from: ab.restore.from, to: 'Apps/Other/Flows/System/x.md' })).status, 400, 'other app');
+  assert.equal((await post('/api/restore', { from: ab.restore.from, to: 'Apps/Demo-App/_Archiv/x.md' })).status, 400, 'back into archive');
+  assert.equal((await post('/api/restore', { from: 'Apps/Demo-App/_Archiv/../../../etc/hosts.md', to: path })).status, 400, 'traversal');
+  assert.equal((await post('/api/restore', { from: 'Apps/Demo-App/_Archiv/nope.md', to: path })).status, 404);
+  assert.equal((await post('/api/restore', ab.restore)).status, 200);
+  assert.equal((await get('/api/note?path=' + encodeURIComponent(path))).status, 200);
+  assert.equal((await post('/api/restore', ab.restore)).status, 404, 'already restored');
+  await post('/api/note', { path }, 'DELETE'); // leave the demo vault tidy for later tests
+});
+
 test('state-changing calls need the header and JSON', async () => {
   const bad = await fetch(BASE + '/api/flow', { method: 'POST', headers: { authorization: auth, 'content-type': 'text/plain' }, body: '{}' });
   assert.equal(bad.status, 400);

@@ -372,7 +372,20 @@ const server = http.createServer(async (req, res) => {
         const parts = data.path.split('/');
         if (parts[0] !== 'Apps' || parts.length < 4) return send(res, 400, { error: 'unexpected location' });
         const dest = join(VAULT, parts[0], parts[1], '_Archiv', `${new Date().toISOString().replace(/[:.]/g, '-')}-${basename(abs)}`);
-        return guard(async () => { await mkdir(join(dest, '..'), { recursive: true }); await rename(abs, dest); return send(res, 200, { ok: true }); });
+        return guard(async () => { await mkdir(join(dest, '..'), { recursive: true }); await rename(abs, dest); return send(res, 200, { ok: true, restore: { from: relative(VAULT, dest).split(sep).join('/'), to: data.path } }); });
+      }
+
+      if (req.method === 'POST' && url.pathname === '/api/restore') { // undo of an archive: move the note back
+        const { from, to } = data;
+        const ok = (p) => typeof p === 'string' && p.endsWith('.md') && !p.includes('\\') && p.split('/').every((x) => x && x !== '.' && x !== '..');
+        if (!ok(from) || !ok(to)) return send(res, 400, { error: 'invalid path' });
+        const f = from.split('/'); const t = to.split('/');
+        if (f[0] !== 'Apps' || f[2] !== '_Archiv' || f.length !== 4 || t[0] !== 'Apps' || t[1] !== f[1] || t.length < 4 || t.includes('_Archiv')) return send(res, 400, { error: 'invalid path' });
+        const absFrom = resolve(VAULT, from); const absTo = resolve(VAULT, to);
+        if (!absFrom.startsWith(VAULT + sep) || !absTo.startsWith(VAULT + sep)) return send(res, 400, { error: 'invalid path' });
+        try { await stat(absFrom); } catch { return send(res, 404, { error: 'not found' }); }
+        try { await stat(absTo); return send(res, 409, { error: 'a note with this name already exists' }); } catch { /* free */ }
+        return guard(async () => { await mkdir(join(absTo, '..'), { recursive: true }); await rename(absFrom, absTo); return send(res, 200, { ok: true }); });
       }
 
       if (req.method === 'POST' && (url.pathname === '/api/finding' || url.pathname === '/api/decision')) {

@@ -1,40 +1,20 @@
-import { useEffect, useState } from 'react';
-import { Button, Toast } from '@heroui/react';
+import { useEffect, useMemo, useState } from 'react';
+import { Toast } from '@heroui/react';
 import { DataProvider, useData, useRoute } from './lib/hooks.jsx';
-import { appHref, blockersOf, safeUrl } from './lib/model.js';
-import { Icon, Strip } from './components/ui.jsx';
+import { Context, Rail, Window } from './components/Shell.jsx';
 import Palette from './components/Palette.jsx';
-import Home from './views/Home.jsx';
-import AppView from './views/AppView.jsx';
+import { AppsView, DecisionsView, FindingsView, FlowsView, FocusView } from './views/Areas.jsx';
 import NotePage from './views/NotePage.jsx';
-
-function Sidebar({ route, onSearch }) {
-  const { data } = useData();
-  return (
-    <aside className="side">
-      <a className="brand" href="#/"><span className="logo"><Icon name="route" size={20} onFill /></span>Command Center</a>
-      <Button variant="secondary" fullWidth onPress={onSearch}><Icon name="search" size={20} />Suchen<span className="kbd ml-auto">Strg K</span></Button>
-      <nav aria-label="Apps" className="grid gap-1">
-        <a className="nav-item" href="#/" aria-current={route.name === 'home' ? 'page' : undefined}><span className="nm"><span className="inline-flex items-center gap-2"><Icon name="grid" size={20} />Alle Apps</span></span></a>
-        {data.apps.map((a) => {
-          const bl = blockersOf(a).length; const url = safeUrl(a.url);
-          return (
-            <div key={a.name}>
-              <a className="nav-item" href={appHref(a.name)} aria-current={route.app === a.name ? 'page' : undefined}><span className="nm"><span>{a.name}</span>{bl > 0 && <span className="badge" title={`${bl} offene Blocker`}>{bl}</span>}</span><Strip app={a} size="sm" /></a>
-              {url && <a className="side-open" href={url} target="_blank" rel="noopener noreferrer">App öffnen<Icon name="link-out" size={14} /></a>}
-            </div>
-          );
-        })}
-      </nav>
-    </aside>
-  );
-}
+import Gallery from './views/Gallery.jsx';
 
 function Shell() {
   const route = useRoute();
   const { data, reload } = useData();
   const [palette, setPalette] = useState(false);
   const [theme, setTheme] = useState(null);
+  const [lastApp, setLastApp] = useState(null);
+  const appName = route.app || lastApp || data.apps[0]?.name || null;
+  useEffect(() => { if (route.app) setLastApp(route.app); }, [route.app]);
   useEffect(() => {
     const onKey = (e) => {
       const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(e.target?.tagName) || e.target?.isContentEditable;
@@ -44,27 +24,28 @@ function Shell() {
     window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey);
   }, []);
   useEffect(() => { if (theme) document.documentElement.dataset.theme = theme; }, [theme]);
-  useEffect(() => { window.scrollTo(0, 0); }, [route.name, route.path, route.app]);
   const toggleTheme = () => { const dark = theme ? theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches; setTheme(dark ? 'light' : 'dark'); };
-  const crumbs = route.name === 'home' ? [] : [{ label: 'Apps', href: '#/' }, ...(route.app ? [{ label: route.app, href: route.name === 'note' ? appHref(route.app) : null }] : []), ...(route.name === 'note' ? [{ label: route.path.split('/').pop().replace(/\.md$/, '') }] : [])];
+  const app = useMemo(() => data.apps.find((a) => a.name === appName), [data, appName]);
+  const area = route.name === 'note' ? route.kind : route.name === 'gallery' ? 'apps' : route.name;
+  const needApp = <Window title="Wähle eine App"><p className="quiet">Lädt …</p></Window>;
+  const view = route.name === 'apps' ? <AppsView />
+    : route.name === 'gallery' ? <Gallery />
+    : route.name === 'note' ? <NotePage path={route.path} appName={route.app} />
+    : !app ? needApp
+    : route.name === 'flows' ? <FlowsView app={app} />
+    : route.name === 'focus' ? <FocusView app={app} />
+    : route.name === 'findings' ? <FindingsView app={app} />
+    : <DecisionsView app={app} />;
   return (
-    <div className="shell">
-      <Sidebar route={route} onSearch={() => setPalette(true)} />
-      <main className="main">
-        <div className="topbar">
-          <nav className="crumbs" aria-label="Pfad">{crumbs.map((c, i) => <span key={i}>{i > 0 && '/ '}{c.href ? <a href={c.href}>{c.label}</a> : c.label}</span>)}</nav>
-          <div className="tools">
-            <Button isIconOnly variant="ghost" aria-label="Aktualisieren" onPress={reload}><Icon name="refresh" size={22} /></Button>
-            <Button variant="ghost" size="sm" onPress={toggleTheme}>Hell / Dunkel</Button>
-          </div>
-        </div>
-        {route.name === 'home' && <Home />}
-        {route.name === 'app' && <AppView name={route.app} />}
-        {route.name === 'note' && <NotePage path={route.path} appName={route.app} />}
-      </main>
+    <>
+      <div className="app">
+        <Rail route={{ ...route, kind: route.kind }} apps={data.apps} app={appName} onSearch={() => setPalette(true)} onTheme={toggleTheme} onReload={reload} />
+        <Context area={area} apps={data.apps} app={appName} />
+        {view}
+      </div>
       <Palette open={palette} onOpenChange={setPalette} apps={data.apps} />
       <Toast.Provider placement="bottom end" />
-    </div>
+    </>
   );
 }
 export default function App() { return <DataProvider><Shell /></DataProvider>; }

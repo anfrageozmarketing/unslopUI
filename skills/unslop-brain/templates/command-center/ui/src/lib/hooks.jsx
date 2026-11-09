@@ -40,7 +40,13 @@ export function useActions() {
       try { const r = await api.create(kind, payload); await reload(); toast.success('Angelegt'); return r; } catch (e) { toast.danger(e.message); return null; }
     },
     async archive(path) {
-      try { await api.archive(path); await reload(); toast('Archiviert'); return true; } catch (e) { toast.danger(e.message); return false; }
+      try {
+        const r = await api.archive(path); await reload();
+        const id = toast('Archiviert', { timeout: 8000, actionProps: { children: 'Rückgängig', variant: 'tertiary', onPress: async () => {
+          try { await api.restore(r.restore); await reload(); toast.close(id); } catch (e) { toast.danger(e.message); }
+        } } });
+        return true;
+      } catch (e) { toast.danger(e.message); return false; }
     },
     async saveBody(path, text) {
       try { await api.putBody(path, text); await reload(); toast.success('Text gespeichert'); return true; } catch (e) { toast.danger(e.message); return false; }

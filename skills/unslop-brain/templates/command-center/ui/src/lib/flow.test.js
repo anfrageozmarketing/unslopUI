@@ -60,9 +60,14 @@ test('model helpers', () => {
   assert.deepEqual(summaryParts(APPS[0]), ['2 Flows, 25 % abgedeckt', '1 offene Blocker', '1 offene Entscheidungen']);
   assert.deepEqual(splitList(' a, b ,,c'), ['a', 'b', 'c']);
   assert.equal(safeUrl('javascript:alert(1)'), null); assert.match(safeUrl('https://x.example'), /^https:/);
-  assert.deepEqual(parseHash('#/app/Demo%20App'), { name: 'app', app: 'Demo App' });
+  assert.deepEqual(parseHash('#/flows/Demo%20App'), { name: 'flows', app: 'Demo App' });
+  assert.deepEqual(parseHash('#/app/Demo%20App'), { name: 'flows', app: 'Demo App' });
+  assert.deepEqual(parseHash('#/findings/X'), { name: 'findings', app: 'X' });
+  assert.deepEqual(parseHash('#/decisions'), { name: 'decisions', app: null });
+  assert.deepEqual(parseHash('#/_components'), { name: 'gallery', app: null });
+  assert.deepEqual(parseHash(''), { name: 'apps', app: null });
   assert.equal(parseHash('#/note/Apps%2FDemo%2FFlows%2Fa.md').app, 'Demo');
-  assert.equal(parseHash('#/note/%E0%A4%A').name, 'home');
+  assert.equal(parseHash('#/note/%E0%A4%A').name, 'apps');
 });
 
 test('command palette search ranks prefix before substring and covers all kinds', () => {

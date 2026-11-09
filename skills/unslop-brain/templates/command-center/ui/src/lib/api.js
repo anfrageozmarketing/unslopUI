@@ -11,5 +11,6 @@ export const api = {
   patch: (path, field, value) => call('/api/note', { method: 'PATCH', body: body({ path, field, value }) }),
   putBody: (path, text) => call('/api/note', { method: 'PUT', body: body({ path, body: text }) }),
   archive: (path) => call('/api/note', { method: 'DELETE', body: body({ path }) }),
+  restore: (token) => call('/api/restore', { method: 'POST', body: body(token) }),
   create: (kind, payload) => call(`/api/${kind}`, { method: 'POST', body: body(payload) }),
 };

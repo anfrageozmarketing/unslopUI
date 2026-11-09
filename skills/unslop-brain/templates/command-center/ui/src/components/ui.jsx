@@ -3,7 +3,7 @@ import { Button, Popover, ListBox, ToggleButton, ToggleButtonGroup, Input } from
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { ICONS } from '../../../design/icons.mjs';
-import { portrait } from '../../../design/illustrations.mjs';
+import { portrait, art as ART } from '../../../design/illustrations.mjs';
 import { STATUS, STATUS_LABEL, PRIOS } from '../lib/constants.js';
 import { areasOf } from '../lib/model.js';
 
@@ -72,17 +72,37 @@ export function Segmented({ label, options, value, onChange, size = 'sm' }) {
 }
 export const PrioSwitch = ({ value, onChange }) => <Segmented label="Priorität" options={PRIOS.map((p) => [p, p])} value={value} onChange={onChange} />;
 
-// Click to edit, Enter saves, Esc cancels.
-export function InlineText({ value, onSave, className, label }) {
+// Click to edit, Enter saves, Esc cancels. Looks like text until touched.
+export function InlineText({ value, onSave, className, label, placeholder = 'leer' }) {
   const [editing, setEditing] = useState(false);
   const [v, setV] = useState(value || '');
   const ref = useRef(null);
   useEffect(() => { setV(value || ''); }, [value]);
   useEffect(() => { if (editing) ref.current?.focus(); }, [editing]);
-  if (!editing) return <button type="button" className={`${className || ''} text-left`} onClick={() => setEditing(true)} aria-label={`${label || 'Text'} bearbeiten`}>{value || <span className="quiet">leer</span>}</button>;
+  if (!editing) return <button type="button" className={`inline ${value ? '' : 'empty'} ${className || ''}`} onClick={() => setEditing(true)} aria-label={`${label || 'Text'} bearbeiten`}>{value || placeholder}</button>;
   const commit = () => { setEditing(false); if (v !== (value || '')) onSave(v); };
-  return <Input ref={ref} aria-label={label || 'Text'} variant="secondary" value={v} onChange={(e) => setV(e.target.value)} onBlur={commit}
+  return <Input ref={ref} aria-label={label || 'Text'} variant="secondary" fullWidth value={v} onChange={(e) => setV(e.target.value)} onBlur={commit}
     onKeyDown={(e) => { if (e.key === 'Enter') commit(); else if (e.key === 'Escape') { setV(value || ''); setEditing(false); } }} />;
+}
+
+// A list of short strings: chips with a remove mark, type and press Enter to add.
+export function TokenField({ value = [], onChange, placeholder = 'hinzufügen' }) {
+  const [v, setV] = useState('');
+  const add = () => { const t = v.trim().replace(/[,[\]"]/g, ''); setV(''); if (t && !value.includes(t)) onChange([...value, t]); };
+  return (
+    <div className="tokens">
+      {value.map((t) => <span key={t} className="token">{t}<button type="button" aria-label={`${t} entfernen`} onClick={() => onChange(value.filter((x) => x !== t))}><Icon name="close" size={14} /></button></span>)}
+      <input className="token-in" value={v} placeholder={placeholder} aria-label={placeholder} onChange={(e) => setV(e.target.value)} onBlur={add}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); add(); } else if (e.key === 'Backspace' && !v && value.length) onChange(value.slice(0, -1)); }} />
+    </div>
+  );
+}
+
+// Name on the left, value on the right, every value editable where it stands.
+export const PropertyRow = ({ label, children }) => <div className="prop"><span className="k">{label}</span><div className="min-w-0">{children}</div></div>;
+
+export function EmptyState({ art, title, children }) {
+  return <div className="empty-state"><div dangerouslySetInnerHTML={{ __html: ART[art]() }} /><h3>{title}</h3>{children}</div>;
 }
 
 // One line at the end of a list: type a title, press Enter.

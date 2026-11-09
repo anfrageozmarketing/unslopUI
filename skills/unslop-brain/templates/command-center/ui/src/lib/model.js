@@ -3,7 +3,7 @@ import { AREA_ORDER, PRIOS } from './constants.js';
 
 export const pct = (x) => (x == null ? '–' : `${Math.round(x * 100)} %`);
 export const noteHref = (n) => `#/note/${encodeURIComponent(n.path)}`;
-export const appHref = (name) => `#/app/${encodeURIComponent(name)}`;
+export const appHref = (name) => `#/flows/${encodeURIComponent(name)}`;
 export const safeUrl = (u) => { try { const x = new URL(String(u)); return x.protocol === 'https:' || x.protocol === 'http:' ? x.href : null; } catch { return null; } };
 export const splitList = (v) => String(v || '').split(',').map((x) => x.trim()).filter(Boolean);
 export const blockersOf = (a) => a.findings.filter((f) => f.severity === 'Blocker' && f.state === 'open');
@@ -39,11 +39,30 @@ export function filterPalette(items, q, limit = 40) {
   const score = (it) => { const l = it.label.toLowerCase(); const i = l.indexOf(s); return i === 0 ? 0 : i > 0 ? 1 : `${l} ${it.hint}`.toLowerCase().includes(s) ? 2 : 9; };
   return items.map((it) => [it, score(it)]).filter(([, sc]) => sc < 9).sort((a, b) => a[1] - b[1] || a[0].label.localeCompare(b[0].label)).slice(0, limit).map(([it]) => it);
 }
+// Routes: #/apps  #/flows/<App>  #/focus/<App>  #/findings/<App>  #/decisions/<App>  #/note/<path>  #/_components
+export const AREAS = [
+  { key: 'apps', label: 'Apps', icon: 'grid' },
+  { key: 'flows', label: 'Flows', icon: 'route' },
+  { key: 'focus', label: 'Fokus', icon: 'bolt' },
+  { key: 'findings', label: 'Befunde', icon: 'alert' },
+  { key: 'decisions', label: 'Entscheidungen', icon: 'question' },
+];
+export const areaHref = (key, app) => (key === 'apps' || !app ? '#/apps' : `#/${key}/${encodeURIComponent(app)}`);
 export function parseHash(hash) {
   const h = String(hash || '').replace(/^#\/?/, '');
   try {
-    if (h.startsWith('app/')) return { name: 'app', app: decodeURIComponent(h.slice(4)) };
-    if (h.startsWith('note/')) { const path = decodeURIComponent(h.slice(5)); const p = path.split('/'); return { name: 'note', path, app: p[0] === 'Apps' ? p[1] : null }; }
-  } catch { /* malformed escape: fall through to home */ }
-  return { name: 'home' };
+    if (h === '_components') return { name: 'gallery', app: null };
+    if (h.startsWith('note/')) { const path = decodeURIComponent(h.slice(5)); const p = path.split('/'); return { name: 'note', path, app: p[0] === 'Apps' ? p[1] : null, kind: { Flows: 'flows', Findings: 'findings', Entscheidungen: 'decisions' }[p[2]] || 'flows' }; }
+    const m = h.match(/^(flows|focus|findings|decisions|app)\/(.+)$/);
+    if (m) return { name: m[1] === 'app' ? 'flows' : m[1], app: decodeURIComponent(m[2]) };
+    const k = h.split('/')[0];
+    if (['flows', 'focus', 'findings', 'decisions'].includes(k)) return { name: k, app: null };
+  } catch { /* malformed escape: fall through */ }
+  return { name: 'apps', app: null };
 }
+export const totalsOf = (apps) => {
+  const flows = apps.reduce((n, a) => n + a.total, 0);
+  const rel = apps.reduce((n, a) => n + (a.total - (a.counts?.na || 0)), 0);
+  const done = apps.reduce((n, a) => n + (a.counts.exists + a.counts.built + 0.5 * a.counts.partial), 0);
+  return { apps: apps.length, flows, coverage: rel ? done / rel : null, blockers: apps.reduce((n, a) => n + blockersOf(a).length, 0), decisions: apps.reduce((n, a) => n + openDecisionsOf(a).length, 0) };
+};
