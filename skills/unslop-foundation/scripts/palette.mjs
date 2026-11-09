@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // UI palette generator: one seed colour in, a complete, contrast-checked design foundation out.
-// Usage: node palette.mjs --seed "#1f5c4d" [--mood calm|bold|warm|cool] [--spark <hue 0-360>] [--out ./design]
-// Writes tokens.css, palette.json, PALETTE.md, preview.html. Exits 1 if any contrast check fails.
+// Usage: node palette.mjs --seed "#1f5c4d" [--mood calm|bold|warm|cool] [--spark <hue 0-360>] [--name "Product"] [--out ./design]
+// Writes tokens.css, palette.json, PALETTE.md, DESIGN.md (agent-facing contract), preview.html. Exits 1 if any contrast check fails.
 // Colour maths in OKLCH, contrast per WCAG 2.x. No dependencies.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -148,6 +148,109 @@ button.t{margin-left:auto;background:none;border:1px solid var(--line);color:var
 </body></html>`;
 }
 
+const PURPOSE = {
+  bg: 'Page background', surface: 'Cards and raised containers', 'surface-2': 'Nested or lower-emphasis regions', line: 'Borders and quiet dividers',
+  ink: 'Primary text', 'ink-muted': 'Supporting text and secondary icons', accent: 'Fills: primary actions, selected states, focus', 'accent-text': 'Accent used as text or thin lines',
+  'on-accent': 'Text and icons on an accent fill', 'accent-soft': 'Soft accent backgrounds, hover and selected rows', spark: 'Illustration and motion highlights only, never text',
+  ok: 'Positive outcome (text, marker)', 'ok-soft': 'Background for ok', warn: 'Caution (text, marker)', 'warn-soft': 'Background for warn',
+  bad: 'Error or destructive (text, marker)', 'bad-soft': 'Background for bad', info: 'Neutral information (text, marker)', 'info-soft': 'Background for info',
+};
+export function designMd(p, name = 'Product') {
+  const rows = Object.keys(p.themes.light).map((k) => `| ${PURPOSE[k] || k} | \`--${k}\` | \`${p.themes.light[k]}\` | \`${p.themes.dark[k]}\` |`).join('\n');
+  return `---
+name: ${name} design contract
+seed: "${p.seed}"
+mood: ${p.mood}
+modes:
+  - light
+  - dark
+tokens: tokens.css
+generated-by: unslop-foundation/scripts/palette.mjs
+---
+
+# ${name} design contract
+
+Read this file before building or changing any UI of ${name}. It is the visual contract for people and coding agents. \`tokens.css\` is the source of truth; if this file and \`tokens.css\` disagree, follow \`tokens.css\`.
+
+## Setup
+
+Import \`tokens.css\` once, at the top of the stylesheet. Light is the default. Dark follows the system (\`prefers-color-scheme\`) unless \`data-theme="light"\` or \`data-theme="dark"\` is set on \`<html>\`.
+
+\`\`\`css
+@import "./tokens.css";
+body { background: var(--bg); color: var(--ink); font-family: var(--font-sans); }
+\`\`\`
+
+## Design direction
+
+- Mood: ${p.mood}. Fill in the product's one-line feeling and its world (objects, metaphors) here when the brief is written.
+- One accent (\`--accent\`) for primary actions and focus. One spark (\`--spark\`) for illustration and motion highlights. Everything else is neutral.
+- Hierarchy comes from content order, spacing, type weight and surface level before borders, shadows or colour.
+- Status colours (\`--ok\`, \`--warn\`, \`--bad\`, \`--info\`) carry meaning only, always with a shape or label, never colour alone.
+- Read first, edit one step deeper. Prefer direct manipulation over dropdowns and form grids.
+
+## Colors
+
+Use the role tokens, never raw hex. Both modes use the same token names; CSS resolves the value. Do not branch component code by theme.
+
+| Purpose | Token | Light | Dark |
+| --- | --- | --- | --- |
+${rows}
+
+Neutral ramp \`--n-50\` to \`--n-950\` and accent ramp \`--a-50\` to \`--a-950\` exist for illustration and fine tuning. Text pairs are contrast-checked in \`PALETTE.md\` (ink 7:1, muted and status text 4.5:1).
+
+## Typography
+
+- Sans-serif only: \`--font-sans\`; mono (\`--font-mono\`) for code, ids and paths.
+- Headings bold to heavy with slightly negative letter spacing; body regular with a comfortable line height; 55-75 characters per line.
+- Tabular numbers for counters, scores and aligned numbers. Sentence case. Avoid all-caps labels except for short conventions.
+
+## Layout and spacing
+
+Spacing scale: \`--space-1\` 4px, \`--space-2\` 8px, \`--space-3\` 12px, \`--space-4\` 16px, \`--space-5\` 24px, \`--space-6\` 32px, \`--space-7\` 48px, \`--space-8\` 72px. Use only these. Group related things with space before adding lines. Do not double parent and child padding.
+
+## Shapes
+
+\`--radius-s\` 6px, \`--radius-m\` 12px, \`--radius-l\` 20px, \`--radius-pill\` 999px. Nested surfaces use a visibly smaller radius than their parent.
+
+## Elevation and glass
+
+- \`--shadow-1\` for raised content, \`--shadow-2\` for floating layers (menus, popovers, dialogs).
+- Glass (\`backdrop-filter\` blur with a translucent \`--surface\`) is one deliberate layer over real imagery, never a base style, never glass on glass. Check contrast on the blurred pixels.
+
+## Motion
+
+\`--dur-1\` 120ms (hover, press), \`--dur-2\` 220ms (state change), \`--dur-3\` 420ms (enter, route draw). Easing \`--ease-out\` for entering, \`--ease-in-out\` for moving. One motion idea per component. Animate \`transform\` and \`opacity\`. Reduced motion sets the durations to 0.
+
+## Icons and illustration
+
+Own bold icon set (24px grid, one stroke weight, round caps), see \`icons.md\` if present. Illustrations use ink, accent, spark, accent-soft and paper only, see \`illustration.md\` if present. Never use third-party assets without an entry in \`CREDITS.md\`.
+
+## Components
+
+Core components and their states live in \`components.html\` if present. Build new components from tokens and from those parts. Every interactive element has a visible focus ring (2px, accent), a target of at least 44px on touch, and an accessible name.
+
+## Do
+
+- Use tokens for every colour, space, radius and duration.
+- Keep one primary action per context.
+- Show active, selected, loading, empty, error and disabled states.
+- Respect reduced motion; keep keyboard access and visible focus.
+
+## Don't
+
+- Don't hardcode colours, shadows, radii or spacing.
+- Don't use colour alone to show state.
+- Don't make static content look interactive.
+- Don't use rows of KPI cards, uniform card grids, or tables with controls in cells as the main element.
+- Don't add serif fonts, gradient text, glow, emoji as icons, or purple-blue mesh backgrounds.
+
+## Source of truth
+
+\`tokens.css\` (values), \`palette.json\` (roles and contrast results), \`PALETTE.md\` (readable table), \`preview.html\` (swatches).
+`;
+}
+
 /* ---------- CLI ---------- */
 if (process.argv[1] && process.argv[1].endsWith('palette.mjs')) {
   const arg = (n, d) => { const i = process.argv.indexOf(`--${n}`); return i > 0 ? process.argv[i + 1] : d; };
@@ -159,6 +262,7 @@ if (process.argv[1] && process.argv[1].endsWith('palette.mjs')) {
   mkdirSync(out, { recursive: true });
   writeFileSync(join(out, 'tokens.css'), tokensCss(p)); writeFileSync(join(out, 'palette.json'), JSON.stringify(p, null, 2));
   writeFileSync(join(out, 'PALETTE.md'), paletteMd(p)); writeFileSync(join(out, 'preview.html'), previewHtml(p));
+  writeFileSync(join(out, 'DESIGN.md'), designMd(p, arg('name', 'Product')));
   const failed = p.checks.filter((c) => !c.pass);
   console.log(`palette ${p.seed} (${p.mood}): ${p.checks.length - failed.length}/${p.checks.length} contrast checks pass -> ${out}`);
   for (const c of failed) console.log(`  FAIL ${c.theme} ${c.name}: ${c.ratio} < ${c.min}`);

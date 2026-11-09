@@ -10,7 +10,7 @@ Generic apps look generic because they start from components. Designers start fr
 ## Order (do not skip ahead)
 
 1. **Brief** (5 lines): who uses it, the one feeling to evoke (calm, sharp, playful, serious), the product's world (what objects and metaphors belong to it), constraints (brand colour, dark mode, languages).
-2. **Palette**: `node scripts/palette.mjs --seed "<hex>" --mood calm|bold|warm|cool --out design/`. Writes `tokens.css`, `palette.json`, `PALETTE.md` (all contrast checks) and `preview.html`. Pick the seed from the brief, not from habit. Exit code 1 means a contrast check failed: change the seed or mood, do not ship it.
+2. **Palette**: `node scripts/palette.mjs --seed "<hex>" --mood calm|bold|warm|cool --out design/`. Add `--name "Product"`. Writes `tokens.css`, `palette.json`, `PALETTE.md` (all contrast checks), **`DESIGN.md`** (the agent-facing design contract: setup, direction, role tokens for light and dark, type, spacing, shapes, elevation, motion, do/don't) and `preview.html`. Complete the brief-specific lines in `DESIGN.md` (mood sentence, product world) and extend it as icons, illustration and the component sheet are added. Pick the seed from the brief, not from habit. Exit code 1 means a contrast check failed: change the seed or mood, do not ship it.
 3. **Type, icons, illustration, motion**: define each in one short page under `design/`, following `references/icons.md`, `references/illustration.md`, `references/motion.md`. Sans-serif only unless the brief asks otherwise.
 4. **Component sheet**: build `design/components.html` (one self-contained page, light and dark) with the product's core components in all states. This is the Dribbble shot: review it before touching a screen. Standard in `references/designer-standard.md`.
 5. **Screens** come last (`unslop-components`, `unslop-visual`), built only from tokens and sheet components.
@@ -34,7 +34,8 @@ Look at strong work to learn **principles**: how a bold icon set keeps one strok
 
 ## Files
 
-- `scripts/palette.mjs` - palette generator (OKLCH, WCAG checks, no dependencies)
+- `scripts/palette.mjs` - palette generator (OKLCH, WCAG checks, no dependencies); also writes `DESIGN.md`
+- Every UI task in a project that has `design/DESIGN.md` starts by reading it; `connect-app.sh` and the project's `CLAUDE.md` should point to it
 - `references/inspiration.md` - sources, what to learn from each, licence facts
 - `references/icons.md` - bold icon style spec and how to draw your own set
 - `references/illustration.md` - spot illustration and generative image system

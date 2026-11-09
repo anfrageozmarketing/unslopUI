@@ -19,7 +19,7 @@ for (const [seed, mood] of [['#1f5c4d', 'calm'], ['#ff6a3d', 'bold'], ['#6d28d9'
     const out = mkdtempSync(join(tmpdir(), 'pal-'));
     const r = run(['--seed', seed, '--mood', mood, '--out', out]);
     assert.equal(r.status, 0, r.stdout + r.stderr);
-    for (const f of ['tokens.css', 'palette.json', 'PALETTE.md', 'preview.html']) assert.ok(existsSync(join(out, f)), f);
+    for (const f of ['tokens.css', 'palette.json', 'PALETTE.md', 'DESIGN.md', 'preview.html']) assert.ok(existsSync(join(out, f)), f);
     const p = JSON.parse(readFileSync(join(out, 'palette.json'), 'utf8'));
     for (const theme of ['light', 'dark']) {
       const t = p.themes[theme];
@@ -53,4 +53,18 @@ test('rejects bad seed and bad mood', () => {
   assert.equal(run(['--seed', 'nope']).status, 1);
   assert.equal(run([]).status, 1);
   assert.equal(run(['--seed', '#1f5c4d', '--mood', 'loud']).status, 1);
+});
+
+test('DESIGN.md is the agent contract: frontmatter, every role token with both modes, fixed sections', () => {
+  const out = mkdtempSync(join(tmpdir(), 'pal-'));
+  assert.equal(run(['--seed', '#1f5c4d', '--name', 'Command Center', '--out', out]).status, 0);
+  const md = readFileSync(join(out, 'DESIGN.md'), 'utf8');
+  const p = JSON.parse(readFileSync(join(out, 'palette.json'), 'utf8'));
+  assert.match(md, /^---\nname: Command Center design contract\nseed: "#1f5c4d"/);
+  for (const k of Object.keys(p.themes.light)) {
+    assert.ok(md.includes(`\`--${k}\``), `role --${k}`);
+    assert.ok(md.includes(p.themes.light[k]) && md.includes(p.themes.dark[k]), `values for --${k}`);
+  }
+  for (const h of ['## Setup', '## Design direction', '## Colors', '## Typography', '## Layout and spacing', '## Shapes', '## Elevation and glass', '## Motion', '## Components', '## Do', "## Don't", '## Source of truth']) assert.ok(md.includes(h), h);
+  assert.ok(!/serif[^-]/.test(md.replace(/Sans-serif|sans-serif|no serif|add serif fonts/gi, '')), 'no serif recommendation');
 });
