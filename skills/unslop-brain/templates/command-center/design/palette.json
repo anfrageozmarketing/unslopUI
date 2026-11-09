@@ -1,0 +1,331 @@
+{
+  "seed": "#1f5c4d",
+  "mood": "calm",
+  "steps": {
+    "neutral": {
+      "50": "#f1f9f6",
+      "100": "#e9f0ee",
+      "200": "#d8e0dd",
+      "300": "#c2c9c7",
+      "400": "#9fa6a4",
+      "500": "#818886",
+      "600": "#646b68",
+      "700": "#484f4d",
+      "800": "#2e3432",
+      "900": "#1b211f",
+      "950": "#0b110f"
+    },
+    "accent": {
+      "50": "#e9fcf6",
+      "100": "#e1f3ed",
+      "200": "#b5ecdb",
+      "300": "#9fd5c4",
+      "400": "#7cb1a1",
+      "500": "#5e9283",
+      "600": "#417566",
+      "700": "#23584a",
+      "800": "#013d30",
+      "900": "#00261d",
+      "950": "#05120f"
+    }
+  },
+  "themes": {
+    "light": {
+      "bg": "#eef5f3",
+      "surface": "#f9fefc",
+      "surface-2": "#e4ece9",
+      "line": "#cfd6d4",
+      "ink": "#292f2d",
+      "ink-muted": "#626967",
+      "accent": "#2c6053",
+      "accent-text": "#275b4d",
+      "on-accent": "#ffffff",
+      "accent-soft": "#daede7",
+      "spark": "#d99b6c",
+      "ok": "#007835",
+      "ok-soft": "#d9f3dd",
+      "warn": "#845a00",
+      "warn-soft": "#fae9ce",
+      "bad": "#a83630",
+      "bad-soft": "#ffe4e0",
+      "info": "#0068a6",
+      "info-soft": "#dbeeff"
+    },
+    "dark": {
+      "bg": "#090f0d",
+      "surface": "#141716",
+      "surface-2": "#1c2220",
+      "line": "#2c3230",
+      "ink": "#d8e0dd",
+      "ink-muted": "#9fa6a4",
+      "accent": "#7cb1a1",
+      "accent-text": "#508475",
+      "on-accent": "#090f0d",
+      "accent-soft": "#1c2a26",
+      "spark": "#e6a879",
+      "ok": "#5dc879",
+      "ok-soft": "#172c1c",
+      "warn": "#e1a01d",
+      "warn-soft": "#31240e",
+      "bad": "#ff8579",
+      "bad-soft": "#381f1c",
+      "info": "#59b6ff",
+      "info-soft": "#152839"
+    }
+  },
+  "checks": [
+    {
+      "theme": "light",
+      "name": "ink on bg",
+      "fg": "ink",
+      "bg": "bg",
+      "min": 7,
+      "ratio": 12.34,
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "name": "ink on surface",
+      "fg": "ink",
+      "bg": "surface",
+      "min": 7,
+      "ratio": 13.39,
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "name": "muted on bg",
+      "fg": "ink-muted",
+      "bg": "bg",
+      "min": 4.5,
+      "ratio": 5.08,
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "name": "muted on surface",
+      "fg": "ink-muted",
+      "bg": "surface",
+      "min": 4.5,
+      "ratio": 5.52,
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "name": "accent text on bg",
+      "fg": "accent-text",
+      "bg": "bg",
+      "min": 4.5,
+      "ratio": 7.06,
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "name": "on-accent on accent",
+      "fg": "on-accent",
+      "bg": "accent",
+      "min": 4.5,
+      "ratio": 7.23,
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "name": "ok on bg",
+      "fg": "ok",
+      "bg": "bg",
+      "min": 4.5,
+      "ratio": 5.08,
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "name": "ok on ok-soft",
+      "fg": "ok",
+      "bg": "ok-soft",
+      "min": 4.5,
+      "ratio": 4.77,
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "name": "warn on bg",
+      "fg": "warn",
+      "bg": "bg",
+      "min": 4.5,
+      "ratio": 5.51,
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "name": "warn on warn-soft",
+      "fg": "warn",
+      "bg": "warn-soft",
+      "min": 4.5,
+      "ratio": 5.11,
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "name": "bad on bg",
+      "fg": "bad",
+      "bg": "bg",
+      "min": 4.5,
+      "ratio": 5.87,
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "name": "bad on bad-soft",
+      "fg": "bad",
+      "bg": "bad-soft",
+      "min": 4.5,
+      "ratio": 5.39,
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "name": "info on bg",
+      "fg": "info",
+      "bg": "bg",
+      "min": 4.5,
+      "ratio": 5.38,
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "name": "info on info-soft",
+      "fg": "info",
+      "bg": "info-soft",
+      "min": 4.5,
+      "ratio": 5.01,
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "name": "ink on bg",
+      "fg": "ink",
+      "bg": "bg",
+      "min": 7,
+      "ratio": 14.39,
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "name": "ink on surface",
+      "fg": "ink",
+      "bg": "surface",
+      "min": 7,
+      "ratio": 13.43,
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "name": "muted on bg",
+      "fg": "ink-muted",
+      "bg": "bg",
+      "min": 4.5,
+      "ratio": 7.8,
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "name": "muted on surface",
+      "fg": "ink-muted",
+      "bg": "surface",
+      "min": 4.5,
+      "ratio": 7.27,
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "name": "accent text on bg",
+      "fg": "accent-text",
+      "bg": "bg",
+      "min": 4.5,
+      "ratio": 4.51,
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "name": "on-accent on accent",
+      "fg": "on-accent",
+      "bg": "accent",
+      "min": 4.5,
+      "ratio": 7.98,
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "name": "ok on bg",
+      "fg": "ok",
+      "bg": "bg",
+      "min": 4.5,
+      "ratio": 9.21,
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "name": "ok on ok-soft",
+      "fg": "ok",
+      "bg": "ok-soft",
+      "min": 4.5,
+      "ratio": 7.08,
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "name": "warn on bg",
+      "fg": "warn",
+      "bg": "bg",
+      "min": 4.5,
+      "ratio": 8.52,
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "name": "warn on warn-soft",
+      "fg": "warn",
+      "bg": "warn-soft",
+      "min": 4.5,
+      "ratio": 6.66,
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "name": "bad on bg",
+      "fg": "bad",
+      "bg": "bg",
+      "min": 4.5,
+      "ratio": 8.18,
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "name": "bad on bad-soft",
+      "fg": "bad",
+      "bg": "bad-soft",
+      "min": 4.5,
+      "ratio": 6.43,
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "name": "info on bg",
+      "fg": "info",
+      "bg": "bg",
+      "min": 4.5,
+      "ratio": 8.8,
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "name": "info on info-soft",
+      "fg": "info",
+      "bg": "info-soft",
+      "min": 4.5,
+      "ratio": 6.86,
+      "pass": true
+    }
+  ],
+  "ok": true
+}

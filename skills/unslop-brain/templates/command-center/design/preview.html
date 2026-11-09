@@ -1,0 +1,113 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Palette preview</title>
+<style>
+:root {
+  --bg: #eef5f3;
+  --surface: #f9fefc;
+  --surface-2: #e4ece9;
+  --line: #cfd6d4;
+  --ink: #292f2d;
+  --ink-muted: #626967;
+  --accent: #2c6053;
+  --accent-text: #275b4d;
+  --on-accent: #ffffff;
+  --accent-soft: #daede7;
+  --spark: #d99b6c;
+  --ok: #007835;
+  --ok-soft: #d9f3dd;
+  --warn: #845a00;
+  --warn-soft: #fae9ce;
+  --bad: #a83630;
+  --bad-soft: #ffe4e0;
+  --info: #0068a6;
+  --info-soft: #dbeeff;
+  --n-50: #f1f9f6;
+  --n-100: #e9f0ee;
+  --n-200: #d8e0dd;
+  --n-300: #c2c9c7;
+  --n-400: #9fa6a4;
+  --n-500: #818886;
+  --n-600: #646b68;
+  --n-700: #484f4d;
+  --n-800: #2e3432;
+  --n-900: #1b211f;
+  --n-950: #0b110f;
+  --a-50: #e9fcf6;
+  --a-100: #e1f3ed;
+  --a-200: #b5ecdb;
+  --a-300: #9fd5c4;
+  --a-400: #7cb1a1;
+  --a-500: #5e9283;
+  --a-600: #417566;
+  --a-700: #23584a;
+  --a-800: #013d30;
+  --a-900: #00261d;
+  --a-950: #05120f;
+  --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 24px; --space-6: 32px; --space-7: 48px; --space-8: 72px;
+  --radius-s: 6px; --radius-m: 12px; --radius-l: 20px; --radius-pill: 999px;
+  --ease-out: cubic-bezier(.2,.8,.2,1); --ease-in-out: cubic-bezier(.65,0,.35,1); --dur-1: 120ms; --dur-2: 220ms; --dur-3: 420ms;
+  --shadow-1: 0 1px 2px rgb(0 0 0 / .06), 0 4px 12px rgb(0 0 0 / .05); --shadow-2: 0 2px 4px rgb(0 0 0 / .08), 0 16px 40px rgb(0 0 0 / .12);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #090f0d;
+    --surface: #141716;
+    --surface-2: #1c2220;
+    --line: #2c3230;
+    --ink: #d8e0dd;
+    --ink-muted: #9fa6a4;
+    --accent: #7cb1a1;
+    --accent-text: #508475;
+    --on-accent: #090f0d;
+    --accent-soft: #1c2a26;
+    --spark: #e6a879;
+    --ok: #5dc879;
+    --ok-soft: #172c1c;
+    --warn: #e1a01d;
+    --warn-soft: #31240e;
+    --bad: #ff8579;
+    --bad-soft: #381f1c;
+    --info: #59b6ff;
+    --info-soft: #152839;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #090f0d;
+  --surface: #141716;
+  --surface-2: #1c2220;
+  --line: #2c3230;
+  --ink: #d8e0dd;
+  --ink-muted: #9fa6a4;
+  --accent: #7cb1a1;
+  --accent-text: #508475;
+  --on-accent: #090f0d;
+  --accent-soft: #1c2a26;
+  --spark: #e6a879;
+  --ok: #5dc879;
+  --ok-soft: #172c1c;
+  --warn: #e1a01d;
+  --warn-soft: #31240e;
+  --bad: #ff8579;
+  --bad-soft: #381f1c;
+  --info: #59b6ff;
+  --info-soft: #152839;
+}
+@media (prefers-reduced-motion: reduce) { :root { --dur-1: 0ms; --dur-2: 0ms; --dur-3: 0ms; } }
+
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--font-sans);padding:var(--space-6)}
+h1{font-size:28px;margin:0 0 var(--space-2)}h2{font-size:13px;color:var(--ink-muted);margin:var(--space-6) 0 var(--space-3);letter-spacing:.04em}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:var(--space-3)}
+.sw{display:grid;grid-template-columns:36px 1fr;gap:2px var(--space-3);align-items:center;font-size:12px}.sw i{grid-row:span 2;width:36px;height:36px;border-radius:var(--radius-s);border:1px solid var(--line)}.sw span{color:var(--ink-muted)}
+.ramp{display:flex;border-radius:var(--radius-m);overflow:hidden;height:44px}.ramp i{flex:1}
+.stage{position:relative;overflow:hidden;border-radius:var(--radius-l);padding:var(--space-7) var(--space-6);background:radial-gradient(circle at 20% 30%,var(--accent) 0 18%,transparent 19%),radial-gradient(circle at 78% 60%,var(--spark) 0 22%,transparent 23%),var(--accent-soft)}
+.glass{max-width:420px;padding:var(--space-5);border-radius:var(--radius-m);background:color-mix(in srgb,var(--surface) 62%,transparent);backdrop-filter:blur(16px) saturate(1.4);-webkit-backdrop-filter:blur(16px) saturate(1.4);border:1px solid color-mix(in srgb,var(--surface) 70%,transparent)}
+.btn{background:var(--accent);color:var(--on-accent);border:0;border-radius:var(--radius-pill);padding:var(--space-2) var(--space-5);font:600 14px var(--font-sans)}
+.row{display:flex;gap:var(--space-3);flex-wrap:wrap;align-items:center}.pill{border-radius:var(--radius-pill);padding:2px var(--space-3);font-size:13px;font-weight:600}
+button.t{margin-left:auto;background:none;border:1px solid var(--line);color:var(--ink);border-radius:var(--radius-pill);padding:var(--space-1) var(--space-3)}
+</style></head><body>
+<div class="row"><h1>Palette preview</h1><button class="t" onclick="var r=document.documentElement;r.dataset.theme=r.dataset.theme==='dark'?'light':'dark'">Light / Dark</button></div>
+<p style="color:var(--ink-muted)">seed #1f5c4d · mood calm · all text pairs checked: pass</p>
+<h2>RAMPS</h2><div class="ramp"><i style="background:var(--n-50)"></i><i style="background:var(--n-100)"></i><i style="background:var(--n-200)"></i><i style="background:var(--n-300)"></i><i style="background:var(--n-400)"></i><i style="background:var(--n-500)"></i><i style="background:var(--n-600)"></i><i style="background:var(--n-700)"></i><i style="background:var(--n-800)"></i><i style="background:var(--n-900)"></i><i style="background:var(--n-950)"></i></div><div class="ramp" style="margin-top:8px"><i style="background:var(--a-50)"></i><i style="background:var(--a-100)"></i><i style="background:var(--a-200)"></i><i style="background:var(--a-300)"></i><i style="background:var(--a-400)"></i><i style="background:var(--a-500)"></i><i style="background:var(--a-600)"></i><i style="background:var(--a-700)"></i><i style="background:var(--a-800)"></i><i style="background:var(--a-900)"></i><i style="background:var(--a-950)"></i></div>
+<h2>ROLES</h2><div class="grid"><div class="sw"><i style="background:var(--bg)"></i><b>--bg</b><span>#eef5f3</span></div><div class="sw"><i style="background:var(--surface)"></i><b>--surface</b><span>#f9fefc</span></div><div class="sw"><i style="background:var(--surface-2)"></i><b>--surface-2</b><span>#e4ece9</span></div><div class="sw"><i style="background:var(--line)"></i><b>--line</b><span>#cfd6d4</span></div><div class="sw"><i style="background:var(--ink)"></i><b>--ink</b><span>#292f2d</span></div><div class="sw"><i style="background:var(--ink-muted)"></i><b>--ink-muted</b><span>#626967</span></div><div class="sw"><i style="background:var(--accent)"></i><b>--accent</b><span>#2c6053</span></div><div class="sw"><i style="background:var(--accent-text)"></i><b>--accent-text</b><span>#275b4d</span></div><div class="sw"><i style="background:var(--on-accent)"></i><b>--on-accent</b><span>#ffffff</span></div><div class="sw"><i style="background:var(--accent-soft)"></i><b>--accent-soft</b><span>#daede7</span></div><div class="sw"><i style="background:var(--spark)"></i><b>--spark</b><span>#d99b6c</span></div><div class="sw"><i style="background:var(--ok)"></i><b>--ok</b><span>#007835</span></div><div class="sw"><i style="background:var(--ok-soft)"></i><b>--ok-soft</b><span>#d9f3dd</span></div><div class="sw"><i style="background:var(--warn)"></i><b>--warn</b><span>#845a00</span></div><div class="sw"><i style="background:var(--warn-soft)"></i><b>--warn-soft</b><span>#fae9ce</span></div><div class="sw"><i style="background:var(--bad)"></i><b>--bad</b><span>#a83630</span></div><div class="sw"><i style="background:var(--bad-soft)"></i><b>--bad-soft</b><span>#ffe4e0</span></div><div class="sw"><i style="background:var(--info)"></i><b>--info</b><span>#0068a6</span></div><div class="sw"><i style="background:var(--info-soft)"></i><b>--info-soft</b><span>#dbeeff</span></div></div>
+<h2>SURFACE OVER IMAGERY (one glass layer)</h2><div class="stage"><div class="glass"><b>Glass on a colour field</b><p style="color:var(--ink-muted);margin:6px 0 var(--space-4)">Secondary text stays readable on the blurred layer.</p><div class="row"><button class="btn">Primary</button><span class="pill" style="background:var(--ok-soft);color:var(--ok)">ok</span><span class="pill" style="background:var(--warn-soft);color:var(--warn)">warn</span><span class="pill" style="background:var(--bad-soft);color:var(--bad)">bad</span><span class="pill" style="background:var(--info-soft);color:var(--info)">info</span></div></div></div>
+</body></html>
