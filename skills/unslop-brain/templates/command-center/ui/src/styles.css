@@ -344,17 +344,10 @@ a.row:hover, a.row:focus-visible { background: var(--surface-2); }
 .note-dialog { width: min(760px, calc(100vw - 24px)); max-width: none; max-height: 86dvh; display: flex; flex-direction: column; background: var(--window); border-radius: 28px; box-shadow: var(--lift); overflow: hidden; }
 .note-dialog .window-head { padding: 24px 24px 8px; } .note-dialog .window-body { padding: 8px 24px 28px; }
 
-/* ===== Shell: ONE sidebar panel (rail + menu column) and the window, same tone, same radius ===== */
+/* ===== Shell: rail + menu column sit directly on the shell ground (one region), the window is the light rounded surface ===== */
 .sidebar { display: contents; }
 @media (min-width: 901px) {
-  .app, .app.no-ctx { grid-template-columns: auto minmax(0, 1fr); gap: 12px; padding: 12px; }
-  .sidebar { display: grid; grid-template-columns: 104px 264px; min-height: 0; background: var(--window); border-radius: 28px; box-shadow: var(--lift); overflow: hidden; transition: grid-template-columns var(--dur-3) var(--ease-out); }
+  .app, .app.no-ctx { grid-template-columns: auto minmax(0, 1fr); gap: 0; padding: 12px 12px 12px 0; }
+  .sidebar { display: grid; grid-template-columns: 104px 264px; min-height: 0; background: transparent; transition: grid-template-columns var(--dur-3) var(--ease-out); }
   .app.no-ctx .sidebar { grid-template-columns: 104px 0; }
-  .rail, .ctx { background: transparent; border-radius: 0; box-shadow: none; }
-  .rail { padding: 14px 0; }
-  .ctx { padding: 16px 12px 12px 0; }
-  .rail-btn[aria-current="page"], .folder[aria-current="page"] { background: var(--surface-2); box-shadow: none; }
-  .rail-btn .cnt { box-shadow: 0 0 0 2px var(--window); }
-  .rail-btn[aria-current="page"] .cnt { box-shadow: 0 0 0 2px var(--surface-2); }
-  .info { background: var(--surface-2); }
 }

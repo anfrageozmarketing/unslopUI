@@ -13,14 +13,13 @@ Quality bar: "Would a designer post this on Behance or Dribbble as a finished sh
 
 ## App shell pattern (desktop apps and tools)
 
-**Two panels, never three.** One sidebar panel and one window, on the shell tone, 12 px apart, same radius (28 px), same surface tone (the sidebar is as light as the content).
+**One sidebar region on the shell ground, plus the window.** The shell ground is the darkest tone (dark mode) or light gray (light mode). Rail and menu column sit directly on it as one region, no panel box, no seam. Only the window is a light, rounded surface.
 
-1. **Sidebar panel** = rail + menu column merged into one rounded panel, no seam, no line, no third box:
-   - **Rail** (about 104 px, left part): the product icon on top, then one labelled app-like button per area (icon above label). Unselected: muted icon. Selected: a raised tile (surface-2), inset about 14 px from the panel edge, plus a 4 px accent bar exactly at the outer edge. Utilities (search, theme, reload) at the bottom, labelled.
-   - **Menu column** (about 264 px, right part): title of the area, then its sub-folders (apps), compact status info at the bottom. Selected sub-folder uses the same surface-2 tile. It collapses with a small handle on the window edge.
-2. **Window**: the working surface, rounded, margin to the shell edge. Content scrolls inside it; the header carries title and the one primary action.
+1. **Rail** (about 104 px): the product icon on top, then one labelled app-like button per area (icon above label). Unselected: muted icon. Selected: a raised tile in the window tone with a soft shadow, inset about 14 px from the edge, plus a 4 px accent bar exactly at the outer edge. Utilities (search, theme, reload) at the bottom, labelled.
+2. **Menu column** (about 264 px): title of the area, then its sub-folders (apps), compact status info at the bottom. Selected sub-folder uses the same raised tile. It collapses with a small handle on the window edge.
+3. **Window**: the working surface, rounded (28 px), margin to the shell edge, clearly lighter than the shell. Content scrolls inside it; its header carries title and the one primary action.
 
-This is the same structure as shadcn's sidebar blocks (an icon rail with a nested menu list, content as an inset rounded card). Build it from HeroUI and Tailwind parts, and take the shadcn block as the structural reference.
+Do not turn rail and menu into separate boxes or panels. This is the structure of shadcn's sidebar blocks (icon rail with a nested menu, content as an inset rounded card).
 
 On a phone: the rail becomes a bottom bar, the menu column a title row with a switcher, the window runs edge to edge with rounded top corners.
 

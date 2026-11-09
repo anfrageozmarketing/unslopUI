@@ -3,7 +3,7 @@
 Every item below was a real defect found in a built UI. Read this list before writing components, then tick it in the gate.
 
 ## Shell and navigation
-- The shell is two panels: ONE sidebar (rail and menu column merged, same tone and radius as the window) and the window. Never a separate third box.
+- The shell: rail and menu column sit directly on the shell ground as one region (no boxes), and the window is the one light rounded surface. Do not restyle an approved shell without being asked.
 - Rail buttons carry a visible label; icon-only menus are not understood. Labels fit their width ("Entscheide", not a clipped long word).
 - Active item: raised tile **inset** from the rail edge (about 14 px), never touching it, plus a 4 px accent bar exactly at the outer edge.
 - Collapse control sits on the edge of the work window (small handle), not inside the content or the page header. Closed state keeps the same handle to reopen. State survives a reload.
