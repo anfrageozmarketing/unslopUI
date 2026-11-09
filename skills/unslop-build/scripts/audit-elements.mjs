@@ -17,6 +17,7 @@ export const ELEMENTS = {
   Skeleton: /<Skeleton|skeleton/i, 'Stacked list': /<ListBox|<ul\b|<li\b|role=["']list/, Table: /<Table\b|<table\b/, Toolbar: /<Toolbar|role=["']toolbar/, 'Top navigation bar': /<header\b[^>]*(topbar|navbar)|topbar|<Navbar/i,
   Tree: /<Tree\b|role=["']tree/, 'Coach marks': /coach-?mark|<Tour|onboarding-?tip/i, 'Context menu': /onContextMenu|<ContextMenu/, Dialog: /<Modal|<Dialog|role=["']dialog/, Drawer: /<Drawer|<Sheet\b/,
   'Dropdown menu': /<Dropdown|<DropdownMenu|role=["']menu["']/, 'Full-screen overlay': /fullscreen|\.ws\b|workspace/i, Popover: /<Popover/, Toast: /toast/i, Tooltip: /<Tooltip|title=\{|title=["']/,
+  'Keyboard key': /<kbd\b|\bkbd\b/, 'Map pin': /map-?pin|<Marker\b/i, 'Status dot': /status-?dot|\bst\b|StatusMark/, 'Table of contents': /table-of-contents|\btoc\b/i, 'Navigation menu': /<NavigationMenu|<nav\b|role=["']navigation/, Logo: /\blogo\b/i, Photo: /<img\b|<picture\b/,
   Avatar: /<Avatar|avatar/i, Icon: /phosphor|lucide|<svg\b|<Icon\b/i, Illustration: /illustration|<Portrait|empty-?state|EmptyState/i, 'Command palette': /command-?palette|<Command\b|Palette/i,
 };
 const STATE_CHECKS = { 'empty states': /empty-?state|EmptyState|keine .* gefunden|no .* yet/i, 'loading states': /skeleton|<Spinner|ProgressBar|loading/i, 'error states': /error|catch\s*\(|errbox|role=["']alert/i, 'undo': /undo|rückgängig/i, 'dark mode': /prefers-color-scheme|data-theme|dark:/i, 'focus-visible': /focus-visible|focus:ring|data-focus/i, 'reduced motion': /prefers-reduced-motion|motion-reduce/i };
