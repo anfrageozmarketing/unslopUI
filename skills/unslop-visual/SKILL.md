@@ -7,7 +7,7 @@ description: Final-layer visual pass for AI-looking UI - tokens for space, color
 
 Visual craft comes last: a polished shell around a missing login is still slop. For a full visual redesign workflow, the separate `unslop` skill by Damir Sokolovsky (CC BY 4.0, heydamir.design/unslop) goes deeper; this skill is the checklist and gate, not a copy of it.
 
-Run `unslop-components` before this pass: a clean table of KPI cards is still slop. This skill polishes the components that skill chose.
+Run `unslop-foundation` (palette, icons, illustration, motion) and `unslop-components` before this pass: a clean table of KPI cards is still slop. This skill polishes the components that skill chose.
 
 ## Order of work
 

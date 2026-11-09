@@ -14,11 +14,14 @@ Most "unslop" tools fix the surface: glow, gradients, emoji. AI-built apps are a
 | `unslop-structure` | Route map, navigation, deep links, list scaling, settings layout, permissions |
 | `unslop-states` | Empty, loading, partial, error, offline, no-permission, limit |
 | `unslop-copy` | Specific, calm copy; German rules and a German slop-phrase list |
+| `unslop-foundation` | Starts every UI build: contrast-checked palette from one seed colour (`scripts/palette.mjs`), bold icon style, illustration and motion language, a designer-grade component sheet; inspiration from Streamline, Magic UI, Coolors and others for principles only, never copied |
 | `unslop-components` | Picks a signature component per screen from the shape of the data; bans the default table / KPI-card / form look |
 | `unslop-visual` | Last-layer visual gate: tokens, quiet chrome, one focal element, mobile |
 | `unslop-brain` | Sets up a **private** Obsidian vault (one note per flow) and a self-hosted **Command Center** web app that shows all apps, flows, status and open decisions |
 
-Order matters: **inventory → audit → flows → structure → states → copy → visuals → verify**.
+Order matters: **inventory → audit → flows → structure → states → copy → foundation → components → visuals → verify**.
+
+The browser tool only **captures** screenshots (`docs/capture-screens.md`); judging and editing stay with the designing agent.
 
 ## Let the AI look at the UI (recommended)
 

@@ -7,6 +7,8 @@ description: Makes app UIs creative and domain-specific instead of looking like 
 
 AI-generated apps share one silhouette: a page title, a row of four KPI cards, a table, a form with dropdowns. It is correct and forgettable. Components should be shaped by **what the data is**, not by what the component library offers.
 
+Build on the foundation first (`unslop-foundation`): palette tokens, icon style, illustration system, motion language and an approved component sheet. Components here use those tokens and parts; they do not invent colours or styles.
+
 ## The ban list (default look)
 
 Do not ship a screen whose main content is any of these, unless the data truly is that:
