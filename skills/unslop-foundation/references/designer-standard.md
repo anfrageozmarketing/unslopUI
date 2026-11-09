@@ -40,6 +40,18 @@ A workspace is a large rounded window laid over the dimmed app (small margin on 
 - Everything has a text label. Icon-only controls are limited to close, zoom and arrows, and carry tooltips and names.
 - Autosave with an unobtrusive "Gespeichert" indicator and Undo; leaving never loses work.
 
+## Editor workspace (work areas with tools, structure, properties)
+
+For areas where people build something (flows, boards, decisions), the workspace is a full editor, not a viewer. Layout from a shipped animation editor, in our own words:
+
+- **Top tool strip**: back arrow, then one tool per object type to add (step, decision, note), the file name with a menu in the middle, share, zoom and the one primary action (Export or Save) on the right. Tools have labels or tooltips.
+- **Left structure panel**: the outline of the object as a tree (Scene > steps). The selected row is a solid accent tile. Clicking a row selects it on the stage and vice versa.
+- **Stage**: the canvas in a quiet tone, the object centred with room around it.
+- **Right properties panel**: a mode switch at the top (Design | Ablauf), the selected object's name with a menu, then its editable properties and the main action as a full-width button. An optional helper card with an illustration offers a smart action (for example "Beschreibung erzeugen").
+- **Bottom strip**: the sequence of the object (timeline, path of steps, history) with a play or run control and a position marker. For flows: the walk-through of the path from start to end.
+- **Home of an area** (before the workspace): a small left menu (Entwürfe, Vorlagen, Bereich, Ordner anlegen, Einstellungen, Papierkorb), a big title, two coloured primary actions at the top ("Neu anlegen", "Importieren") and a grid of tiles with a preview and caption (name, last edited). A dashed tile with a plus adds the next item.
+- A round help button sits bottom right in every workspace.
+
 ## Preview and workspace (two levels per area)
 
 Every area has a **preview** and a **workspace**.
