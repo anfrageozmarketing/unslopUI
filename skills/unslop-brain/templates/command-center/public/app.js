@@ -107,20 +107,7 @@ const TABS = [
       root.append(h('h2', {}, 'Nächste Flows (MVP zuerst)'),
         next.length ? table(['Flow', 'Bereich', 'Prio', 'Status'], next.map((f) => [noteLink(f), f.area, f.prio, STATUS_LABEL[f.status]])) : h('p', { class: 'empty' }, 'Alles umgesetzt.'));
   } },
-  { key: 'board', label: () => 'Board', filter: true, render: (a, root, name, flows) => {
-      if (!flows.length) root.append(h('p', { class: 'empty' }, 'Keine Flows in dieser Auswahl.'));
-      root.append(h('div', { class: 'board' }, STATUS.map(([k, l]) => {
-        const items = flows.filter((f) => f.status === k).sort((x, y) => x.prio.localeCompare(y.prio));
-        return h('section', { class: 'col', 'aria-label': l }, h('h3', {}, h('span', {}, l), h('span', { class: 'num' }, items.length)), items.map((f) => flowCard(f, name)));
-      })));
-  } },
-  { key: 'areas', label: () => 'Bereiche', filter: true, render: (a, root, name, flows, areas) => {
-      for (const ar of areas.filter((x) => !areaFilter || x === areaFilter)) {
-        const fl = a.flows.filter((f) => f.area === ar);
-        const c = { missing: 0, partial: 0, exists: 0, built: 0 }; fl.forEach((f) => c[f.status]++);
-        root.append(h('h2', {}, `${ar} · ${fl.length}`), statusBar(c, fl.length), table(['Flow', 'Status', 'Prio', 'Screens', 'Endpoints'], fl.map((f) => [noteLink(f), STATUS_LABEL[f.status] || f.status, f.prio, f.screens.join(', '), f.endpoints.join(', ')])));
-      }
-  } },
+  { key: 'flows', label: (a) => `Flows (${a.total})`, render: (a, root, name, _f, areas) => flowsTab(a, root, name, areas) },
   { key: 'findings', label: (a) => `Befunde (${a.findings.length})`, render: (a, root, name) => {
       const fs = [...a.findings].sort((x, y) => (SEVERITY_RANK[x.severity] ?? 9) - (SEVERITY_RANK[y.severity] ?? 9));
       root.append(fs.length ? table(['Schwere', 'Befund', 'Wo', 'Status'], fs.map((f) => [h('span', { class: `badge ${f.severity === 'Blocker' ? 'blocker' : ''}` }, f.severity), noteLink(f), f.where, select(f, 'state', ['open', 'fixed', 'wontfix'], name)])) : h('p', { class: 'empty' }, 'Keine Befunde.'));
@@ -129,6 +116,144 @@ const TABS = [
       root.append(a.decisions.length ? table(['Entscheidung', 'Frage', 'Antwort', 'Status'], a.decisions.map((d) => [noteLink(d), d.question, d.answer, select(d, 'state', ['open', 'decided'], name)])) : h('p', { class: 'empty' }, 'Keine Entscheidungen.'));
   } },
 ];
+
+/* ---------- flows management ---------- */
+const PRIOS = ['MVP', 'V1', 'V2'];
+const FQ = { q: '', area: '', status: '', prio: '' };
+let flowView = 'list';
+let showNew = false;
+function statusSelect(f, appName) {
+  const st = h('select', { 'aria-label': 'Status' }, STATUS.map(([k, l]) => h('option', { value: k, selected: f.status === k }, l)));
+  st.addEventListener('change', () => {
+    if (st.value === 'built' && !f.evidence && !confirm('Für "Gebaut" fehlt ein Nachweis (evidence). Trotzdem setzen?')) { st.value = f.status; return; }
+    patch(f.path, 'status', st.value, appName);
+  });
+  return st;
+}
+function prioSelect(f, appName) {
+  const pr = h('select', { 'aria-label': 'Priorität' }, PRIOS.map((v) => h('option', { value: v, selected: f.prio === v }, v)));
+  pr.addEventListener('change', () => patch(f.path, 'prio', pr.value, appName));
+  return pr;
+}
+const splitList = (v) => String(v || '').split(',').map((x) => x.trim()).filter(Boolean);
+
+function flowsTab(a, root, name, areas) {
+  const search = h('input', { type: 'search', placeholder: 'Flow, Screen oder Endpoint suchen', value: FQ.q, 'aria-label': 'Flows durchsuchen' });
+  const filter = (key, label, opts) => {
+    const s = h('select', { 'aria-label': label }, h('option', { value: '' }, label), opts.map(([v, l]) => h('option', { value: v, selected: FQ[key] === v }, l)));
+    s.addEventListener('change', () => { FQ[key] = s.value; draw(); });
+    return s;
+  };
+  const views = h('span', { class: 'tabs inline' }, [['list', 'Liste'], ['board', 'Board']].map(([k, l]) =>
+    h('button', { type: 'button', 'aria-pressed': String(flowView === k), onclick: () => { flowView = k; appView(name); } }, l)));
+  const newBtn = h('button', { type: 'button', class: 'ghost', onclick: () => { showNew = !showNew; appView(name); } }, showNew ? 'Abbrechen' : '+ Neuer Flow');
+  root.append(h('div', { class: 'toolbar' }, search, filter('area', 'Alle Bereiche', areas.map((x) => [x, x])), filter('status', 'Alle Status', STATUS), filter('prio', 'Alle Prios', PRIOS.map((x) => [x, x])), views, newBtn));
+  if (showNew) root.append(newFlowForm(a, name, areas));
+  const count = h('p', { class: 'muted num' });
+  const host = h('div');
+  root.append(count, host);
+  search.addEventListener('input', () => { FQ.q = search.value; draw(); });
+
+  function draw() {
+    const q = FQ.q.trim().toLowerCase();
+    const list = a.flows.filter((f) => (!FQ.area || f.area === FQ.area) && (!FQ.status || f.status === FQ.status) && (!FQ.prio || f.prio === FQ.prio)
+      && (!q || [f.title, f.area, ...f.screens, ...f.endpoints].join(' ').toLowerCase().includes(q)));
+    count.textContent = `${list.length} von ${a.total} Flows`;
+    if (!list.length) { host.replaceChildren(h('p', { class: 'empty' }, a.total ? 'Kein Flow passt zu den Filtern.' : 'Noch keine Flows. Lege den ersten mit "+ Neuer Flow" an.')); return; }
+    const byPrio = (x, y) => PRIOS.indexOf(x.prio) - PRIOS.indexOf(y.prio) || x.title.localeCompare(y.title);
+    if (flowView === 'board') {
+      host.replaceChildren(h('div', { class: 'board' }, STATUS.map(([k, l]) => {
+        const items = list.filter((f) => f.status === k).sort(byPrio);
+        return h('section', { class: 'col', 'aria-label': l }, h('h3', {}, h('span', {}, l), h('span', { class: 'num' }, items.length)), items.map((f) => flowCard(f, name)));
+      })));
+      return;
+    }
+    const groups = [...new Set(list.map((f) => f.area))].sort((x, y) => (AREA_ORDER.indexOf(x) + 1 || 99) - (AREA_ORDER.indexOf(y) + 1 || 99));
+    host.replaceChildren(...groups.flatMap((ar) => {
+      const fl = list.filter((f) => f.area === ar).sort(byPrio);
+      return [h('h2', {}, `${ar} · ${fl.length}`),
+        table(['Flow', 'Status', 'Prio', 'Screens', 'Nachweis'], fl.map((f) => [noteLink(f), statusSelect(f, name), prioSelect(f, name), f.screens.join(', '), f.evidence ? '✓' : '']))];
+    }));
+  }
+  draw();
+}
+
+function newFlowForm(a, appName, areas) {
+  const field = (label, input) => h('label', { class: 'fld' }, h('span', {}, label), input);
+  const title = h('input', { required: true, maxlength: 80, placeholder: 'z. B. Passwort zurücksetzen' });
+  const area = h('input', { required: true, maxlength: 60, list: 'areas', placeholder: 'z. B. Zugang', value: FQ.area });
+  const dl = h('datalist', { id: 'areas' }, [...new Set([...AREA_ORDER, ...areas])].map((x) => h('option', { value: x })));
+  const st = h('select', {}, STATUS.map(([k, l]) => h('option', { value: k, selected: k === 'missing' }, l)));
+  const pr = h('select', {}, PRIOS.map((v) => h('option', { value: v, selected: v === 'V1' }, v)));
+  const scr = h('input', { placeholder: '/login, /forgot (Komma trennt)' });
+  const ep = h('input', { placeholder: 'POST /api/auth/login (Komma trennt)' });
+  const form = h('form', { class: 'newflow card' }, h('h3', {}, 'Neuer Flow'),
+    h('div', { class: 'fgrid' }, field('Titel', title), field('Bereich', area), field('Status', st), field('Prio', pr), field('Screens', scr), field('Endpoints', ep)), dl,
+    h('div', { class: 'row', style: 'justify-content:flex-start' }, h('button', { class: 'ghost', type: 'submit' }, 'Flow anlegen')));
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    try {
+      const r = await api('/api/flow', { method: 'POST', body: JSON.stringify({ app: appName, area: area.value, title: title.value, status: st.value, prio: pr.value, screens: splitList(scr.value), endpoints: splitList(ep.value) }) });
+      showNew = false; await load(); renderSide(); location.hash = `#/note/${encodeURIComponent(r.path)}`;
+    } catch (err) { toast(err.message); }
+  });
+  return form;
+}
+
+/* ---------- note management (flow, finding, decision) ---------- */
+const MANAGED = ['flow', 'finding', 'decision'];
+let editBody = false;
+let lastNote = null;
+function managePanel(path, note, appName) {
+  const t = note.meta.type;
+  if (!MANAGED.includes(t)) return null;
+  const m = note.meta;
+  const inputs = {};
+  const rows = [];
+  const text = (key, label, val, ph = '') => { inputs[key] = h('input', { value: val || '', placeholder: ph, maxlength: 300 }); rows.push(h('label', { class: 'fld' }, h('span', {}, label), inputs[key])); };
+  const pick = (key, label, pairs, val) => { inputs[key] = h('select', {}, pairs.map(([v, l]) => h('option', { value: v, selected: val === v }, l))); rows.push(h('label', { class: 'fld' }, h('span', {}, label), inputs[key])); };
+  const orig = {};
+  if (t === 'flow') {
+    pick('status', 'Status', STATUS, m.status); pick('prio', 'Prio', PRIOS.map((v) => [v, v]), m.prio);
+    text('screens', 'Screens', (m.screens || []).join(', '), 'Komma trennt'); text('endpoints', 'Endpoints', (m.endpoints || []).join(', '), 'Komma trennt');
+    text('evidence', 'Nachweis (für "Gebaut")', m.evidence, 'Test, Gate oder Link');
+  } else if (t === 'decision') {
+    pick('state', 'Status', [['open', 'Offen'], ['decided', 'Entschieden']], m.state); text('answer', 'Antwort', m.answer);
+  } else {
+    pick('state', 'Status', [['open', 'Offen'], ['fixed', 'Behoben'], ['wontfix', 'Wird nicht behoben']], m.state);
+    pick('severity', 'Schwere', ['Blocker', 'Gap', 'Rough', 'Polish'].map((v) => [v, v]), m.severity);
+  }
+  for (const k of Object.keys(inputs)) orig[k] = inputs[k].value;
+  const value = (k) => (k === 'screens' || k === 'endpoints' ? splitList(inputs[k].value) : inputs[k].value);
+  const save = h('button', { type: 'button', class: 'ghost' }, 'Speichern');
+  save.addEventListener('click', async () => {
+    const changed = Object.keys(inputs).filter((k) => inputs[k].value !== orig[k]);
+    if (!changed.length) { toast('Nichts geändert'); return; }
+    if (inputs.status && changed.includes('status') && inputs.status.value === 'built' && !inputs.evidence.value.trim() && !confirm('Für "Gebaut" fehlt ein Nachweis. Trotzdem speichern?')) return;
+    try {
+      for (const k of changed.filter((x) => x !== 'status')) await api('/api/note', { method: 'PATCH', body: JSON.stringify({ path, field: k, value: value(k) }) });
+      if (changed.includes('status')) await api('/api/note', { method: 'PATCH', body: JSON.stringify({ path, field: 'status', value: value('status') }) });
+      await load(); renderSide(); toast('Gespeichert'); await route();
+    } catch (e) { toast(e.message); }
+  });
+  const edit = h('button', { type: 'button', class: 'ghost', onclick: () => { editBody = true; route(); } }, 'Text bearbeiten');
+  const arch = h('button', { type: 'button', class: 'ghost danger', onclick: async () => {
+    if (!confirm('Notiz archivieren? Sie verschwindet aus der Übersicht und liegt im Ordner _Archiv der App.')) return;
+    try { await api('/api/note', { method: 'DELETE', body: JSON.stringify({ path }) }); await load(); renderSide(); toast('Archiviert'); location.hash = appName ? `#/app/${encodeURIComponent(appName)}` : '#/'; } catch (e) { toast(e.message); }
+  } }, 'Archivieren');
+  return h('section', { class: 'manage', 'aria-label': 'Verwalten' }, h('div', { class: 'fgrid' }, rows), h('div', { class: 'row', style: 'justify-content:flex-start;margin-top:12px' }, save, edit, arch));
+}
+function bodyEditor(path, note) {
+  const ta = h('textarea', { class: 'editor', rows: 22, spellcheck: 'false', 'aria-label': 'Notiztext (Markdown)' });
+  ta.value = note.body.replace(/^\n+/, '');
+  const save = h('button', { type: 'button', class: 'ghost' }, 'Text speichern');
+  save.addEventListener('click', async () => {
+    try { await api('/api/note', { method: 'PUT', body: JSON.stringify({ path, body: ta.value }) }); editBody = false; await load(); toast('Gespeichert'); await route(); } catch (e) { toast(e.message); }
+  });
+  const cancel = h('button', { type: 'button', class: 'ghost', onclick: () => { editBody = false; route(); } }, 'Abbrechen');
+  return h('div', {}, h('p', { class: 'muted' }, 'Markdown. Diagramme als ```mermaid-Block. Die Eigenschaften oben bleiben unverändert.'), ta, h('div', { class: 'row', style: 'justify-content:flex-start;margin-top:12px' }, save, cancel));
+}
+
 function stat(label, value, cls = '') {
   return h('div', { class: 'card stat' }, h('div', { class: `big num ${cls}` }, String(value ?? '–')), h('div', { class: 'muted' }, label));
 }
@@ -147,7 +272,6 @@ function appView(name) {
   const tab = TABS.find((t) => t.key === appTab) || TABS[0];
   root.append(h('div', { class: 'tabs', style: 'margin-top:16px' }, TABS.map((t) =>
     h('button', { type: 'button', 'aria-pressed': String(t.key === tab.key), onclick: () => { appTab = t.key; appView(name); } }, t.label(a)))));
-  if (tab.filter) root.append(h('div', { class: 'tabs' }, ['Alle', ...areas].map((ar) => h('button', { type: 'button', 'aria-pressed': String((areaFilter || 'Alle') === ar), onclick: () => { areaFilter = ar === 'Alle' ? '' : ar; appView(name); } }, ar))));
   const flows = a.flows.filter((f) => !areaFilter || f.area === areaFilter);
   tab.render(a, root, name, flows, areas);
   $view.replaceChildren(root);
@@ -158,14 +282,7 @@ function select(item, field, values, appName) {
   return s;
 }
 function flowCard(f, appName) {
-  const st = h('select', { 'aria-label': 'Status' }, STATUS.map(([k, l]) => h('option', { value: k, selected: f.status === k }, l)));
-  st.addEventListener('change', () => {
-    if (st.value === 'built' && !f.evidence && !confirm('Für "Gebaut" fehlt ein Nachweis (evidence) in der Notiz. Trotzdem setzen?')) { st.value = f.status; return; }
-    patch(f.path, 'status', st.value, appName);
-  });
-  const pr = h('select', { 'aria-label': 'Priorität' }, ['MVP', 'V1', 'V2'].map((v) => h('option', { value: v, selected: f.prio === v }, v)));
-  pr.addEventListener('change', () => patch(f.path, 'prio', pr.value, appName));
-  return h('div', { class: 'flow' }, noteLink(f), h('div', { class: 'muted' }, f.area), h('div', { class: 'meta' }, st, pr));
+  return h('div', { class: 'flow' }, noteLink(f), h('div', { class: 'muted' }, f.area), h('div', { class: 'meta' }, statusSelect(f, appName), prioSelect(f, appName)));
 }
 async function patch(path, field, value, appName) {
   try {
@@ -176,6 +293,7 @@ async function patch(path, field, value, appName) {
 
 /* ---------- note view ---------- */
 async function noteView(path) {
+  if (lastNote !== path) { editBody = false; lastNote = path; }
   const parts = path.split('/');
   const appName = parts[0] === 'Apps' ? parts[1] : null;
   crumbs([{ label: 'Apps', href: '#/' }, ...(appName ? [{ label: appName, href: `#/app/${encodeURIComponent(appName)}` }] : []), { label: parts.at(-1).replace(/\.md$/, '') }]);
@@ -183,8 +301,11 @@ async function noteView(path) {
   let note;
   try { note = await api(`/api/note?path=${encodeURIComponent(path)}`); } catch (e) { $view.replaceChildren(h('p', { class: 'empty' }, e.message)); return; }
   const box = h('article', { class: 'note' });
+  const mp = managePanel(path, note, appName);
+  if (mp) box.append(mp);
   const meta = Object.entries(note.meta).filter(([k, v]) => v !== '' && !(Array.isArray(v) && !v.length));
-  if (meta.length) box.append(h('p', { class: 'legend' }, meta.map(([k, v]) => h('span', {}, h('b', {}, `${k}: `), Array.isArray(v) ? v.join(', ') : String(v)))));
+  if (meta.length && !mp) box.append(h('p', { class: 'legend' }, meta.map(([k, v]) => h('span', {}, h('b', {}, `${k}: `), Array.isArray(v) ? v.join(', ') : String(v)))));
+  if (editBody && mp) { box.append(bodyEditor(path, note)); $view.replaceChildren(box); return; }
   const body = note.body.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_, t, alias) => alias || t);
   if (window.marked && window.DOMPurify) {
     const holder = h('div');

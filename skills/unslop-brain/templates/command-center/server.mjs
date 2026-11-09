@@ -3,8 +3,8 @@
 // Fails closed: refuses to start without users. Writes only whitelisted frontmatter fields.
 import http from 'node:http';
 import crypto from 'node:crypto';
-import { readFile, writeFile, readdir } from 'node:fs/promises';
-import { join, resolve, relative, sep } from 'node:path';
+import { readFile, writeFile, readdir, mkdir, rename } from 'node:fs/promises';
+import { join, resolve, relative, sep, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const HERE = fileURLToPath(new URL('.', import.meta.url));
@@ -21,10 +21,13 @@ const ENUMS = {
   severity: ['Blocker', 'Gap', 'Rough', 'Polish'],
 };
 const WRITABLE = {
-  flow: ['status', 'prio'],
+  flow: ['status', 'prio', 'screens', 'endpoints', 'evidence'],
   finding: ['state', 'severity'],
-  decision: ['state'],
+  decision: ['state', 'answer'],
 };
+const FIELD_KIND = { screens: 'list', endpoints: 'list', evidence: 'text', answer: 'text' };
+const MANAGED = ['flow', 'finding', 'decision'];
+const MAX_BODY = 64 * 1024;
 const STATE_VALUES = { finding: ['open', 'fixed', 'wontfix'], decision: ['open', 'decided'] };
 
 /* ---------- users ---------- */
@@ -112,9 +115,41 @@ export function setField(text, field, value) {
   const lines = m[2].split(/\r?\n/);
   const re = new RegExp(`^${field}:`);
   const i = lines.findIndex((l) => re.test(l));
-  if (i < 0) return null;
-  lines[i] = `${field}: ${value}`;
+  if (i < 0) lines.push(`${field}: ${value}`);
+  else {
+    let n = 1; // drop "- item" continuation lines of an old block list
+    while (i + n < lines.length && /^\s+-\s/.test(lines[i + n])) n++;
+    lines.splice(i, n, `${field}: ${value}`);
+  }
   return m[1] + lines.join('\n') + m[3] + text.slice(m[0].length);
+}
+
+export function replaceBody(text, body) {
+  const m = text.match(/^---\r?\n[\s\S]*?\r?\n---[ \t]*(\r?\n|$)/);
+  if (!m) return null;
+  return text.slice(0, m[0].length).replace(/(\r?\n)?$/, '\n') + body.replace(/\s+$/, '') + '\n';
+}
+
+const today = () => new Date().toISOString().slice(0, 10);
+const touch = (text) => setField(text, 'updated', today()) ?? text;
+
+// Values that go into frontmatter. Returns the text to write, or null when invalid.
+export function fmtValue(kind, v) {
+  if (kind === 'list') {
+    if (!Array.isArray(v) || v.length > 30) return null;
+    const items = v.map((x) => String(x).trim()).filter(Boolean);
+    if (items.some((x) => x.length > 120 || /[\r\n,[\]"]/.test(x))) return null;
+    return `[${items.join(', ')}]`;
+  }
+  if (kind === 'text') {
+    if (typeof v !== 'string' || v.length > 300 || /[\r\n"]/.test(v)) return null;
+    return v.trim() === '' ? '' : `"${v.trim()}"`;
+  }
+  return null;
+}
+
+export function safeName(s, max = 80) {
+  return String(s ?? '').normalize('NFC').replace(/[\\/:*?"<>|#^[\]\r\n\t]/g, ' ').replace(/\s+/g, ' ').trim().replace(/^\.+/, '').slice(0, max).trim();
 }
 
 /* ---------- vault scan ---------- */
@@ -125,7 +160,7 @@ async function walk(dir, out = []) {
     if (e.name.startsWith('.')) continue;
     const p = join(dir, e.name);
     if (e.isSymbolicLink()) continue;
-    if (e.isDirectory()) await walk(p, out);
+    if (e.isDirectory()) { if (e.name !== '_Archiv') await walk(p, out); }
     else if (e.isFile() && e.name.endsWith('.md')) out.push(p);
   }
   return out;
@@ -229,27 +264,83 @@ const server = http.createServer(async (req, res) => {
       const { meta, body } = parseNote(await readFile(abs, 'utf8'));
       return send(res, 200, { meta, body });
     }
-    if (req.method === 'PATCH' && url.pathname === '/api/note') {
+    if (['PATCH', 'PUT', 'DELETE', 'POST'].includes(req.method) && url.pathname.startsWith('/api/')) {
+      // state-changing: needs the custom header and a JSON body (blocks cross-site form posts)
       if (req.headers['x-requested-with'] !== 'command-center' || !String(req.headers['content-type'] || '').startsWith('application/json'))
         return send(res, 400, { error: 'bad request' });
       let data;
-      try { data = JSON.parse(await readBody(req)); } catch { return send(res, 400, { error: 'bad json' }); }
-      const abs = await resolveNote(data.path);
-      if (!abs) return send(res, 404, { error: 'not found' });
-      const text = await readFile(abs, 'utf8');
-      const type = parseNote(text).meta.type;
-      const allowed = WRITABLE[type] || [];
-      const field = data.field;
-      if (!allowed.includes(field)) return send(res, 400, { error: 'field not writable' });
-      const values = field === 'state' ? STATE_VALUES[type] : ENUMS[field];
-      if (!values.includes(data.value)) return send(res, 400, { error: 'invalid value' });
-      const out = setField(text, field, data.value);
-      if (out === null) return send(res, 409, { error: `field "${field}" missing in note` });
-      try { await writeFile(abs, out, 'utf8'); } catch (e) {
-        if (e.code === 'EACCES' || e.code === 'EROFS') return send(res, 403, { error: 'vault is not writable for the app (chown -R 1000:1000 the vault)' });
-        throw e;
+      try { data = JSON.parse(await readBody(req, MAX_BODY + 4096)); } catch { return send(res, 400, { error: 'bad json' }); }
+      if (!data || typeof data !== 'object') return send(res, 400, { error: 'bad json' });
+      const guard = async (fn) => {
+        try { return await fn(); } catch (e) {
+          if (e.code === 'EACCES' || e.code === 'EROFS') return send(res, 403, { error: 'vault is not writable for the app (chown -R 1000:1000 the vault)' });
+          throw e;
+        }
+      };
+
+      if (req.method === 'PATCH' && url.pathname === '/api/note') {
+        const abs = await resolveNote(data.path);
+        if (!abs) return send(res, 404, { error: 'not found' });
+        const text = await readFile(abs, 'utf8');
+        const type = parseNote(text).meta.type;
+        const field = data.field;
+        if (!(WRITABLE[type] || []).includes(field)) return send(res, 400, { error: 'field not writable' });
+        let value;
+        if (FIELD_KIND[field]) {
+          value = fmtValue(FIELD_KIND[field], data.value);
+          if (value === null) return send(res, 400, { error: 'invalid value' });
+        } else {
+          const values = field === 'state' ? STATE_VALUES[type] : ENUMS[field];
+          if (!values.includes(data.value)) return send(res, 400, { error: 'invalid value' });
+          value = data.value;
+        }
+        const out = setField(text, field, value);
+        if (out === null) return send(res, 409, { error: 'note has no frontmatter' });
+        return guard(async () => { await writeFile(abs, touch(out), 'utf8'); return send(res, 200, { ok: true }); });
       }
-      return send(res, 200, { ok: true });
+
+      if (req.method === 'PUT' && url.pathname === '/api/note') {
+        const abs = await resolveNote(data.path);
+        if (!abs) return send(res, 404, { error: 'not found' });
+        if (typeof data.body !== 'string' || data.body.length > MAX_BODY) return send(res, 400, { error: 'invalid body' });
+        const text = await readFile(abs, 'utf8');
+        if (!MANAGED.includes(parseNote(text).meta.type)) return send(res, 400, { error: 'note type not editable' });
+        const out = replaceBody(text, data.body);
+        if (out === null) return send(res, 409, { error: 'note has no frontmatter' });
+        return guard(async () => { await writeFile(abs, touch(out), 'utf8'); return send(res, 200, { ok: true }); });
+      }
+
+      if (req.method === 'DELETE' && url.pathname === '/api/note') { // archive, never delete
+        const abs = await resolveNote(data.path);
+        if (!abs) return send(res, 404, { error: 'not found' });
+        const text = await readFile(abs, 'utf8');
+        if (!MANAGED.includes(parseNote(text).meta.type)) return send(res, 400, { error: 'note type not archivable' });
+        const parts = data.path.split('/');
+        if (parts[0] !== 'Apps' || parts.length < 4) return send(res, 400, { error: 'unexpected location' });
+        const dest = join(VAULT, parts[0], parts[1], '_Archiv', `${new Date().toISOString().replace(/[:.]/g, '-')}-${basename(abs)}`);
+        return guard(async () => { await mkdir(join(dest, '..'), { recursive: true }); await rename(abs, dest); return send(res, 200, { ok: true }); });
+      }
+
+      if (req.method === 'POST' && url.pathname === '/api/flow') {
+        const { apps } = await scan();
+        const app = apps.find((a) => a.name === data.app && a.path);
+        if (!app) return send(res, 404, { error: 'app not found' });
+        const area = safeName(data.area); const title = safeName(data.title);
+        if (!area || !title) return send(res, 400, { error: 'title and area required' });
+        const status = data.status ?? 'missing'; const prio = data.prio ?? 'V1';
+        if (!ENUMS.status.includes(status) || !ENUMS.prio.includes(prio)) return send(res, 400, { error: 'invalid value' });
+        const screens = fmtValue('list', data.screens ?? []); const endpoints = fmtValue('list', data.endpoints ?? []);
+        if (screens === null || endpoints === null) return send(res, 400, { error: 'invalid value' });
+        const rel = `${app.path.split('/').slice(0, -1).join('/')}/Flows/${area}/${title}.md`;
+        const abs = resolve(VAULT, rel);
+        if (!abs.startsWith(VAULT + sep)) return send(res, 400, { error: 'invalid name' });
+        const content = `---\ntype: flow\napp: ${app.name}\narea: ${area}\ntitle: "${title}"\nstatus: ${status}\nprio: ${prio}\nscreens: ${screens}\nendpoints: ${endpoints}\nevidence:\nupdated: ${today()}\n---\n# ${title}\n\n\`\`\`mermaid\nflowchart TD\n  A[Start] --> B[Ergebnis]\n\`\`\`\n\n## Soll\n\n- \n\n## Lücken\n\n- \n`;
+        return guard(async () => {
+          await mkdir(join(abs, '..'), { recursive: true });
+          try { await writeFile(abs, content, { encoding: 'utf8', flag: 'wx' }); } catch (e) { if (e.code === 'EEXIST') return send(res, 409, { error: 'a flow with this title already exists in this area' }); throw e; }
+          return send(res, 201, { ok: true, path: rel });
+        });
+      }
     }
     return send(res, 404, { error: 'not found' });
   } catch (err) {

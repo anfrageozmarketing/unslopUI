@@ -3,7 +3,7 @@
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
-import { mkdtempSync, cpSync, readFileSync } from 'node:fs';
+import { mkdtempSync, cpSync, readFileSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -99,6 +99,77 @@ test('write-back: whitelist, enums, CSRF header', async () => {
   const after = readFileSync(join(tmp, 'vault', FLOW), 'utf8');
   assert.match(after, /^status: partial$/m);
   assert.equal(after.replace(/^status: partial$/m, 'status: missing'), before, 'only the status line changed');
+});
+
+const post = (path, body, method = 'POST') => fetch(BASE + path, {
+  method, headers: { authorization: auth, 'content-type': 'application/json', 'x-requested-with': 'command-center' }, body: JSON.stringify(body),
+});
+const readVault = (rel) => readFileSync(join(tmp, 'vault', rel), 'utf8');
+
+test('create flow: validates input and refuses duplicates and path tricks', async () => {
+  const ok = await post('/api/flow', { app: 'Demo-App', area: 'Zugang', title: 'Einladung annehmen', status: 'missing', prio: 'MVP', screens: ['/invite/:token'], endpoints: ['POST /api/invites'] });
+  assert.equal(ok.status, 201);
+  const { path } = await ok.json();
+  assert.equal(path, 'Apps/Demo-App/Flows/Zugang/Einladung annehmen.md');
+  const txt = readVault(path);
+  assert.match(txt, /^type: flow$/m);
+  assert.match(txt, /^screens: \[\/invite\/:token\]$/m);
+  assert.equal((await post('/api/flow', { app: 'Demo-App', area: 'Zugang', title: 'Einladung annehmen' })).status, 409);
+  assert.equal((await post('/api/flow', { app: 'Nope', area: 'Zugang', title: 'X' })).status, 404);
+  assert.equal((await post('/api/flow', { app: 'Demo-App', area: 'Zugang', title: '' })).status, 400);
+  assert.equal((await post('/api/flow', { app: 'Demo-App', area: 'Zugang', title: 'X', status: 'bogus' })).status, 400);
+  assert.equal((await post('/api/flow', { app: 'Demo-App', area: 'Zugang', title: 'X', screens: ['a,b'] })).status, 400);
+  // traversal attempts are neutralised into a harmless name inside the app's Flows folder
+  const t = await post('/api/flow', { app: 'Demo-App', area: '../../..', title: '../../etc/evil' });
+  if (t.status === 201) assert.match((await t.json()).path, /^Apps\/Demo-App\/Flows\/[^/]+\/[^/]+\.md$/);
+  else assert.equal(t.status, 400);
+  const idx = await (await get('/api/index')).json();
+  assert.ok(idx.apps[0].flows.some((f) => f.title === 'Einladung annehmen'));
+});
+
+test('edit flow fields: lists, text, enum; touches updated', async () => {
+  const P = 'Apps/Demo-App/Flows/Zugang/Einladung annehmen.md';
+  assert.equal((await post('/api/note', { path: P, field: 'endpoints', value: ['POST /api/a', 'GET /api/b'] }, 'PATCH')).status, 200);
+  assert.match(readVault(P), /^endpoints: \[POST \/api\/a, GET \/api\/b\]$/m);
+  assert.equal((await post('/api/note', { path: P, field: 'evidence', value: 'Test e2e_invite grün' }, 'PATCH')).status, 200);
+  assert.match(readVault(P), /^evidence: "Test e2e_invite grün"$/m);
+  assert.equal((await post('/api/note', { path: P, field: 'evidence', value: 'mit "Quote"' }, 'PATCH')).status, 400);
+  assert.equal((await post('/api/note', { path: P, field: 'screens', value: 'nicht-liste' }, 'PATCH')).status, 400);
+  assert.equal((await post('/api/note', { path: P, field: 'title', value: 'x' }, 'PATCH')).status, 400);
+  assert.match(readVault(P), new RegExp(`^updated: ${new Date().toISOString().slice(0, 10)}$`, 'm'));
+  // a block list in the old file is replaced cleanly
+  const D = 'Apps/Demo-App/Entscheidungen/Single- oder Multi-Tenant.md';
+  assert.equal((await post('/api/note', { path: D, field: 'answer', value: 'Nur das eigene Team' }, 'PATCH')).status, 200);
+  assert.match(readVault(D), /^answer: "Nur das eigene Team"$/m);
+});
+
+test('edit body keeps frontmatter; rejects oversize and non-managed notes', async () => {
+  const P = 'Apps/Demo-App/Flows/Zugang/Einladung annehmen.md';
+  const head = readVault(P).split('\n---\n')[0];
+  assert.equal((await post('/api/note', { path: P, body: '# Neu\n\nText' }, 'PUT')).status, 200);
+  const after = readVault(P);
+  assert.ok(after.startsWith(head.replace(/^updated: .*$/m, '').slice(0, 20)));
+  assert.match(after, /# Neu\n\nText\n$/);
+  assert.match(after, /^status: missing$/m);
+  assert.equal((await post('/api/note', { path: P, body: 'x'.repeat(70000) }, 'PUT')).status, 400);
+  assert.equal((await post('/api/note', { path: 'Apps/Demo-App/_App.md', body: 'x' }, 'PUT')).status, 400);
+});
+
+test('archive moves the note out of the index and never deletes', async () => {
+  const P = 'Apps/Demo-App/Flows/Zugang/Einladung annehmen.md';
+  assert.equal((await post('/api/note', { path: P }, 'DELETE')).status, 200);
+  const idx = await (await get('/api/index')).json();
+  assert.ok(!idx.apps[0].flows.some((f) => f.title === 'Einladung annehmen'));
+  assert.equal((await get('/api/note?path=' + encodeURIComponent(P))).status, 404);
+  const archived = readdirSync(join(tmp, 'vault', 'Apps/Demo-App/_Archiv'));
+  assert.equal(archived.length, 1);
+  assert.match(archived[0], /Einladung annehmen\.md$/);
+  assert.equal((await post('/api/note', { path: 'Apps/Demo-App/_App.md' }, 'DELETE')).status, 400);
+});
+
+test('state-changing calls need the header and JSON', async () => {
+  const bad = await fetch(BASE + '/api/flow', { method: 'POST', headers: { authorization: auth, 'content-type': 'text/plain' }, body: '{}' });
+  assert.equal(bad.status, 400);
 });
 
 test('locks out after repeated failures', async () => {

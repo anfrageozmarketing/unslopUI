@@ -86,3 +86,16 @@ th { color: var(--muted); font-weight: 500; }
 .stat { padding: var(--s3) var(--s4); }
 .stat .big { font-size: 26px; font-weight: 650; line-height: 1.2; }
 .stat .big.blocker { color: var(--missing); }
+
+.toolbar { display: flex; flex-wrap: wrap; gap: var(--s2); align-items: center; margin-bottom: var(--s3); }
+.toolbar input[type="search"] { flex: 1 1 220px; min-width: 0; }
+input, textarea { font: inherit; font-size: 14px; background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: var(--s2) var(--s3); }
+select { padding: var(--s2) var(--s2); }
+.tabs.inline { margin: 0; }
+.fgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--s3); }
+.fld { display: flex; flex-direction: column; gap: var(--s1); font-size: 13px; color: var(--muted); }
+.fld input, .fld select { color: var(--ink); width: 100%; }
+.manage, .newflow { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: var(--s4); margin-bottom: var(--s4); }
+.newflow h3 { margin: 0 0 var(--s3); }
+.editor { width: 100%; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; line-height: 1.5; resize: vertical; }
+.ghost.danger { color: var(--missing); }
