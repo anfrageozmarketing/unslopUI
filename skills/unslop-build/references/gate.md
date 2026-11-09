@@ -11,3 +11,5 @@
 - [ ] Rendered screenshots reviewed (light and dark): no clipped text, broken bars, overlaps (`docs/ui-review.md` section 3b).
 - [ ] Copy checked (`unslop-copy`): nothing invented, errors say cause and next step.
 - [ ] Say what was not checked.
+- [ ] `references/pitfalls.md` ticked: round badges, inset active tile with edge bar, edge collapse handle, docked panels, aligned bars, tonal focus, create at top, persisted state.
+- [ ] `unslop-verify` run with `scenarios.default.json` plus one scenario per promised function; clean.

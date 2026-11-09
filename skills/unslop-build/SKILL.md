@@ -16,8 +16,8 @@ Audit skills find what is wrong. This skill **builds**. The rule that makes the 
    - Typography: choose the font from the brief (`unslop-foundation`), sans-serif, 4 sizes per screen at most, weight carries hierarchy.
    - Record both in `design/DESIGN.md`. Import `tokens.css` and `spec.css` once in the app's global CSS. No hex, no ad-hoc px in components.
 2. **Flows**: `unslop-flows` with `unslop-flows/references/classic-flows.md`. Output: the list of flows that fit, each as a mermaid diagram with its screens.
-3. **Elements**: pick from `unslop-components/references/classic-elements.md`, map to the stack with `references/element-map.md` (HeroUI component first, shadcn pattern when HeroUI has none, own part only for the signature component). Build each once with all states; show them on a component sheet before screens.
-4. **Screens**: for every screen of every flow take its type from `unslop-structure/references/classic-screens.md` and its composition from `references/screen-recipes.md`. Give each screen one primary action and one signature idea (see "crazy screens" below).
+3. **Elements** (read `references/pitfalls.md` first): pick from `unslop-components/references/classic-elements.md`, map to the stack with `references/element-map.md` (HeroUI component first, shadcn pattern when HeroUI has none, own part only for the signature component). Build each once with all states; show them on a component sheet before screens.
+4. **Screens** (read `references/pitfalls.md` first, it lists the defects to avoid from the start): for every screen of every flow take its type from `unslop-structure/references/classic-screens.md` and its composition from `references/screen-recipes.md`. Give each screen one primary action and one signature idea (see "crazy screens" below).
 5. **Gate** (`references/gate.md`): run before reporting done; fix, then re-check. Verify rendering and functions with `unslop-verify` (screenshots, measurements, click-path scenarios).
 
 ## Stack rules
@@ -55,4 +55,5 @@ Limits: one idea per screen, tokens only, contrast checked, the plain version mu
 - `scripts/spec.mjs` - size spec generator
 - `references/element-map.md` - classic element to HeroUI / shadcn / Tailwind
 - `references/screen-recipes.md` - classic screen type to composition
+- `references/pitfalls.md` - known defects to avoid while building
 - `references/gate.md` - checks before done

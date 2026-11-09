@@ -1,0 +1,5 @@
+[
+  { "name": "Theme choice survives reload", "route": "/", "steps": [{ "click": "text=Design" }, { "wait": 300 }, { "reload": true }], "expect": [{ "storage": ["cc.theme", "dark"] }] },
+  { "name": "No sideways scroll on a phone", "route": "/", "width": 360, "steps": [], "expect": [{ "noOverflow": true }] },
+  { "name": "No sideways scroll when narrow desktop", "route": "/", "width": 820, "steps": [], "expect": [{ "noOverflow": true }] }
+]

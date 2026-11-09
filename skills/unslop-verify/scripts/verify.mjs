@@ -29,6 +29,10 @@ export function inspect() {
     if (e.scrollWidth > e.clientWidth + 2 && cs.overflowX !== 'visible' && cs.overflowX !== 'auto' && cs.overflowX !== 'scroll' && cs.textOverflow !== 'ellipsis') out.push({ kind: 'clipped-text', msg: `${name(e)} clips "${t.slice(0, 40)}"` });
   }
   for (const e of document.querySelectorAll('img')) if (vis(e) && (!e.complete || e.naturalWidth === 0)) out.push({ kind: 'broken-image', msg: name(e) });
+  for (const e of document.querySelectorAll('[class*="badge" i], [class*="count" i], [class*="cnt" i]')) {
+    if (!vis(e)) continue; const r = e.getBoundingClientRect(); const t = (e.textContent || '').trim();
+    if (/^\d{1,3}\+?$/.test(t) && r.width < 40) { if (Math.abs(r.width - r.height) > 1.5) out.push({ kind: 'badge-not-round', msg: `${name(e)} is ${r.width.toFixed(1)}x${r.height.toFixed(1)}px, count badges must be circles` }); if (r.height > 20) out.push({ kind: 'badge-big', msg: `${name(e)} is ${r.height.toFixed(0)}px tall (max 20)` }); }
+  }
   const small = innerWidth <= 480;
   for (const e of document.querySelectorAll('button, a[href], [role="button"], input, select, textarea, [role="tab"]')) {
     if (!vis(e)) continue; const r = e.getBoundingClientRect();
