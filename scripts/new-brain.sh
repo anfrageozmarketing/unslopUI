@@ -13,6 +13,8 @@ cp -R "$here/skills/unslop-brain/templates/vault" "$target/vault"
 cp -R "$here/skills/unslop-brain/templates/command-center/." "$target/command-center/"
 cp "$target/command-center/.env.example" "$target/command-center/.env"
 chmod 600 "$target/command-center/.env"
+# The container runs as uid 1000 (node); it needs write access to the vault for status changes.
+if [ "$(id -u)" = "0" ]; then chown -R 1000:1000 "$target/vault"; else echo "Note: make $target/vault writable for uid 1000 (chown -R 1000:1000), or status changes will fail." >&2; fi
 printf '.env\nnode_modules/\n.DS_Store\n' > "$target/.gitignore"
 cat <<MSG
 Brain scaffolded in $target

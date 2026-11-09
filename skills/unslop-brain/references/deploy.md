@@ -10,7 +10,7 @@ Goal: only the owner's team can reach the Command Center, and nothing about the 
    - **Localhost + SSH tunnel** (safest): `HOST=127.0.0.1`, publish no port, reach it with `ssh -L 8080:127.0.0.1:8080 server`.
    - **Reverse proxy with TLS** (Traefik example in `docker-compose.yml`): enable the IP allow-list middleware with the team's fixed IPs or a VPN range. Basic auth in the app is the second layer, not the only one.
 4. **TLS.** Never serve the login over plain HTTP outside localhost. Set `TRUST_PROXY=1` only behind your own proxy so the rate limit sees real client IPs.
-5. **Files.** Mount the vault read-write into the container; mount nothing else. The container runs as a non-root user.
+5. **Files.** Mount the vault read-write into the container; mount nothing else. The container runs as uid 1000 (`node`), so the vault must be writable for it: `chown -R 1000:1000 <vault>` (`new-brain.sh` does this when run as root). Without it, reading works but status changes fail.
 6. **Backups.** Daily copy of the vault directory (and `git push` to the private remote if used). Obsidian Sync or a git plugin on the laptop is fine; the server copy stays the reference.
 7. **Updates.** The app has no runtime dependencies; update by replacing `server.mjs` and `public/`. Browser libraries are pinned CDN versions; vendor them into `public/vendor/` if the team's browsers must not call a CDN.
 8. **Audit.** Proxy access logs are the audit trail. Keep them.

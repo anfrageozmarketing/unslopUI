@@ -244,7 +244,10 @@ const server = http.createServer(async (req, res) => {
       if (!values.includes(data.value)) return send(res, 400, { error: 'invalid value' });
       const out = setField(text, field, data.value);
       if (out === null) return send(res, 409, { error: `field "${field}" missing in note` });
-      await writeFile(abs, out, 'utf8');
+      try { await writeFile(abs, out, 'utf8'); } catch (e) {
+        if (e.code === 'EACCES' || e.code === 'EROFS') return send(res, 403, { error: 'vault is not writable for the app (chown -R 1000:1000 the vault)' });
+        throw e;
+      }
       return send(res, 200, { ok: true });
     }
     return send(res, 404, { error: 'not found' });
