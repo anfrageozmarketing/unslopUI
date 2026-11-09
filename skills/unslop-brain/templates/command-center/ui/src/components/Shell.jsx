@@ -95,9 +95,10 @@ export function Sheet({ title, sub, actions, onClose, children }) {
     <Modal.Backdrop isOpen onOpenChange={(o) => { if (!o) onClose(); }} variant="blur">
       <Modal.Container size="lg" placement="center">
         <Modal.Dialog className="note-dialog" aria-label={typeof title === 'string' ? title : 'Details'}>
+          <button type="button" className="sheet-close" aria-label="Schließen (Esc)" title="Schließen (Esc)" onClick={onClose}><Icon name="close" size={22} /></button>
           <header className="window-head">
             <div className="min-w-0"><h1>{title}</h1>{sub && <div className="sub-t">{sub}</div>}</div>
-            <div className="tools">{actions}<Button variant="secondary" size="sm" onPress={onClose}>Schließen <span className="kbd">Esc</span></Button></div>
+            {actions && <div className="tools">{actions}</div>}
           </header>
           <div className="window-body">{children}</div>
         </Modal.Dialog>

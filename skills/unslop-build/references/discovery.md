@@ -6,7 +6,8 @@ Before any screen, find out what the app or feature must do. Ask **one batch of 
 
 1. **Purpose in one sentence**: what does it do, for whom, instead of what?
 2. **Kind**: internal tool, B2B product, consumer app, or marketing site?
-3. **Features** (tick all): accounts, teams, payments, content (create/edit/organise), search, files, social, chat, notifications, data and charts, scheduling, AI, admin, onboarding. Anything else: name it.
+3. **What do people arrange, connect, schedule, order, place or split?** (steps and branches, cards between states, things over time, hierarchies, proportions, rules, places). Each answer points to an interactive editor (`interactive-patterns.md`).
+3b. **Features** (tick all): accounts, teams, payments, content (create/edit/organise), search, files, social, chat, notifications, data and charts, scheduling, AI, admin, onboarding. Anything else: name it.
 4. **Devices**: desktop only, phone too, phone first?
 5. **Feeling**: calm, bold, warm or cool; brand colour or existing logo; font preference.
 6. **Language and form of address**: German Du or Sie, English; one language or several.

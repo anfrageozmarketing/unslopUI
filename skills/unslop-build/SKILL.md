@@ -28,6 +28,10 @@ Audit skills find what is wrong. This skill **builds**. The rule that makes the 
 3. Do the same for the classic flows and screens (`unslop-flows`, `unslop-structure` catalogs). Gaps become findings, then work.
 4. Start from the shell starter (`templates/app-shell/`) when the app has no shell of this kind.
 
+## Find where an interactive editor fits
+
+Run `node scripts/suggest-editors.mjs <code, schema or notes dir>` and read `references/interactive-patterns.md`. The script lists, with evidence, where the data has a shape people arrange, connect, schedule, order, place or split (node editor, canvas, board, timeline, tree, rule builder, compare view, map, layout builder ...). Decide with the three questions on that page (is the structure the value, is it edited often, is being wrong risky). Two yes: build the editor as a workspace. A list with click-to-edit rows is the answer when nothing fires.
+
 ## Previews and workspaces (decide per area, then build both)
 
 Every area of the product gets a **preview** (what it looks like at a glance, drawn from its data) and, where people build or arrange something, a **workspace** (full-screen editor). Decide by the data shape:
@@ -73,6 +77,8 @@ Limits: one idea per screen, tokens only, contrast checked, the plain version mu
 
 ## References
 
+- `references/interactive-patterns.md` - when a canvas, node editor, board, timeline ... makes sense, and how to build it
+- `scripts/suggest-editors.mjs` - evidence-based editor suggestions from code, schema or notes
 - `templates/app-shell/` - shell, workspace window, loading, tokens-ready CSS (starter)
 - `scripts/audit-elements.mjs` - classic element coverage of a source tree
 - `references/discovery.md` - the questions and how they decide the scope

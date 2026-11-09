@@ -39,6 +39,8 @@ Every item below was a real defect found in a built UI. Read this list before wr
 - A loading state always ends in content, empty or an error with a retry.
 
 ## Edit where it is
+- Never a second popup for editing text. An "Edit" button that opens a dialog with a text area and a preview is a defect; the text itself is the control.
+- Detail dialogs: the close button sits in the top right corner (round, 44 px, labelled, Esc works), the title has full width, no focus ring around the dialog, no duplicate close in the action row.
 - Text is edited by clicking it: no pencil, no "Edit" button first. The text turns into an input (short) or an auto-growing text area (long), tone change instead of a border, saves on leaving or Enter, Esc cancels, Undo after saving. Links inside the text stay links.
 - Dialogs for editing are the fallback for long structured content only.
 

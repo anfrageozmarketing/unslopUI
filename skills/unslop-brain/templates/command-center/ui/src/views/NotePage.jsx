@@ -1,7 +1,7 @@
 import { NoteSkeleton } from '../components/Loading.jsx';
 import { replaceSection } from '../lib/note.js';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Button, Modal } from '@heroui/react';
+import { Button } from '@heroui/react';
 import { api } from '../lib/api.js';
 import { useActions, useData } from '../lib/hooks.jsx';
 import { parseFlow, sollChain, splitSections, takeMermaid } from '../lib/flow.js';
@@ -29,25 +29,6 @@ function EditableMarkdown({ text, onSave, label, placeholder = 'Klicken und schr
     onBlur={commit} onKeyDown={(e) => { if (e.key === 'Escape') { setV(text); setEditing(false); } else if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) commit(); }} />;
 }
 
-function TextEditor({ open, onOpenChange, initial, onSave }) {
-  const [text, setText] = useState(initial);
-  useEffect(() => { if (open) setText(initial); }, [open, initial]);
-  return (
-    <Modal.Backdrop isOpen={open} onOpenChange={onOpenChange} variant="blur">
-      <Modal.Container size="lg" placement="center">
-        <Modal.Dialog className="glass p-4" aria-label="Text bearbeiten">
-          <div className="grid gap-4 md:grid-cols-2" style={{ minHeight: '50vh' }}>
-            <textarea className="editor" value={text} onChange={(e) => setText(e.target.value)} aria-label="Markdown" spellCheck={false} style={{ minHeight: '50vh' }} />
-            <div className="overflow-auto"><Markdown text={text} /></div>
-          </div>
-          <div className="mt-4 flex justify-end gap-2"><Button variant="ghost" onPress={() => onOpenChange(false)}>Abbrechen</Button><Button onPress={() => { onSave(text); onOpenChange(false); }}>Speichern</Button></div>
-        </Modal.Dialog>
-      </Modal.Container>
-    </Modal.Backdrop>
-  );
-}
-
-// Every value of the note is editable where it stands. No form, no Save button.
 export function Properties({ path, note }) {
   const { change } = useActions(); const m = note.meta; const t = m.type;
   const set = (field, prev, label) => (v) => change(path, field, v, prev, label);
@@ -77,7 +58,7 @@ export function Properties({ path, note }) {
 
 export default function NotePage({ path, appName, dialog = false }) {
   const { version } = useData(); const { saveBody, archive } = useActions();
-  const [note, setNote] = useState(null); const [err, setErr] = useState(null); const [editor, setEditor] = useState(false);
+  const [note, setNote] = useState(null); const [err, setErr] = useState(null); 
   useEffect(() => { let off = false; setErr(null); api.note(path).then((n) => { if (!off) setNote(n); }).catch((e) => { if (!off) setErr(e.message); }); return () => { off = true; }; }, [path, version]);
   const parts = useMemo(() => {
     if (!note) return null;
@@ -99,11 +80,10 @@ export default function NotePage({ path, appName, dialog = false }) {
       actions={managed && <>
         {!dialog && <Button variant="ghost" size="sm" onPress={() => { location.hash = areaHref(kind, appName); }}><Icon name="back" size={18} />Zurück</Button>}
         {isFlow && <Button variant="primary" size="sm" onPress={() => { location.hash = `#/workspace/${encodeURIComponent(path)}`; }}><Icon name="expand" size={18} />Workspace</Button>}
-        <Button variant="ghost" size="sm" onPress={() => setEditor(true)}><Icon name="edit" size={18} />Text</Button>
         <Button isIconOnly variant="ghost" aria-label="Archivieren" onPress={async () => { if (await archive(path)) location.hash = areaHref(kind, appName); }}><Icon name="archive" size={22} /></Button>
       </>}>
       <div className="grid gap-6">
-        {isFlow && <><div onDoubleClick={() => { location.hash = `#/workspace/${encodeURIComponent(path)}`; }}><FlowCanvas graph={parts.graph.g} onEdit={() => setEditor(true)} /></div>{parts.graph.derived && parts.graph.g.nodes.length > 0 && <p className="quiet -mt-3">Aus „Soll“ abgeleitet</p>}</>}
+        {isFlow && <><div onDoubleClick={() => { location.hash = `#/workspace/${encodeURIComponent(path)}`; }}><FlowCanvas graph={parts.graph.g} onEdit={() => { location.hash = `#/workspace/${encodeURIComponent(path)}`; }} /></div>{parts.graph.derived && parts.graph.g.nodes.length > 0 && <p className="quiet -mt-3">Aus „Soll“ abgeleitet</p>}</>}
         {managed && <Properties path={path} note={note} />}
         {managed && (parts.rest.trim() || !isFlow) && <EditableMarkdown label="Beschreibung" text={parts.rest} onSave={(t) => saveBody(path, replaceSection(note.body, null, t))} />}
         {!managed && parts.rest.trim() && <Markdown text={parts.rest} />}
@@ -111,7 +91,6 @@ export default function NotePage({ path, appName, dialog = false }) {
         {(isFlow ? others : parts.secs).map((s) => <section key={s.title}><h2 className="mb-2 text-xl">{s.title}</h2>{managed ? <EditableMarkdown label={s.title} text={s.md} onSave={(t) => saveBody(path, replaceSection(note.body, s.title, t))} /> : <Markdown text={s.md} />}</section>)}
         {!isFlow && !managed && <Markdown text={note.body} />}
       </div>
-      <TextEditor open={editor} onOpenChange={setEditor} initial={note.body.replace(/^\n+/, '')} onSave={(t) => saveBody(path, t)} />
     </Frame>
   );
 }

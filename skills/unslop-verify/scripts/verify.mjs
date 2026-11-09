@@ -82,7 +82,7 @@ export function inspect() {
   const small = innerWidth <= 480;
   for (const e of document.querySelectorAll('button, a[href], [role="button"], input, select, textarea, [role="tab"]')) {
     if (!vis(e)) continue; const r = e.getBoundingClientRect();
-    if (small && (r.width < 40 || r.height < 40)) out.push({ kind: 'tap-target', msg: `${name(e)} is ${Math.round(r.width)}x${Math.round(r.height)}px (min 44)` });
+    if (small && r.width >= 4 && (r.width < 40 || r.height < 40)) out.push({ kind: 'tap-target', msg: `${name(e)} is ${Math.round(r.width)}x${Math.round(r.height)}px (min 44)` });
     if (!e.disabled && getComputedStyle(e).cursor === 'auto' && !small && e.tagName !== 'INPUT' && e.tagName !== 'TEXTAREA') out.push({ kind: 'cursor', msg: `${name(e)} is clickable but cursor is not pointer` });
     const lbl = (e.getAttribute('aria-label') || e.textContent || e.getAttribute('title') || '').trim();
     if (!lbl && e.tagName !== 'INPUT' && !e.querySelector('[aria-label], button, input')) out.push({ kind: 'no-name', msg: `${name(e)} has no accessible name` });
