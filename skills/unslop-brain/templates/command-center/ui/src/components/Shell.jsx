@@ -14,7 +14,7 @@ export function Rail({ route, apps, app, onSearch, onTheme, onReload }) {
       <a className="logo" href="#/apps" aria-label="Command Center"><Icon name="route" size={24} /></a>
       {AREAS.map((a) => (
         <a key={a.key} className="rail-btn" href={areaHref(a.key, app)} title={a.label} aria-current={current === a.key ? 'page' : undefined}>
-          <span className="rail-ic"><Icon name={a.icon} size={26} active={current === a.key} />{count[a.key] > 0 && <span className="badge cnt" role="img" aria-label={a.key === 'findings' ? `${count[a.key]} offene Blocker (alle Apps)` : `${count[a.key]} offene Entscheidungen (alle Apps)`} title={a.key === 'findings' ? `${count[a.key]} offene Blocker (alle Apps)` : `${count[a.key]} offene Entscheidungen (alle Apps)`}>{count[a.key]}</span>}</span>
+          <span className="rail-ic"><Icon name={a.icon} size={26} active={current === a.key} />{count[a.key] > 0 && <span className="badge cnt" role="img" aria-label={a.key === 'findings' ? `${count[a.key]} offene Blocker (alle Apps)` : `${count[a.key]} offene Entscheidungen (alle Apps)`} title={a.key === 'findings' ? `${count[a.key]} offene Blocker (alle Apps)` : `${count[a.key]} offene Entscheidungen (alle Apps)`}>{count[a.key] > 9 ? '9+' : count[a.key]}</span>}</span>
           <span className="rail-lbl">{a.label}</span>
         </a>
       ))}
@@ -36,7 +36,7 @@ export function Context({ area, apps, app }) {
         const bl = blockersOf(a).length;
         return (
           <a key={a.name} className="folder" href={area === 'apps' ? appHref(a.name) : areaHref(area, a.name)} aria-current={app === a.name && area !== 'apps' ? 'page' : undefined}>
-            <span className="nm"><span>{a.name}</span>{bl > 0 && <span className="badge" title={`${bl} offene Blocker`}>{bl}</span>}</span>
+            <span className="nm"><span>{a.name}</span>{bl > 0 && <span className="badge" title={`${bl} offene Blocker`}>{bl > 9 ? '9+' : bl}</span>}</span>
             <Strip app={a} size="sm" />
           </a>
         );

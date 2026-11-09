@@ -15,7 +15,7 @@ Quality bar: "Would a designer post this on Behance or Dribbble as a finished sh
 
 Three layers, no separator lines:
 
-1. **Rail** (about 64 px): the product icon on top, then one app-like button per area. Unselected: muted icon. Selected: a raised tile (surface-2) with a soft drop shadow and the full-contrast icon, plus a thin accent bar at the outer edge as the active mark. Utilities (search, theme, refresh) at the bottom.
+1. **Rail** (about 64 px): the product icon on top, then one app-like button per area. Unselected: muted icon. The tile is inset from the rail edge (about 14 px each side), never touching it. Selected: a raised tile (surface-2) with a soft drop shadow and the full-contrast icon, plus a thin accent bar (4 px, rounded on the inner side) exactly at the outer edge of the rail as the active mark. Utilities (search, theme, refresh) at the bottom.
 2. **Context column** (about 240 px): title of the area, then its sub-folders (list of items to switch between), compact status info at the bottom (for example sync or usage). Same tone as the rail, so the two read as one shell.
 3. **Window**: the working surface as a rounded container (radius 24 px) with a margin to the shell edge. It is clearly lighter than the shell in dark mode and whiter in light mode. Content scrolls inside it; its header carries title and the one primary action.
 
@@ -44,7 +44,7 @@ A workspace is a large rounded window laid over the dimmed app (small margin on 
 
 - **Focus without a border on pointer use.** Clicking a field or card changes its tone (lighter or whiter surface, soft lift shadow, accent colour on the icon), not an outline. A ring is shown only for keyboard focus (`:focus-visible`), 2 px offset, and never inside composite fields that already change tone. Never `outline: none` without this replacement.
 - **Create sits at the top.** "New finding", "New flow", "New decision" is the first element of its list, directly under the title, not at the bottom. Newly created items appear at the top of the list with a short highlight. The add line stays compact; extra fields appear on request.
-- **Badges are small.** Count badges on icons: 16 px high, 10 px bold figures, placed beside the icon corner with a ring in the background colour, never covering the icon. Show a count only when it asks for action (open blockers, open decisions), say whose count it is in the tooltip and aria-label ("6 offene Blocker, alle Apps"), and cap at 99+.
+- **Badges are small and round.** Count badges on icons: a perfect circle (17 px, no horizontal padding), 10 px bold figures, "9+" above nine, placed beside the icon corner with a ring in the background colour, never covering the icon. Show a count only when it asks for action (open blockers, open decisions), say whose count it is in the tooltip and aria-label ("6 offene Blocker, alle Apps"), and cap at 99+.
 
 ## Editor workspace (work areas with tools, structure, properties)
 
