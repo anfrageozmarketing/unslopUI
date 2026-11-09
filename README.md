@@ -15,6 +15,7 @@ Most "unslop" tools fix the surface: glow, gradients, emoji. AI-built apps are a
 | `unslop-states` | Empty, loading, partial, error, offline, no-permission, limit |
 | `unslop-copy` | Specific, calm copy; German rules and a German slop-phrase list |
 | `unslop-visual` | Last-layer visual gate: tokens, quiet chrome, one focal element, mobile |
+| `unslop-brain` | Sets up a **private** Obsidian vault (one note per flow) and a self-hosted **Command Center** web app that shows all apps, flows, status and open decisions |
 
 Order matters: **inventory → audit → flows → structure → states → copy → visuals → verify**.
 
@@ -29,13 +30,23 @@ As a Claude Code plugin:
 
 Or copy `skills/*` into `~/.claude/skills/` (or `.claude/skills/` in a project).
 
+## Private brain + Command Center
+
+The skills are public and generic. Your real flows, findings and decisions are not. `unslop-brain` ships the schema, vault templates and a dependency-free Command Center app (Node, no build). You scaffold it **on your own server**, outside this repo:
+
+```
+scripts/new-brain.sh /docker/app-brain
+```
+
+The app is fail-closed (no users, no start), uses hashed passwords, rate-limits logins, writes only whitelisted frontmatter fields and is meant to sit behind TLS and an IP allow-list. See [`deploy.md`](skills/unslop-brain/references/deploy.md). A runnable demo vault is in `examples/demo-vault`.
+
 ## Use
 
 > "Check the app and build all flows we need, including what is missing." → `unslop-ui` / `unslop-flows`
 
 `scripts/inventory.sh <app-dir>` lists routes, endpoints, auth hints, env vars, tables, the biggest files and state coverage. It seeds the audit.
 
-`scripts/validate.sh` checks every skill's frontmatter.
+`scripts/validate.sh` checks every skill's frontmatter. `node --test tests/` tests the Command Center (auth, API, write-back, path safety).
 
 ## Example
 

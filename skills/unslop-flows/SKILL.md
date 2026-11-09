@@ -17,7 +17,8 @@ Turns an existing codebase into a flows document that a team can build from.
 6. **Derive the build list**: new screens (route map), data model additions, API additions, settings fields.
 7. **Prioritize** into MVP / V1 / V2. MVP is whatever blocks safe use by a second person.
 8. **List open decisions** that change the plan (tenancy, auth route, legal basis for outbound mail, database, support channel, relation to sibling systems). Do not decide them silently.
-9. Fill `templates/FLOWS.template.md`, keep the section order, and state what was not checked.
+9. **Output.** If a private brain exists (see `unslop-brain`), write one note per flow into `Apps/<app>/Flows/<area>/` with the frontmatter from `unslop-brain/references/schema.md`, plus `Findings/` and `Entscheidungen/` notes. Otherwise fill `templates/FLOWS.template.md` as a single document. Keep the section order and state what was not checked.
+10. **Never** write a real app's flows into the public skill pack repo.
 
 ## Rules
 
