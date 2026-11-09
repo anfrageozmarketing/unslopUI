@@ -33,7 +33,7 @@ Zu dieser App gibt es ein privates Wissens-Vault (Markdown, Obsidian-kompatibel)
 
 **Nach der Arbeit:** Im Frontmatter der betroffenen Flows \`status\` und \`updated\` pflegen. \`built\` nur setzen, wenn ein Test, Gate oder eine Prüfung bestanden hat, und diesen Nachweis in \`evidence\` eintragen. Neue Flows, Befunde oder Entscheidungen als neue Notiz nach dem Schema anlegen. Behobene Befunde auf \`state: fixed\` setzen.
 
-**Regeln:** Keine Passwörter, Tokens oder Kundendaten in Notizen. Das Vault nie in ein öffentliches Repo kopieren. Ist das Vault nicht erreichbar (anderer Rechner), das dem Nutzer sagen statt zu raten.
+**Regeln:** Schreiben nur unter \`Apps/$app_name/\`, andere Apps nur lesen. Keine Passwörter, Tokens oder Kundendaten in Notizen. Das Vault nie in ein öffentliches Repo kopieren. Ist das Vault nicht erreichbar (anderer Rechner), das dem Nutzer sagen statt zu raten.
 $end
 MSG
 )
