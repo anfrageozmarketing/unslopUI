@@ -3,18 +3,16 @@
 Goal: look at the Command Center in a real browser, judge it, fix what is wrong, push to a branch.
 Run this in a **local** session (Playwright MCP connected, `browser_navigate` available). Use demo data only.
 
-## 1. Start a local instance (demo data, test login)
+## 1. Start the preview (demo data, login handled for you)
 
 ```bash
-cd skills/unslop-brain/templates/command-center
-CC_PASSWORD='testpasswort-123' node hash-password.mjs test      # prints  test=<salt>.<hash>
-cp -R ../../../../examples/demo-vault /tmp/demo-vault
-VAULT_DIR=/tmp/demo-vault CC_USERS='<the line printed above>' PORT=8090 node server.mjs
+node scripts/dev-preview.mjs
 ```
 
-Open `http://127.0.0.1:8090` with HTTP Basic auth `test` / `testpasswort-123`
-(for Playwright use `httpCredentials` in the browser context, never put credentials in the URL: the page's `fetch` calls fail then).
-Never use the real server, its URL or its password.
+Keep it running (background) and open **`http://127.0.0.1:8091`** with the browser tool. The script copies the demo vault to a temp folder,
+starts the Command Center and a tiny local proxy that adds the test login, so no credentials are needed in the URL
+(credentials in the URL break the page's `fetch` calls). `node scripts/dev-preview.mjs --selftest` checks that it starts and exits.
+Never use the real server, its URL or its password. On a server session the Playwright browser runs on the same machine, so `127.0.0.1` works.
 
 ## 2. Screens to look at
 
