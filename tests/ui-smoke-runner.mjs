@@ -69,6 +69,11 @@ if(kinds.A!=='start'||kinds.B!=='router'||kinds.K!=='end') throw new Error('kind
 const cyc=parseFlow('flowchart LR\n A-->B\n B-->C\n C-->A'); const cl=layoutFlow(cyc);
 if(cl.back.size!==1) throw new Error('cycle should yield one back edge');
 if(parseFlow('').nodes.length!==0) throw new Error('empty source');
+// an edge that skips a layer is lifted over the node in between; a neighbouring edge stays a plain curve
+const sk=parseFlow('flowchart LR\n A-->B\n B-->C\n A-->C'); const sl=layoutFlow(sk); const all=[...sl.pos.values()];
+const skip=edgePath(sl.pos.get('A'),sl.pos.get('C'),false,all); const near=edgePath(sl.pos.get('A'),sl.pos.get('B'),false,all);
+if(!skip.d.includes(' L')) throw new Error('skipping edge not routed around the middle node');
+if(near.d.includes(' L')) throw new Error('neighbouring edge must stay a plain curve');
 // every mermaid block of the demo vault must parse into a drawable graph
 const walk=(d)=>fs.readdirSync(d,{withFileTypes:true}).flatMap(e=>e.isDirectory()?walk(d+'/'+e.name):e.name.endsWith('.md')?[d+'/'+e.name]:[]);
 const vault=process.argv[3];

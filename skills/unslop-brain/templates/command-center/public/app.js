@@ -370,9 +370,18 @@ function layoutFlow(g) {
   return { pos, back, w: PAD * 2 + maxRank * (NODE_W + GAP_X) + NODE_W, h: PAD * 2 + tallest + (hasBack ? 70 : 0) };
 }
 const KIND_LABEL = { start: 'Start', router: 'Weiche', step: 'Schritt', end: 'Ende' };
-function edgePath(a, b, isBack) {
+function edgePath(a, b, isBack, others) {
   const sx = a.x + a.w; const sy = a.y + a.h / 2; const tx = b.x; const ty = b.y + b.h / 2;
   if (isBack || tx <= sx + 20) { const dy = Math.max(a.y + a.h, b.y + b.h) + 54 - Math.min(sy, ty); return { d: `M${sx} ${sy} C${sx + 90} ${sy + dy} ${tx - 90} ${ty + dy} ${tx} ${ty}`, mx: (sx + tx) / 2, my: Math.max(sy, ty) + dy * 0.75 }; }
+  // An edge that skips layers must not run behind the nodes in between: lift it over (or under) them.
+  const lo = Math.min(sy, ty) - 6; const hi = Math.max(sy, ty) + 6;
+  const hit = (others || []).filter((o) => o !== a && o !== b && o.x + o.w > sx + 8 && o.x < tx - 8 && o.y < hi + 14 && o.y + o.h > lo - 14);
+  if (hit.length) {
+    const top = Math.min(...hit.map((o) => o.y)) - 34; const bot = Math.max(...hit.map((o) => o.y + o.h)) + 34;
+    const up = Math.abs(top - sy) <= Math.abs(bot - sy); const by = up ? top : bot;
+    const x1 = Math.max(sx + 40, hit[0].x - 40) ; const x2 = Math.min(tx - 40, Math.max(...hit.map((o) => o.x + o.w)) + 40);
+    return { d: `M${sx} ${sy} C${sx + 40} ${sy} ${x1 - 20} ${by} ${x1 + 30} ${by} L${x2 - 30} ${by} C${x2 + 20} ${by} ${tx - 40} ${ty} ${tx} ${ty}`, mx: (x1 + x2) / 2, my: by };
+  }
   const dx = Math.max(48, (tx - sx) / 2);
   return { d: `M${sx} ${sy} C${sx + dx} ${sy} ${tx - dx} ${ty} ${tx} ${ty}`, mx: (sx + tx) / 2, my: (sy + ty) / 2 };
 }
@@ -390,7 +399,7 @@ function flowCanvas(g, onEdit) {
   const labels = [];
   for (const e of g.edges) {
     const a = lay.pos.get(e.from); const b = lay.pos.get(e.to); if (!a || !b) continue;
-    const p = edgePath(a, b, lay.back.has(e));
+    const p = edgePath(a, b, lay.back.has(e), [...lay.pos.values()]);
     paths.push(`<path d="${p.d}" class="fedge${lay.back.has(e) ? ' back' : ''}" marker-end="url(#arr)"/>`);
     if (e.label) labels.push(h('span', { class: 'elabel', style: `left:${Math.round(p.mx)}px;top:${Math.round(p.my)}px` }, e.label));
   }
@@ -409,12 +418,16 @@ function flowCanvas(g, onEdit) {
   }
   for (const l of labels) world.append(l);
   stage.append(world);
+  // Stage hugs the diagram instead of leaving a big empty canvas (phone: still tall enough to read).
+  stage.style.height = `${Math.round(Math.max(300, Math.min(620, lay.h * 1.15 + 70)))}px`;
 
   let k = 1; let x = 0; let y = 0;
   const apply = () => { world.style.transform = `translate(${x}px, ${y}px) scale(${k})`; };
   const fit = () => {
     const w = stage.clientWidth || 900; const hh = stage.clientHeight || 480;
-    k = Math.min(1, (w - 24) / lay.w, (hh - 24) / lay.h); x = (w - lay.w * k) / 2; y = (hh - lay.h * k) / 2; apply();
+    // Narrow stage: keep text readable (>= 0.8) and start at the left edge; the rest is reached by panning.
+    k = Math.max(w < 600 ? 0.8 : 0, Math.min(1.5, (w - 24) / lay.w, (hh - 24) / lay.h));
+    x = lay.w * k > w - 24 ? 12 : (w - lay.w * k) / 2; y = (hh - lay.h * k) / 2; apply();
   };
   const zoomAt = (f, cx, cy) => { const k2 = Math.max(0.3, Math.min(2, k * f)); x = cx - (cx - x) * (k2 / k); y = cy - (cy - y) * (k2 / k); k = k2; apply(); };
   const ctl = h('div', { class: 'fctl' },
