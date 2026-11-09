@@ -51,3 +51,4 @@ Many rows, many comparable columns, sorting matters (audit logs, price lists, ex
 ## Files
 
 - `references/patterns.md` - data shape to component catalogue, status language, worked example (route map for product flows)
+- `references/classic-elements.md` - classic UI elements by group, inventory and state check

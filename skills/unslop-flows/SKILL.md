@@ -44,4 +44,5 @@ Run this only when the user asks ("check the base flows", "what is missing compa
 ## Files
 
 - `references/flow-catalog.md` - the flow catalog with Must/Should/Could per app type
+- `references/classic-flows.md` - classic flows by family, checklist for the gap check
 - `templates/FLOWS.template.md` - the document skeleton

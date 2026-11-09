@@ -19,3 +19,7 @@ description: Fixes the information architecture of an app that grew as one page 
 ## Output
 
 A route table (existing / new), a navigation sketch, the role matrix, and the list of API changes (filters, pagination, ownership), each with the file it touches.
+
+## References
+
+- `references/classic-screens.md` - classic screens by family, to check an app has the screens people expect
