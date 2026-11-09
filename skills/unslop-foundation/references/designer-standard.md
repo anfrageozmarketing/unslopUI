@@ -13,13 +13,13 @@ Quality bar: "Would a designer post this on Behance or Dribbble as a finished sh
 
 ## App shell pattern (desktop apps and tools)
 
-**One sidebar region on the shell ground, plus the window.** The shell ground is the darkest tone (dark mode) or light gray (light mode). Rail and menu column sit directly on it as one region, no panel box, no seam. Only the window is a light, rounded surface.
+Reference: a slim light icon rail, a dark rounded menu panel, a light rounded content window (the menu panel is an inversion on purpose).
 
-1. **Rail** (about 104 px): the product icon on top, then one labelled app-like button per area (icon above label). Unselected: muted icon. Selected: a raised tile in the window tone with a soft shadow, inset about 14 px from the edge, plus a 4 px accent bar exactly at the outer edge. Utilities (search, theme, reload) at the bottom, labelled.
-2. **Menu column** (about 264 px): title of the area, then its sub-folders (apps), compact status info at the bottom. Selected sub-folder uses the same raised tile. It collapses with a small handle on the window edge.
-3. **Window**: the working surface, rounded (28 px), margin to the shell edge, clearly lighter than the shell. Content scrolls inside it; its header carries title and the one primary action.
+1. **Rail** (about 104 px) sits directly on the shell ground, no box: the product icon on top, then one labelled app-like button per area (icon above label). Unselected: muted icon and label, no tile. Selected: an **inverted tile** (dark tile, light icon and label) with a soft shadow, inset about 14 px from the edge, plus a 4 px accent bar exactly at the outer edge. Utilities (search, theme, reload) at the bottom, labelled.
+2. **Menu column** (about 264 px) is its **own rounded panel** (radius 28 px) in a deep tone from the palette (`--menu`), light text. Colour roles are re-scoped inside the panel (`--ink`, `--ink-muted`, `--surface-2`, `--accent-text`) so every component adapts. Title of the area, sub-folders (apps) as rows with a soft light tile when selected, status info at the bottom. It collapses with a small handle on the window edge.
+3. **Window**: the working surface, rounded (28 px), light, clearly lighter than the shell and the menu panel. Content scrolls inside it; the header carries title and the one primary action.
 
-Do not turn rail and menu into separate boxes or panels. This is the structure of shadcn's sidebar blocks (icon rail with a nested menu, content as an inset rounded card).
+Gaps between rail, menu panel and window are 12 px; the three read as rail, one dark panel and one light panel, not as equal boxes. In dark mode the menu panel is a deep green-black, slightly different from the window.
 
 On a phone: the rail becomes a bottom bar, the menu column a title row with a switcher, the window runs edge to edge with rounded top corners.
 

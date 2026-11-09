@@ -344,10 +344,25 @@ a.row:hover, a.row:focus-visible { background: var(--surface-2); }
 .note-dialog { width: min(760px, calc(100vw - 24px)); max-width: none; max-height: 86dvh; display: flex; flex-direction: column; background: var(--window); border-radius: 28px; box-shadow: var(--lift); overflow: hidden; }
 .note-dialog .window-head { padding: 24px 24px 8px; } .note-dialog .window-body { padding: 8px 24px 28px; }
 
-/* ===== Shell: rail + menu column sit directly on the shell ground (one region), the window is the light rounded surface ===== */
+/* ===== Shell: slim rail on the ground, menu column as its own dark rounded panel (inversion), light rounded window ===== */
+:root { --menu: color-mix(in srgb, var(--a-950) 72%, var(--n-900)); --menu-ink: var(--n-50); --menu-muted: var(--n-400); }
 .sidebar { display: contents; }
 @media (min-width: 901px) {
-  .app, .app.no-ctx { grid-template-columns: auto minmax(0, 1fr); gap: 0; padding: 12px 12px 12px 0; }
-  .sidebar { display: grid; grid-template-columns: 104px 264px; min-height: 0; background: transparent; transition: grid-template-columns var(--dur-3) var(--ease-out); }
+  .app, .app.no-ctx { grid-template-columns: auto minmax(0, 1fr); gap: 12px; padding: 12px 12px 12px 0; }
+  .sidebar { display: grid; grid-template-columns: 104px 264px; min-height: 0; transition: grid-template-columns var(--dur-3) var(--ease-out); }
   .app.no-ctx .sidebar { grid-template-columns: 104px 0; }
+  /* selected rail tile is inverted: dark tile, light icon */
+  .rail-btn[aria-current="page"] { background: var(--menu); color: var(--menu-ink); box-shadow: var(--lift); }
+  .rail-btn[aria-current="page"] .cnt { box-shadow: 0 0 0 2px var(--menu); }
+  /* the menu column: own rounded panel, scoped colour roles so every component inside adapts */
+  .ctx {
+    --ink: var(--menu-ink); --ink-muted: var(--menu-muted); --bg: var(--menu); --window: color-mix(in srgb, white 11%, transparent); --surface-2: color-mix(in srgb, white 8%, transparent);
+    --accent-text: var(--a-300); --accent-soft: color-mix(in srgb, var(--a-300) 22%, transparent);
+    background: var(--menu); color: var(--menu-ink); border-radius: 28px; box-shadow: var(--lift); padding: 16px 12px 12px; margin-right: 0;
+  }
+  .ctx .folder[aria-current="page"] { background: var(--window); box-shadow: none; }
+  .ctx .folder:hover { background: color-mix(in srgb, white 7%, transparent); }
+  .ctx .info { background: var(--surface-2); }
+  .ctx .meter { background: color-mix(in srgb, white 22%, transparent); }
+  .ctx .meter-fill { background: var(--a-300); }
 }
