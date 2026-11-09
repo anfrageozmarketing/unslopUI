@@ -40,11 +40,11 @@ export function FlowsView({ app }) {
   return (
     <Window title={app.name} sub="Flows" actions={<OpenApp app={app} />}>
       <div className="grid gap-6">
+        <QuickAdd placeholder="Neuer Flow" onSubmit={async (title) => { const r = await create('flow', { app: app.name, area, title, status: 'missing', prio: 'V1', screens: [], endpoints: [] }); if (r?.path) location.hash = noteHref({ path: r.path }); return !!r; }}>{pickArea(areas, area, setArea)}</QuickAdd>
         <div className="scroll-x"><ToggleButtonGroup aria-label="Status filtern" selectionMode="multiple" size="sm" selectedKeys={active} onSelectionChange={(k) => setActive(new Set([...k].map(String)))}>
           {STATUS.filter(([k]) => app.counts[k]).map(([k, l]) => <ToggleButton key={k} id={k}><StatusMark status={k} />{l}<span className="num muted">{app.counts[k]}</span></ToggleButton>)}
         </ToggleButtonGroup></div>
         <RouteMap app={app} active={active} />
-        <QuickAdd placeholder="Neuer Flow" onSubmit={async (title) => { const r = await create('flow', { app: app.name, area, title, status: 'missing', prio: 'V1', screens: [], endpoints: [] }); if (r?.path) location.hash = noteHref({ path: r.path }); return !!r; }}>{pickArea(areas, area, setArea)}</QuickAdd>
       </div>
     </Window>
   );
@@ -70,6 +70,9 @@ export function FindingsView({ app }) {
   return (
     <Window title={app.name} sub="Befunde" actions={<Segmented label="Befunde zeigen" options={[['open', 'Offen'], ['all', 'Alle']]} value={show} onChange={setShow} />}>
       <div className="grid gap-4">
+        <QuickAdd placeholder="Neuer Befund" onSubmit={async (title) => { const r = await create('finding', { app: app.name, title, severity: sev, where: '' }); if (r?.path) location.hash = noteHref({ path: r.path }); return !!r; }}>
+          <Dropdown><Button variant="ghost" size="sm" aria-label={`Schwere: ${sev}`}>{sev}</Button><Dropdown.Popover><Dropdown.Menu onAction={(k) => setSev(String(k))}>{SEVERITIES.map((s) => <Dropdown.Item key={s} id={s} textValue={s}><Label>{s}</Label></Dropdown.Item>)}</Dropdown.Menu></Dropdown.Popover></Dropdown>
+        </QuickAdd>
         {list.length === 0 && <EmptyState art="emptyFindings" title="Keine Befunde" />}
         <div className="rows">
           {list.map((f) => (
@@ -84,9 +87,6 @@ export function FindingsView({ app }) {
             </div>
           ))}
         </div>
-        <QuickAdd placeholder="Neuer Befund" onSubmit={async (title) => { const r = await create('finding', { app: app.name, title, severity: sev, where: '' }); if (r?.path) location.hash = noteHref({ path: r.path }); return !!r; }}>
-          <Dropdown><Button variant="ghost" size="sm" aria-label={`Schwere: ${sev}`}>{sev}</Button><Dropdown.Popover><Dropdown.Menu onAction={(k) => setSev(String(k))}>{SEVERITIES.map((s) => <Dropdown.Item key={s} id={s} textValue={s}><Label>{s}</Label></Dropdown.Item>)}</Dropdown.Menu></Dropdown.Popover></Dropdown>
-        </QuickAdd>
       </div>
     </Window>
   );
@@ -99,6 +99,7 @@ export function DecisionsView({ app }) {
   return (
     <Window title={app.name} sub="Entscheidungen" actions={<Segmented label="Entscheidungen zeigen" options={[['open', 'Offen'], ['decided', 'Entschieden'], ['all', 'Alle']]} value={show} onChange={setShow} />}>
       <div className="grid gap-4">
+        <QuickAdd placeholder="Neue Entscheidung" onSubmit={async (title) => { const r = await create('decision', { app: app.name, title, question: '' }); if (r?.path) location.hash = noteHref({ path: r.path }); return !!r; }} />
         {list.length === 0 && <EmptyState art="emptyDecisions" title="Nichts zu entscheiden" />}
         <div className="rows">
           {list.map((d) => (
@@ -111,7 +112,6 @@ export function DecisionsView({ app }) {
             </div>
           ))}
         </div>
-        <QuickAdd placeholder="Neue Entscheidung" onSubmit={async (title) => { const r = await create('decision', { app: app.name, title, question: '' }); if (r?.path) location.hash = noteHref({ path: r.path }); return !!r; }} />
       </div>
     </Window>
   );

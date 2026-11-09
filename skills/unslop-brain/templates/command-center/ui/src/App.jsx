@@ -14,7 +14,7 @@ function Shell() {
   const { data, reload } = useData();
   const { ctxOpen } = useShell();
   const [palette, setPalette] = useState(false);
-  const [theme, setTheme] = useState(null);
+  const [theme, setTheme] = useState(() => { try { const t = localStorage.getItem('cc.theme'); return t === 'dark' || t === 'light' ? t : null; } catch { return null; } });
   const [lastApp, setLastApp] = useState(null);
   const appName = route.app || lastApp || data.apps[0]?.name || null;
   useEffect(() => { if (route.app) setLastApp(route.app); }, [route.app]);
@@ -26,7 +26,7 @@ function Shell() {
     };
     window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey);
   }, []);
-  useEffect(() => { if (theme) document.documentElement.dataset.theme = theme; }, [theme]);
+  useEffect(() => { if (theme) { document.documentElement.dataset.theme = theme; try { localStorage.setItem('cc.theme', theme); } catch { /* private mode */ } } }, [theme]);
   const toggleTheme = () => { const dark = theme ? theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches; setTheme(dark ? 'light' : 'dark'); };
   const app = useMemo(() => data.apps.find((a) => a.name === appName), [data, appName]);
   const area = route.name === 'note' || route.name === 'workspace' ? route.kind : route.name === 'gallery' ? 'apps' : route.name;

@@ -40,6 +40,12 @@ A workspace is a large rounded window laid over the dimmed app (small margin on 
 - Everything has a text label. Icon-only controls are limited to close, zoom and arrows, and carry tooltips and names.
 - Autosave with an unobtrusive "Gespeichert" indicator and Undo; leaving never loses work.
 
+## Focus, create actions and badges
+
+- **Focus without a border on pointer use.** Clicking a field or card changes its tone (lighter or whiter surface, soft lift shadow, accent colour on the icon), not an outline. A ring is shown only for keyboard focus (`:focus-visible`), 2 px offset, and never inside composite fields that already change tone. Never `outline: none` without this replacement.
+- **Create sits at the top.** "New finding", "New flow", "New decision" is the first element of its list, directly under the title, not at the bottom. Newly created items appear at the top of the list with a short highlight. The add line stays compact; extra fields appear on request.
+- **Badges are small.** Count badges on icons: 16 px high, 10 px bold figures, placed beside the icon corner with a ring in the background colour, never covering the icon. Show a count only when it asks for action (open blockers, open decisions), say whose count it is in the tooltip and aria-label ("6 offene Blocker, alle Apps"), and cap at 99+.
+
 ## Editor workspace (work areas with tools, structure, properties)
 
 For areas where people build something (flows, boards, decisions), the workspace is a full editor, not a viewer. Layout from a shipped animation editor, in our own words:

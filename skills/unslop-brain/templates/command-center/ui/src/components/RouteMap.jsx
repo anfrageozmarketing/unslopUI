@@ -13,7 +13,7 @@ export function Lane({ app, area, active, current }) {
         {flows.map((f, i) => (
           <a key={f.path} href={noteHref(f)} className={`node m-rise p-${f.prio}${active?.size && !active.has(f.status) ? ' dim' : ''}${f.path === current ? ' cur' : ''}`} data-s={f.status} style={{ '--i': i }}
             aria-current={f.path === current ? 'page' : undefined} title={`${f.title} · ${STATUS_LABEL[f.status]} · ${f.prio}${f.reason ? ` · ${f.reason}` : ''}`}>
-            <StatusMark status={f.status} /><span className="lbl">{f.title}</span>{f.prio === 'MVP' && <span className="mvp">MVP</span>}
+            <StatusMark status={f.status} /><span className="lbl">{softWrap(f.title)}</span>{f.prio === 'MVP' && <span className="mvp">MVP</span>}
           </a>
         ))}
       </div>
@@ -22,6 +22,8 @@ export function Lane({ app, area, active, current }) {
 }
 
 // One lane per area, one node per flow. Marker = status, size = priority.
+const softWrap = (t = '') => t.replace(/\p{L}{14,}/gu, (w) => `${w.slice(0, Math.ceil(w.length / 2))}\u00AD${w.slice(Math.ceil(w.length / 2))}`);
+
 export default function RouteMap({ app, active }) {
   const areas = areasOf(app);
   if (!areas.length) return <p className="quiet">Noch keine Flows. Lege den ersten unten an.</p>;

@@ -21,8 +21,9 @@ export default function Workspace({ path, appName }) {
   const { data, reload, version } = useData(); const { change } = useActions();
   const [note, setNote] = useState(null); const [err, setErr] = useState(null);
   const [graph, setGraph] = useState(null); const [text, setText] = useState('');
-  const [mode, setMode] = useState('flow'); const [panel, setPanel] = useState(() => window.innerWidth > 900);
+  const [mode, setMode] = useState('flow'); const [panel, setPanel] = useState(() => window.innerWidth >= 1100);
   const [saved, setSaved] = useState('saved'); const [fit, setFit] = useState(0);
+  useEffect(() => { let t; const on = () => { clearTimeout(t); t = setTimeout(() => setFit((x) => x + 1), 120); }; window.addEventListener('resize', on); return () => { clearTimeout(t); window.removeEventListener('resize', on); }; }, []);
   const history = useRef([]); const timer = useRef(null); const body = useRef('');
   const app = data.apps.find((a) => a.name === appName);
   const close = useCallback(() => { reload(); location.hash = `#/note/${encodeURIComponent(path)}`; }, [path, reload]);
@@ -95,7 +96,7 @@ export default function Workspace({ path, appName }) {
         <footer className="ws-bottom">
           <span className="quiet text-sm">{idx >= 0 ? `${idx + 1} von ${siblings.length} in ${m?.area}` : ''}</span>
           <div className="mid">{mode === 'flow' && <Button variant="secondary" onPress={() => setFit((x) => x + 1)}><Icon name="fit" size={20} />Einpassen</Button>}<span className="quiet text-sm self-center">{mode === 'flow' ? 'Schritt anklicken, Kante berühren, vom Ausgang ziehen' : 'Markdown links, Vorschau rechts'}</span></div>
-          <div className="end"><Button variant={panel ? 'secondary' : 'primary'} onPress={() => setPanel((p) => !p)}><Icon name="sidebar" size={20} />Eigenschaften</Button></div>
+          <div className="end"><Button variant={panel ? 'secondary' : 'primary'} onPress={() => { setPanel((p) => !p); setTimeout(() => setFit((x) => x + 1), 60); }}><Icon name="sidebar" size={20} />Eigenschaften</Button></div>
         </footer>
       </div>
     </>

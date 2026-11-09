@@ -9,6 +9,7 @@ Audit skills find what is wrong. This skill **builds**. The rule that makes the 
 
 ## Order (no skipping)
 
+0. **Discovery**: ask what the app or feature must do (`references/discovery.md`, at most seven questions), then `node scripts/scope.mjs brief.json --out design/SCOPE.md` decides which flows, screens, UI elements and design-system settings are in. The user confirms the scope before anything is built.
 1. **Define the spec** (nothing built yet)
    - Colours: `unslop-foundation/scripts/palette.mjs` writes `tokens.css` (checked contrast, light and dark).
    - Sizes: `node scripts/spec.mjs --out design --base 4 --ratio 1.2 --density comfortable --font "<font>"` writes `spec.css` (Tailwind v4 `@theme` + HeroUI variable mapping), `SPEC.md`, `spec.json`: spacing multiples, type scale, control heights, radii, breakpoints, 44 px tap target.
@@ -17,7 +18,7 @@ Audit skills find what is wrong. This skill **builds**. The rule that makes the 
 2. **Flows**: `unslop-flows` with `unslop-flows/references/classic-flows.md`. Output: the list of flows that fit, each as a mermaid diagram with its screens.
 3. **Elements**: pick from `unslop-components/references/classic-elements.md`, map to the stack with `references/element-map.md` (HeroUI component first, shadcn pattern when HeroUI has none, own part only for the signature component). Build each once with all states; show them on a component sheet before screens.
 4. **Screens**: for every screen of every flow take its type from `unslop-structure/references/classic-screens.md` and its composition from `references/screen-recipes.md`. Give each screen one primary action and one signature idea (see "crazy screens" below).
-5. **Gate** (`references/gate.md`): run before reporting done; fix, then re-check.
+5. **Gate** (`references/gate.md`): run before reporting done; fix, then re-check. Verify rendering and functions with `unslop-verify` (screenshots, measurements, click-path scenarios).
 
 ## Stack rules
 
@@ -49,6 +50,8 @@ Limits: one idea per screen, tokens only, contrast checked, the plain version mu
 
 ## References
 
+- `references/discovery.md` - the questions and how they decide the scope
+- `scripts/scope.mjs` - brief to SCOPE.md (flows, screens, elements, design settings)
 - `scripts/spec.mjs` - size spec generator
 - `references/element-map.md` - classic element to HeroUI / shadcn / Tailwind
 - `references/screen-recipes.md` - classic screen type to composition

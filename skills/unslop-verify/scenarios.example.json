@@ -1,0 +1,5 @@
+[
+  { "name": "Dark mode survives reload", "route": "/", "steps": [{ "click": "text=Design" }, { "wait": 300 }, { "reload": true }],
+    "expect": [{ "attr": ["html", "data-theme", "dark"] }, { "storage": ["cc.theme", "dark"] }] },
+  { "name": "Phone: no sideways scroll", "route": "/", "width": 360, "steps": [], "expect": [{ "noOverflow": true }] }
+]
