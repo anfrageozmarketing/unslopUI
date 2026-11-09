@@ -36,15 +36,15 @@ Use the role tokens, never raw hex. Both modes use the same token names; CSS res
 
 | Purpose | Token | Light | Dark |
 | --- | --- | --- | --- |
-| Page background | `--bg` | `#eef5f3` | `#090f0d` |
-| Cards and raised containers | `--surface` | `#f9fefc` | `#141716` |
-| Nested or lower-emphasis regions | `--surface-2` | `#e4ece9` | `#1c2220` |
-| Borders and quiet dividers | `--line` | `#cfd6d4` | `#2c3230` |
+| Page background | `--bg` | `#eef5f3` | `#101513` |
+| Cards and raised containers | `--surface` | `#f9fefc` | `#191d1b` |
+| Nested or lower-emphasis regions | `--surface-2` | `#e4ece9` | `#222826` |
+| Borders and quiet dividers | `--line` | `#cfd6d4` | `#333a37` |
 | Primary text | `--ink` | `#292f2d` | `#d8e0dd` |
 | Supporting text and secondary icons | `--ink-muted` | `#626967` | `#9fa6a4` |
 | Fills: primary actions, selected states, focus | `--accent` | `#2c6053` | `#7cb1a1` |
-| Accent used as text or thin lines | `--accent-text` | `#275b4d` | `#508475` |
-| Text and icons on an accent fill | `--on-accent` | `#ffffff` | `#090f0d` |
+| Accent used as text or thin lines | `--accent-text` | `#275b4d` | `#548879` |
+| Text and icons on an accent fill | `--on-accent` | `#ffffff` | `#101513` |
 | Soft accent backgrounds, hover and selected rows | `--accent-soft` | `#daede7` | `#1c2a26` |
 | Illustration and motion highlights only, never text | `--spark` | `#d99b6c` | `#e6a879` |
 | Positive outcome (text, marker) | `--ok` | `#007835` | `#5dc879` |

@@ -52,15 +52,15 @@
       "info-soft": "#dbeeff"
     },
     "dark": {
-      "bg": "#090f0d",
-      "surface": "#141716",
-      "surface-2": "#1c2220",
-      "line": "#2c3230",
+      "bg": "#101513",
+      "surface": "#191d1b",
+      "surface-2": "#222826",
+      "line": "#333a37",
       "ink": "#d8e0dd",
       "ink-muted": "#9fa6a4",
       "accent": "#7cb1a1",
-      "accent-text": "#508475",
-      "on-accent": "#090f0d",
+      "accent-text": "#548879",
+      "on-accent": "#101513",
       "accent-soft": "#1c2a26",
       "spark": "#e6a879",
       "ok": "#5dc879",
@@ -206,7 +206,7 @@
       "fg": "ink",
       "bg": "bg",
       "min": 7,
-      "ratio": 14.39,
+      "ratio": 13.72,
       "pass": true
     },
     {
@@ -215,7 +215,7 @@
       "fg": "ink",
       "bg": "surface",
       "min": 7,
-      "ratio": 13.43,
+      "ratio": 12.67,
       "pass": true
     },
     {
@@ -224,7 +224,7 @@
       "fg": "ink-muted",
       "bg": "bg",
       "min": 4.5,
-      "ratio": 7.8,
+      "ratio": 7.43,
       "pass": true
     },
     {
@@ -233,7 +233,7 @@
       "fg": "ink-muted",
       "bg": "surface",
       "min": 4.5,
-      "ratio": 7.27,
+      "ratio": 6.87,
       "pass": true
     },
     {
@@ -242,7 +242,7 @@
       "fg": "accent-text",
       "bg": "bg",
       "min": 4.5,
-      "ratio": 4.51,
+      "ratio": 4.54,
       "pass": true
     },
     {
@@ -251,7 +251,7 @@
       "fg": "on-accent",
       "bg": "accent",
       "min": 4.5,
-      "ratio": 7.98,
+      "ratio": 7.61,
       "pass": true
     },
     {
@@ -260,7 +260,7 @@
       "fg": "ok",
       "bg": "bg",
       "min": 4.5,
-      "ratio": 9.21,
+      "ratio": 8.78,
       "pass": true
     },
     {
@@ -278,7 +278,7 @@
       "fg": "warn",
       "bg": "bg",
       "min": 4.5,
-      "ratio": 8.52,
+      "ratio": 8.12,
       "pass": true
     },
     {
@@ -296,7 +296,7 @@
       "fg": "bad",
       "bg": "bg",
       "min": 4.5,
-      "ratio": 8.18,
+      "ratio": 7.8,
       "pass": true
     },
     {
@@ -314,7 +314,7 @@
       "fg": "info",
       "bg": "bg",
       "min": 4.5,
-      "ratio": 8.8,
+      "ratio": 8.4,
       "pass": true
     },
     {

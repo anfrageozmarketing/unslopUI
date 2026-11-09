@@ -50,15 +50,15 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #090f0d;
-    --surface: #141716;
-    --surface-2: #1c2220;
-    --line: #2c3230;
+    --bg: #101513;
+    --surface: #191d1b;
+    --surface-2: #222826;
+    --line: #333a37;
     --ink: #d8e0dd;
     --ink-muted: #9fa6a4;
     --accent: #7cb1a1;
-    --accent-text: #508475;
-    --on-accent: #090f0d;
+    --accent-text: #548879;
+    --on-accent: #101513;
     --accent-soft: #1c2a26;
     --spark: #e6a879;
     --ok: #5dc879;
@@ -72,15 +72,15 @@
   }
 }
 :root[data-theme="dark"] {
-  --bg: #090f0d;
-  --surface: #141716;
-  --surface-2: #1c2220;
-  --line: #2c3230;
+  --bg: #101513;
+  --surface: #191d1b;
+  --surface-2: #222826;
+  --line: #333a37;
   --ink: #d8e0dd;
   --ink-muted: #9fa6a4;
   --accent: #7cb1a1;
-  --accent-text: #508475;
-  --on-accent: #090f0d;
+  --accent-text: #548879;
+  --on-accent: #101513;
   --accent-soft: #1c2a26;
   --spark: #e6a879;
   --ok: #5dc879;
@@ -105,9 +105,14 @@ h1{font-size:28px;margin:0 0 var(--space-2)}h2{font-size:13px;color:var(--ink-mu
 .row{display:flex;gap:var(--space-3);flex-wrap:wrap;align-items:center}.pill{border-radius:var(--radius-pill);padding:2px var(--space-3);font-size:13px;font-weight:600}
 button.t{margin-left:auto;background:none;border:1px solid var(--line);color:var(--ink);border-radius:var(--radius-pill);padding:var(--space-1) var(--space-3)}
 </style></head><body>
-<div class="row"><h1>Palette preview</h1><button class="t" onclick="var r=document.documentElement;r.dataset.theme=r.dataset.theme==='dark'?'light':'dark'">Light / Dark</button></div>
+<div class="row"><h1>Palette preview</h1><button class="t" id="theme">Light / Dark</button></div>
 <p style="color:var(--ink-muted)">seed #1f5c4d · mood calm · all text pairs checked: pass</p>
 <h2>RAMPS</h2><div class="ramp"><i style="background:var(--n-50)"></i><i style="background:var(--n-100)"></i><i style="background:var(--n-200)"></i><i style="background:var(--n-300)"></i><i style="background:var(--n-400)"></i><i style="background:var(--n-500)"></i><i style="background:var(--n-600)"></i><i style="background:var(--n-700)"></i><i style="background:var(--n-800)"></i><i style="background:var(--n-900)"></i><i style="background:var(--n-950)"></i></div><div class="ramp" style="margin-top:8px"><i style="background:var(--a-50)"></i><i style="background:var(--a-100)"></i><i style="background:var(--a-200)"></i><i style="background:var(--a-300)"></i><i style="background:var(--a-400)"></i><i style="background:var(--a-500)"></i><i style="background:var(--a-600)"></i><i style="background:var(--a-700)"></i><i style="background:var(--a-800)"></i><i style="background:var(--a-900)"></i><i style="background:var(--a-950)"></i></div>
-<h2>ROLES</h2><div class="grid"><div class="sw"><i style="background:var(--bg)"></i><b>--bg</b><span>#eef5f3</span></div><div class="sw"><i style="background:var(--surface)"></i><b>--surface</b><span>#f9fefc</span></div><div class="sw"><i style="background:var(--surface-2)"></i><b>--surface-2</b><span>#e4ece9</span></div><div class="sw"><i style="background:var(--line)"></i><b>--line</b><span>#cfd6d4</span></div><div class="sw"><i style="background:var(--ink)"></i><b>--ink</b><span>#292f2d</span></div><div class="sw"><i style="background:var(--ink-muted)"></i><b>--ink-muted</b><span>#626967</span></div><div class="sw"><i style="background:var(--accent)"></i><b>--accent</b><span>#2c6053</span></div><div class="sw"><i style="background:var(--accent-text)"></i><b>--accent-text</b><span>#275b4d</span></div><div class="sw"><i style="background:var(--on-accent)"></i><b>--on-accent</b><span>#ffffff</span></div><div class="sw"><i style="background:var(--accent-soft)"></i><b>--accent-soft</b><span>#daede7</span></div><div class="sw"><i style="background:var(--spark)"></i><b>--spark</b><span>#d99b6c</span></div><div class="sw"><i style="background:var(--ok)"></i><b>--ok</b><span>#007835</span></div><div class="sw"><i style="background:var(--ok-soft)"></i><b>--ok-soft</b><span>#d9f3dd</span></div><div class="sw"><i style="background:var(--warn)"></i><b>--warn</b><span>#845a00</span></div><div class="sw"><i style="background:var(--warn-soft)"></i><b>--warn-soft</b><span>#fae9ce</span></div><div class="sw"><i style="background:var(--bad)"></i><b>--bad</b><span>#a83630</span></div><div class="sw"><i style="background:var(--bad-soft)"></i><b>--bad-soft</b><span>#ffe4e0</span></div><div class="sw"><i style="background:var(--info)"></i><b>--info</b><span>#0068a6</span></div><div class="sw"><i style="background:var(--info-soft)"></i><b>--info-soft</b><span>#dbeeff</span></div></div>
+<h2>ROLES</h2><div class="grid"><div class="sw"><i style="background:var(--bg)"></i><b>--bg</b><span data-var="bg">#eef5f3</span></div><div class="sw"><i style="background:var(--surface)"></i><b>--surface</b><span data-var="surface">#f9fefc</span></div><div class="sw"><i style="background:var(--surface-2)"></i><b>--surface-2</b><span data-var="surface-2">#e4ece9</span></div><div class="sw"><i style="background:var(--line)"></i><b>--line</b><span data-var="line">#cfd6d4</span></div><div class="sw"><i style="background:var(--ink)"></i><b>--ink</b><span data-var="ink">#292f2d</span></div><div class="sw"><i style="background:var(--ink-muted)"></i><b>--ink-muted</b><span data-var="ink-muted">#626967</span></div><div class="sw"><i style="background:var(--accent)"></i><b>--accent</b><span data-var="accent">#2c6053</span></div><div class="sw"><i style="background:var(--accent-text)"></i><b>--accent-text</b><span data-var="accent-text">#275b4d</span></div><div class="sw"><i style="background:var(--on-accent)"></i><b>--on-accent</b><span data-var="on-accent">#ffffff</span></div><div class="sw"><i style="background:var(--accent-soft)"></i><b>--accent-soft</b><span data-var="accent-soft">#daede7</span></div><div class="sw"><i style="background:var(--spark)"></i><b>--spark</b><span data-var="spark">#d99b6c</span></div><div class="sw"><i style="background:var(--ok)"></i><b>--ok</b><span data-var="ok">#007835</span></div><div class="sw"><i style="background:var(--ok-soft)"></i><b>--ok-soft</b><span data-var="ok-soft">#d9f3dd</span></div><div class="sw"><i style="background:var(--warn)"></i><b>--warn</b><span data-var="warn">#845a00</span></div><div class="sw"><i style="background:var(--warn-soft)"></i><b>--warn-soft</b><span data-var="warn-soft">#fae9ce</span></div><div class="sw"><i style="background:var(--bad)"></i><b>--bad</b><span data-var="bad">#a83630</span></div><div class="sw"><i style="background:var(--bad-soft)"></i><b>--bad-soft</b><span data-var="bad-soft">#ffe4e0</span></div><div class="sw"><i style="background:var(--info)"></i><b>--info</b><span data-var="info">#0068a6</span></div><div class="sw"><i style="background:var(--info-soft)"></i><b>--info-soft</b><span data-var="info-soft">#dbeeff</span></div></div>
 <h2>SURFACE OVER IMAGERY (one glass layer)</h2><div class="stage"><div class="glass"><b>Glass on a colour field</b><p style="color:var(--ink-muted);margin:6px 0 var(--space-4)">Secondary text stays readable on the blurred layer.</p><div class="row"><button class="btn">Primary</button><span class="pill" style="background:var(--ok-soft);color:var(--ok)">ok</span><span class="pill" style="background:var(--warn-soft);color:var(--warn)">warn</span><span class="pill" style="background:var(--bad-soft);color:var(--bad)">bad</span><span class="pill" style="background:var(--info-soft);color:var(--info)">info</span></div></div></div>
+<script>
+function sync(){var cs=getComputedStyle(document.documentElement);document.querySelectorAll('[data-var]').forEach(function(e){e.textContent=cs.getPropertyValue('--'+e.dataset.var).trim();});}
+document.getElementById('theme').addEventListener('click',function(){var r=document.documentElement;var dark=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;r.dataset.theme=dark?'light':'dark';sync();});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',sync);sync();
+</script>
 </body></html>
