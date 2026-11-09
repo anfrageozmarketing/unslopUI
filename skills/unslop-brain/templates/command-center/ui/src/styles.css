@@ -378,17 +378,17 @@ a.row:hover, a.row:focus-visible { background: var(--surface-2); }
 /* ===== Top bar above the app: own tone, product, search, messages, account ===== */
 .frame { display: grid; grid-template-rows: auto minmax(0, 1fr); height: 100%; background: var(--shell); }
 .frame > .app { height: auto; min-height: 0; }
-.topbar { display: grid; grid-template-columns: auto minmax(0, 520px) auto; justify-content: space-between; align-items: center; gap: 16px; height: 60px; padding: 0 16px 0 20px; background: var(--menu); color: var(--menu-ink); }
+.topbar { display: grid; grid-template-columns: auto minmax(0, 520px) auto; justify-content: space-between; align-items: center; gap: 16px; height: 60px; padding: 0 16px 0 20px; background: var(--shell); color: var(--ink); }
 .tb-brand { display: flex; align-items: center; gap: 12px; font-size: 15px; }
 .tb-logo { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 12px; background: var(--accent); color: var(--on-accent); }
-.tb-search { display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 14px; border-radius: 20px; background: color-mix(in srgb, white 9%, transparent); color: var(--menu-muted); font: 600 14px var(--font-sans); cursor: pointer; text-align: left; transition: background var(--dur-1), color var(--dur-1); }
+.tb-search { display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 14px; border-radius: 20px; background: color-mix(in srgb, var(--ink) 8%, transparent); color: var(--ink-muted); font: 600 14px var(--font-sans); cursor: pointer; text-align: left; transition: background var(--dur-1), color var(--dur-1); }
 .tb-search span:nth-child(2) { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.tb-search:hover { background: color-mix(in srgb, white 15%, transparent); color: var(--menu-ink); }
-.tb-search .kbd { background: color-mix(in srgb, white 12%, transparent); color: var(--menu-ink); }
+.tb-search:hover { background: color-mix(in srgb, var(--ink) 13%, transparent); color: var(--ink); }
+.tb-search .kbd { background: var(--window); color: var(--ink); }
 .tb-right { display: flex; align-items: center; gap: 8px; }
-.tb-btn { position: relative; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; color: var(--menu-ink); transition: background var(--dur-1); }
-.tb-btn:hover { background: color-mix(in srgb, white 12%, transparent); }
-.tb-cnt { position: absolute; top: 4px; right: 2px; box-shadow: 0 0 0 2px var(--menu); }
+.tb-btn { position: relative; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; color: var(--ink); transition: background var(--dur-1); }
+.tb-btn:hover { background: color-mix(in srgb, var(--ink) 10%, transparent); }
+.tb-cnt { position: absolute; top: 4px; right: 2px; box-shadow: 0 0 0 2px var(--shell); }
 .tb-avatar { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: var(--on-accent); font: 800 13px var(--font-sans); cursor: pointer; transition: transform var(--dur-1); }
 .tb-avatar:hover { transform: scale(1.06); }
 @media (min-width: 901px) {
