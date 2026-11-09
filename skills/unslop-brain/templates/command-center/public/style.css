@@ -1,9 +1,9 @@
 /* Command Center. Idea: a route map of the product. Sans only, bold line icons, one glass layer over a generated star chart. */
 :root {
-  --bg: #eeece6; --panel: #fbfaf7; --ink: #191a18; --muted: #5f6259; --line: #d8d5cb;
+  --bg: #eeece6; --panel: #fbfaf7; --ink: #191a18; --muted: #565950; --line: #d8d5cb;
   --missing: #b4443a; --partial: #a8700f; --exists: #4f7f5d; --built: #1b5748; --na: #6f6c63;
   --accent: #1b5748; --focus: #1b5748;
-  --glass: color-mix(in srgb, var(--panel) 68%, transparent); --glass-edge: rgba(255,255,255,.7); --glass-hi: rgba(255,255,255,.55); --glass-shadow: 0 10px 30px rgba(25,26,24,.12);
+  --glass: color-mix(in srgb, var(--panel) 78%, transparent); --glass-edge: rgba(255,255,255,.7); --glass-hi: rgba(255,255,255,.55); --glass-shadow: 0 10px 30px rgba(25,26,24,.12);
   --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px; --s7: 48px; --radius: 10px;
   --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI Variable Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   font-family: var(--sans); font-variant-numeric: tabular-nums;
@@ -11,7 +11,7 @@
 @media (prefers-color-scheme: dark) {
   :root { --bg: #131513; --panel: #1b1e1b; --ink: #ecede8; --muted: #a2a59b; --line: #2b2e2a;
     --missing: #e2766b; --partial: #e0b050; --exists: #7fb48c; --built: #6fbf9f; --na: #8b8e84; --accent: #6fbf9f; --focus: #6fbf9f;
-    --glass: color-mix(in srgb, var(--panel) 62%, transparent); --glass-edge: rgba(255,255,255,.14); --glass-hi: rgba(255,255,255,.09); --glass-shadow: 0 10px 30px rgba(0,0,0,.4); }
+    --glass: color-mix(in srgb, var(--panel) 74%, transparent); --glass-edge: rgba(255,255,255,.14); --glass-hi: rgba(255,255,255,.09); --glass-shadow: 0 10px 30px rgba(0,0,0,.4); }
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--ink); line-height: 1.5; }
@@ -40,8 +40,8 @@ h3 { font-size: 13px; margin: 0; }
 #backdrop { position: fixed; inset: 0; z-index: 0; pointer-events: none; -webkit-mask-image: linear-gradient(to right, #000 0, #000 200px, transparent 430px); mask-image: linear-gradient(to right, #000 0, #000 200px, transparent 430px); }
 #backdrop svg { width: 100%; height: 100%; display: block; }
 #backdrop .st { fill: var(--c); stroke: var(--c); stroke-width: 2; }
-#backdrop .ring { fill: none; stroke: var(--ink); stroke-opacity: .1; stroke-width: 1.5; }
-#backdrop .rt { fill: none; stroke: var(--ink); stroke-opacity: .3; stroke-width: 1.6; stroke-dasharray: 2 6; }
+#backdrop .ring { fill: none; stroke: var(--ink); stroke-opacity: .2; stroke-width: 2; }
+#backdrop .rt { fill: none; stroke: var(--ink); stroke-opacity: .45; stroke-width: 2; stroke-dasharray: 2 6; }
 
 /* shell */
 .top { display: flex; align-items: center; gap: var(--s3); padding: var(--s2) var(--s5); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 4; background: var(--bg); min-height: 56px; }
