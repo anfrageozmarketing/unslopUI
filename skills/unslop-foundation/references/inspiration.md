@@ -10,7 +10,7 @@ Checked 2026-11-09 from the sites' public pages. Terms change: verify before rel
 | Pixels Market (pixels.market) | Marketplace for illustration and icon packs, colours adjustable in the browser | Categories led by a cover image; colour recolouring as a feature: one drawing, many palettes | Free items are personal, non-commercial only: not usable in a business product. Paid tiers allow client work but forbid resale or redistribution |
 | Coolors (coolors.co) | Palette generator, contrast checker, palette visualizer | Palette thinking: a ramp of neutrals plus one accent; test text pairs for contrast, preview the palette on real components | Palettes may be used in your own products. Do not sell, compile or redistribute them, do not use them to train AI |
 | HeroUI `DESIGN.md` (heroui.com/react/DESIGN.md) | A design-system contract written for coding agents: frontmatter, then fixed sections (setup, direction, colour roles with light/dark/purpose, type, layout, shapes, elevation, components, interaction, do/don't, sources) | A design system is easiest for an agent to follow as one short file with role tokens in a table, explicit do/don't lists and a stated source of truth. We adopt the **structure**, with our own text, tokens and rules (`DESIGN.md` from `palette.mjs`) | Fetched 2026-11-09 for reading only, not stored in this repository. Licence of the file not checked: do not copy its text or its colour values |
-| RareUI (rareui.com) | Component/design resource | Could not be read when checked (blocked). Unverified: do not rely on any claim about it |
+| RareUI (rareui.com) | Component/design resource (unverified) | Could not be read when checked (blocked): nothing learned | Unknown: do not rely on any claim about it |
 
 ## How to use a source
 
