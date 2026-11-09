@@ -79,14 +79,14 @@ export default function Workspace({ path, appName }) {
             <Button variant="secondary" size="sm" onPress={close}><Icon name="close" size={18} />Schließen<span className="kbd">Esc</span></Button>
           </div>
         </header>
-        <div className="ws-stage">
+        <div className={`ws-stage${panel && note ? ' has-panel' : ''}`}>
           {!graph ? <p className="quiet p-8">Lädt …</p> : mode === 'flow'
             ? <FlowEditor graph={graph} onChange={apply} fitSignal={fit} />
             : <div className="ws-text"><textarea className="editor" value={text} onChange={(e) => onText(e.target.value)} aria-label="Notiztext (Markdown)" spellCheck={false} /><div className="pv"><Markdown text={text} /></div></div>}
           <button type="button" className="ws-nav l" aria-label="Vorheriger Flow" title="Vorheriger Flow" disabled={idx <= 0} onClick={() => go(-1)}><Icon name="back" size={22} /></button>
           <button type="button" className="ws-nav r" aria-label="Nächster Flow" title="Nächster Flow" disabled={idx < 0 || idx >= siblings.length - 1} onClick={() => go(1)}><Icon name="next" size={22} /></button>
           {panel && note && (
-            <aside className="ws-panel glass" aria-label="Eigenschaften">
+            <aside className="ws-panel" aria-label="Eigenschaften">
               <Properties path={path} note={note} />
               {mode === 'flow' && (() => { const { secs } = splitSections(text); return secs.filter((s) => /^(soll|l[uü]cken)/i.test(s.title)).map((s) => <section key={s.title}><h2>{s.title}</h2><Markdown text={s.md} /></section>); })()}
             </aside>
