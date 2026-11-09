@@ -15,9 +15,9 @@ export function AppsView() {
       {state === 'ready' && !data.apps.length && <EmptyState art="firstApp" title="Erste App anlegen"><p className="quiet">_App.md im Vault</p></EmptyState>}
       <div className="cards">
         {data.apps.map((a) => (
-          <a key={a.name} className="card" href={`#/flows/${encodeURIComponent(a.name)}`}>
-            <Portrait app={a} width={900} height={420} />
-            <div className="glass panel"><h2>{a.name}</h2></div>
+          <a key={a.name} className="app-tile" href={`#/flows/${encodeURIComponent(a.name)}`}>
+            <div className="card"><Portrait app={a} width={900} height={420} /></div>
+            <h2>{a.name}</h2>
           </a>
         ))}
       </div>

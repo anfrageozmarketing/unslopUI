@@ -17,6 +17,7 @@ Most "unslop" tools fix the surface: glow, gradients, emoji. AI-built apps are a
 | `unslop-build` | Builds flows, UI elements and screens on HeroUI, Tailwind and shadcn patterns from a spec defined first (colours, type, spacing, sizes), with element map, screen recipes and a gate |
 | `unslop-verify` | One command: screenshots in light/dark at desktop and phone width, measured rendering defects, and click-path scenarios (for example "dark mode survives reload") in a REPORT.md |
 | `unslop-element` | Takes one element out of an app and rebuilds it completely (diagnose, three directions, tokens-only rebuild, all-states sheet, verify) |
+| `unslop-simplify` | Keeps UI simple: element test, limits per screen, no cards in cards, tiles with picture and name, detail one click deeper |
 | `unslop-human` | Measured contrast (with a checker script), focus and keyboard, states, affordances, reduced motion, 200 percent zoom |
 | `unslop-copy` | Specific, calm copy; German rules and a German slop-phrase list |
 | `unslop-foundation` | Starts every UI build: contrast-checked palette from one seed colour (`scripts/palette.mjs`), bold icon style, illustration and motion language, a designer-grade component sheet; inspiration from Streamline, Magic UI, Coolors and others for principles only, never copied |

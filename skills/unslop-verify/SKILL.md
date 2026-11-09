@@ -18,7 +18,7 @@ Options: `--widths 1280,360`, `--themes light,dark`, `--auth user:pass` (basic a
 
 ## What you get
 
-`verify-out/REPORT.md` and one screenshot per route, width and theme. The report lists findings per view: `overflow-x`, `clipped-text`, `progress-thin | progress-empty | progress-over | progress-a11y`, `broken-image`, `badge-not-round`, `badge-big`, `glow`, `inset-highlight`, `plain-loading-text` (a bare "Lädt" or "Loading"), `inner-scroll-x`, `edge-touch` (text or control closer than 16 px to the window edge), `hover-noninteractive` (real mouse hover on elements that are not clickable), `hover-no-padding` (hover tone touching the text), `tap-target`, `cursor`, `no-name`, `overlap`, plus console errors. Hover checks run at desktop width; switch off with `--hover off`.
+`verify-out/REPORT.md` and one screenshot per route, width and theme. The report lists findings per view: `overflow-x`, `clipped-text`, `progress-thin | progress-empty | progress-over | progress-a11y`, `broken-image`, `badge-not-round`, `badge-big`, `glow`, `inset-highlight`, `plain-loading-text` (a bare "Lädt" or "Loading"), `inner-scroll-x`, `too-busy` (nested boxes, too many type sizes, words or controls in view; see `unslop-simplify`), `edge-touch` (text or control closer than 16 px to the window edge), `hover-noninteractive` (real mouse hover on elements that are not clickable), `hover-no-padding` (hover tone touching the text), `tap-target`, `cursor`, `no-name`, `overlap`, plus console errors. Hover checks run at desktop width; switch off with `--hover off`.
 
 ## Then
 

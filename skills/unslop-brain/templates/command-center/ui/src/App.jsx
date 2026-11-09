@@ -3,7 +3,7 @@ import { Toast } from '@heroui/react';
 import { DataProvider, useData, useRoute } from './lib/hooks.jsx';
 import { ShellProvider, useShell } from './lib/shell.jsx';
 import Workspace from './views/Workspace.jsx';
-import { Context, Rail, Window } from './components/Shell.jsx';
+import { Context, Rail, TopBar, Window } from './components/Shell.jsx';
 import Palette from './components/Palette.jsx';
 import { AppsView, DecisionsView, FindingsView, FlowsView, FocusView } from './views/Areas.jsx';
 import NotePage from './views/NotePage.jsx';
@@ -45,12 +45,15 @@ function Shell() {
   if (state === 'loading') return <BootScreen />;
   return (
     <>
+      <div className="frame">
+      <TopBar apps={data.apps} app={appName} onSearch={() => setPalette(true)} onTheme={toggleTheme} onReload={reload} />
       <div className={`app${ctxOpen ? '' : ' no-ctx'}`}>
-        <div className="sidebar">
-          <Rail route={{ ...route, kind: route.kind }} apps={data.apps} app={appName} onSearch={() => setPalette(true)} onTheme={toggleTheme} onReload={reload} />
+        <Rail route={{ ...route, kind: route.kind }} apps={data.apps} app={appName} onSearch={() => setPalette(true)} onTheme={toggleTheme} onReload={reload} />
+        <div className="deck">
           <Context area={area} apps={data.apps} app={appName} />
+          {view}
         </div>
-        {view}
+      </div>
       </div>
       {route.name === 'workspace' && <Workspace key={route.path} path={route.path} appName={route.app} />}
       <Palette open={palette} onOpenChange={setPalette} apps={data.apps} />

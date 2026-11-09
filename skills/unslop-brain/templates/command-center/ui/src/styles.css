@@ -344,21 +344,25 @@ a.row:hover, a.row:focus-visible { background: var(--surface-2); }
 .note-dialog { width: min(760px, calc(100vw - 24px)); max-width: none; max-height: 86dvh; display: flex; flex-direction: column; background: var(--window); border-radius: 28px; box-shadow: var(--lift); overflow: hidden; }
 .note-dialog .window-head { padding: 24px 24px 8px; } .note-dialog .window-body { padding: 8px 24px 28px; }
 
-/* ===== Shell: slim rail on the ground, menu column as its own dark rounded panel (inversion), light rounded window ===== */
+/* ===== Shell: slim rail on the ground; layer 2 (dark) runs to the screen edge and holds the menu AND the light window ===== */
 :root { --menu: color-mix(in srgb, var(--a-950) 72%, var(--n-900)); --menu-ink: var(--n-50); --menu-muted: var(--n-400); }
 .sidebar { display: contents; }
+.deck { display: contents; }
 @media (min-width: 901px) {
-  .app, .app.no-ctx { grid-template-columns: auto minmax(0, 1fr); gap: 12px; padding: 12px 12px 12px 0; }
-  .sidebar { display: grid; grid-template-columns: 104px 264px; min-height: 0; transition: grid-template-columns var(--dur-3) var(--ease-out); }
-  .app.no-ctx .sidebar { grid-template-columns: 104px 0; }
+  .app, .app.no-ctx { grid-template-columns: 104px minmax(0, 1fr); gap: 0; padding: 0; }
+  .deck { display: grid; grid-template-columns: 264px minmax(0, 1fr); min-height: 0; min-width: 0; background: var(--menu); border-radius: 28px 0 0 28px; box-shadow: var(--lift); transition: grid-template-columns var(--dur-3) var(--ease-out); }
+  .app.no-ctx .deck { grid-template-columns: 0 minmax(0, 1fr); }
+  .deck > .window { margin: 12px 12px 12px 0; min-height: 0; }
+  .app.no-ctx .deck > .window { margin-left: 12px; }
+  .rail { padding: 20px 0 14px; }
   /* selected rail tile is inverted: dark tile, light icon */
   .rail-btn[aria-current="page"] { background: var(--menu); color: var(--menu-ink); box-shadow: var(--lift); }
   .rail-btn[aria-current="page"] .cnt { box-shadow: 0 0 0 2px var(--menu); }
-  /* the menu column: own rounded panel, scoped colour roles so every component inside adapts */
+  /* menu column sits on layer 2: colour roles re-scoped so every component inside adapts */
   .ctx {
     --ink: var(--menu-ink); --ink-muted: var(--menu-muted); --bg: var(--menu); --window: color-mix(in srgb, white 11%, transparent); --surface-2: color-mix(in srgb, white 8%, transparent);
     --accent-text: var(--a-300); --accent-soft: color-mix(in srgb, var(--a-300) 22%, transparent);
-    background: var(--menu); color: var(--menu-ink); border-radius: 28px; box-shadow: var(--lift); padding: 16px 12px 12px; margin-right: 0;
+    background: transparent; color: var(--menu-ink); border-radius: 0; box-shadow: none; padding: 20px 8px 14px 14px;
   }
   .ctx .folder[aria-current="page"] { background: var(--window); box-shadow: none; }
   .ctx .folder:hover { background: color-mix(in srgb, white 7%, transparent); }
@@ -366,3 +370,38 @@ a.row:hover, a.row:focus-visible { background: var(--surface-2); }
   .ctx .meter { background: color-mix(in srgb, white 22%, transparent); }
   .ctx .meter-fill { background: var(--a-300); }
 }
+/* app preview tile: picture, name below */
+.app-tile { display: grid; gap: 10px; color: var(--ink); }
+.app-tile h2 { font-size: 18px; padding: 0 4px; }
+.app-tile:hover .card { transform: translateY(-3px); box-shadow: var(--lift); }
+
+/* ===== Top bar above the app: own tone, product, search, messages, account ===== */
+.frame { display: grid; grid-template-rows: auto minmax(0, 1fr); height: 100%; background: var(--shell); }
+.frame > .app { height: auto; min-height: 0; }
+.topbar { display: grid; grid-template-columns: auto minmax(0, 520px) auto; justify-content: space-between; align-items: center; gap: 16px; height: 60px; padding: 0 16px 0 20px; background: var(--menu); color: var(--menu-ink); }
+.tb-brand { display: flex; align-items: center; gap: 12px; font-size: 15px; }
+.tb-logo { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 12px; background: var(--accent); color: var(--on-accent); }
+.tb-search { display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 14px; border-radius: 20px; background: color-mix(in srgb, white 9%, transparent); color: var(--menu-muted); font: 600 14px var(--font-sans); cursor: pointer; text-align: left; transition: background var(--dur-1), color var(--dur-1); }
+.tb-search span:nth-child(2) { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tb-search:hover { background: color-mix(in srgb, white 15%, transparent); color: var(--menu-ink); }
+.tb-search .kbd { background: color-mix(in srgb, white 12%, transparent); color: var(--menu-ink); }
+.tb-right { display: flex; align-items: center; gap: 8px; }
+.tb-btn { position: relative; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; color: var(--menu-ink); transition: background var(--dur-1); }
+.tb-btn:hover { background: color-mix(in srgb, white 12%, transparent); }
+.tb-cnt { position: absolute; top: 4px; right: 2px; box-shadow: 0 0 0 2px var(--menu); }
+.tb-avatar { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: var(--on-accent); font: 800 13px var(--font-sans); cursor: pointer; transition: transform var(--dur-1); }
+.tb-avatar:hover { transform: scale(1.06); }
+@media (min-width: 901px) {
+  .frame > .app { grid-template-columns: 104px minmax(0, 1fr); }
+  .deck { border-top-left-radius: 28px; }
+  .rail { padding-top: 16px; }
+  .ctx { padding-top: 16px; }
+}
+@media (max-width: 900px) {
+  .frame { display: block; height: auto; }
+  .topbar { height: 56px; grid-template-columns: auto 1fr auto; position: sticky; top: 0; z-index: 30; }
+  .tb-brand b, .tb-search span:nth-child(2), .tb-search .kbd { display: none; }
+  .tb-search { justify-self: end; width: 40px; padding: 0; justify-content: center; }
+}
+
+.tb-brand { min-height: 44px; }

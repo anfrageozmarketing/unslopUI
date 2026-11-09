@@ -17,3 +17,4 @@
 - [ ] No bare "Loading" text anywhere: boot screen, skeletons and progress exist for every wait (`plain-loading-text` is clean).
 - [ ] Text is editable by clicking it, without a pencil or Edit button.
 - [ ] Spacing per `references/spacing.md`: nothing within 16 px (phone 12 px) of its window or card edge, full-bleed only marked `data-edge`; `unslop-verify` has no `edge-touch`.
+- [ ] `unslop-simplify` gate passed: no card in a card, tiles show picture and name, detail one click deeper, no `too-busy` finding.

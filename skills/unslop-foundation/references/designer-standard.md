@@ -13,15 +13,14 @@ Quality bar: "Would a designer post this on Behance or Dribbble as a finished sh
 
 ## App shell pattern (desktop apps and tools)
 
-Reference: a slim light icon rail, a dark rounded menu panel, a light rounded content window (the menu panel is an inversion on purpose).
+Reference: a top bar, a slim light rail, one dark "layer 2" that runs to the screen edge and contains both the menu and the light content window.
 
-1. **Rail** (about 104 px) sits directly on the shell ground, no box: the product icon on top, then one labelled app-like button per area (icon above label). Unselected: muted icon and label, no tile. Selected: an **inverted tile** (dark tile, light icon and label) with a soft shadow, inset about 14 px from the edge, plus a 4 px accent bar exactly at the outer edge. Utilities (search, theme, reload) at the bottom, labelled.
-2. **Menu column** (about 264 px) is its **own rounded panel** (radius 28 px) in a deep tone from the palette (`--menu`), light text. Colour roles are re-scoped inside the panel (`--ink`, `--ink-muted`, `--surface-2`, `--accent-text`) so every component adapts. Title of the area, sub-folders (apps) as rows with a soft light tile when selected, status info at the bottom. It collapses with a small handle on the window edge.
-3. **Window**: the working surface, rounded (28 px), light, clearly lighter than the shell and the menu panel. Content scrolls inside it; the header carries title and the one primary action.
+1. **Top bar** (about 60 px, full width, own tone): product mark and name on the left, a search pill (with shortcut) in the middle, messages (bell with a count) and the account avatar on the right. Account, login state, workspace switch and notifications live here, not in the rail. The avatar opens a small popover (who, theme, reload, log out when accounts exist). An optional slot for an announcement can sit in the middle. Chosen in discovery (account placement: sidebar, top bar or window header).
+2. **Rail** (about 104 px) sits directly on the shell ground, no box: one labelled app-like button per area (icon above label). Unselected: muted icon and label. Selected: an **inverted tile** (dark tile, light icon and label) with a soft shadow, inset about 14 px, plus a 4 px accent bar exactly at the outer edge. No duplicate utilities (search, theme, reload belong in the top bar).
+3. **Layer 2** (dark, deep palette tone `--menu`): one rounded container (radius 28 px on the left corners) that runs to the right, top and bottom screen edges. Left part: the menu column (title of the area, sub-folders as rows with a soft light tile when selected, status info at the bottom). Right part: the **light rounded content window** inset 12 px inside it. Colour roles are re-scoped in the menu column (`--ink`, `--ink-muted`, `--surface-2`, `--accent-text`) so every component adapts. The menu collapses with a small handle on the window edge.
+4. **Window**: light, rounded (28 px), clearly lighter than layer 2. Content scrolls inside it; its header carries title and the one primary action.
 
-Gaps between rail, menu panel and window are 12 px; the three read as rail, one dark panel and one light panel, not as equal boxes. In dark mode the menu panel is a deep green-black, slightly different from the window.
-
-On a phone: the rail becomes a bottom bar, the menu column a title row with a switcher, the window runs edge to edge with rounded top corners.
+On a phone: the top bar stays (compact), the rail becomes a bottom bar, the menu column a title row with a switcher, the window runs edge to edge with rounded top corners.
 
 ## Tile pattern, layered backgrounds, inversion
 

@@ -1,4 +1,4 @@
-import { Button, Modal } from '@heroui/react';
+import { Button, Modal, Popover } from '@heroui/react';
 import { AREAS, areaHref, appHref, blockersOf, openDecisionsOf, pct, safeUrl, totalsOf } from '../lib/model.js';
 import { Icon, Strip } from './ui.jsx';
 import { useShell } from '../lib/shell.jsx';
@@ -11,7 +11,6 @@ export function Rail({ route, apps, app, onSearch, onTheme, onReload }) {
   const current = route.name === 'note' || route.name === 'workspace' ? (route.kind || 'flows') : route.name;
   return (
     <nav className="rail" aria-label="Bereiche">
-      <a className="logo" href="#/apps" aria-label="Command Center"><Icon name="route" size={24} /></a>
       {AREAS.map((a) => (
         <a key={a.key} className="rail-btn" href={areaHref(a.key, app)} title={a.label} aria-current={current === a.key ? 'page' : undefined}>
           <span className="rail-ic"><Icon name={a.icon} size={26} active={current === a.key} />{count[a.key] > 0 && <span className="cnt-badge cnt" role="img" aria-label={a.key === 'findings' ? `${count[a.key]} offene Blocker (alle Apps)` : `${count[a.key]} offene Entscheidungen (alle Apps)`} title={a.key === 'findings' ? `${count[a.key]} offene Blocker (alle Apps)` : `${count[a.key]} offene Entscheidungen (alle Apps)`}>{count[a.key] > 9 ? '9+' : count[a.key]}</span>}</span>
@@ -19,10 +18,33 @@ export function Rail({ route, apps, app, onSearch, onTheme, onReload }) {
         </a>
       ))}
       <span className="sp" />
-      <button type="button" className="rail-btn util" title="Suchen (Strg K)" onClick={onSearch}><span className="rail-ic"><Icon name="search" size={24} /></span><span className="rail-lbl">Suchen</span></button>
-      <button type="button" className="rail-btn util" title="Hell oder dunkel" onClick={onTheme}><span className="rail-ic"><Icon name="contrast" size={24} /></span><span className="rail-lbl">Design</span></button>
-      <button type="button" className="rail-btn util" title="Aktualisieren" onClick={onReload}><span className="rail-ic"><Icon name="refresh" size={24} /></span><span className="rail-lbl">Neu laden</span></button>
     </nav>
+  );
+}
+
+// Top bar above the whole app: its own tone, holds product, search, messages and the account area.
+export function TopBar({ apps, app, onSearch, onTheme, onReload }) {
+  const blockers = apps.reduce((n, a) => n + blockersOf(a).length, 0);
+  return (
+    <header className="topbar">
+      <a className="tb-brand" href="#/apps" aria-label="Command Center, zur Übersicht"><span className="tb-logo"><Icon name="route" size={22} /></span><b>Command Center</b></a>
+      <button type="button" className="tb-search" onClick={onSearch} aria-label="Suchen und springen"><Icon name="search" size={18} /><span>Apps, Flows, Befunde suchen</span><span className="kbd">Strg K</span></button>
+      <div className="tb-right">
+        <a className="tb-btn" href={areaHref('findings', app)} aria-label={blockers ? `${blockers} offene Blocker` : 'Keine offenen Blocker'} title="Blocker"><Icon name="bell" size={22} />{blockers > 0 && <span className="cnt-badge tb-cnt">{blockers > 9 ? '9+' : blockers}</span>}</a>
+        <Popover>
+          <Popover.Trigger><button type="button" className="tb-avatar" aria-label="Konto"><span>Ich</span></button></Popover.Trigger>
+          <Popover.Content placement="bottom end">
+            <Popover.Dialog className="glass w-64 p-3">
+              <div className="grid gap-3">
+                <div><b>Angemeldet</b><div className="quiet text-sm">über den Zugang des Teams</div></div>
+                <Button variant="secondary" onPress={onTheme}><Icon name="contrast" size={20} />Hell oder dunkel</Button>
+                <Button variant="secondary" onPress={onReload}><Icon name="refresh" size={20} />Neu laden</Button>
+              </div>
+            </Popover.Dialog>
+          </Popover.Content>
+        </Popover>
+      </div>
+    </header>
   );
 }
 

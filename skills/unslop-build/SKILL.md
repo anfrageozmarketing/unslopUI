@@ -18,7 +18,8 @@ Audit skills find what is wrong. This skill **builds**. The rule that makes the 
 2. **Flows**: `unslop-flows` with `unslop-flows/references/classic-flows.md`. Output: the list of flows that fit, each as a mermaid diagram with its screens.
 3. **Elements** (read `references/pitfalls.md` first): pick from `unslop-components/references/classic-elements.md`, map to the stack with `references/element-map.md` (HeroUI component first, shadcn pattern when HeroUI has none, own part only for the signature component). Build each once with all states; show them on a component sheet before screens.
 4. **Screens** (read `references/pitfalls.md` first, it lists the defects to avoid from the start): for every screen of every flow take its type from `unslop-structure/references/classic-screens.md` and its composition from `references/screen-recipes.md`. Give each screen one primary action and one signature idea (see "crazy screens" below).
-5. **Gate** (`references/gate.md`): run before reporting done; fix, then re-check. Verify rendering and functions with `unslop-verify` (screenshots, measurements, click-path scenarios).
+5. **Simplify** (`unslop-simplify`): run the element test on every screen, remove what does not earn its place.
+6. **Gate** (`references/gate.md`): run before reporting done; fix, then re-check. Verify rendering and functions with `unslop-verify` (screenshots, measurements, click-path scenarios).
 
 ## Stack rules
 

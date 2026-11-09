@@ -85,8 +85,9 @@ export default function NotePage({ path, appName, dialog = false }) {
     const g = code ? parseFlow(code) : { nodes: [], edges: [] };
     return { secs, rest, graph: g.nodes.length ? { g, derived: false } : { g: sollChain(note.meta.title || '', secs) || { nodes: [], edges: [] }, derived: true } };
   }, [note]);
-  if (err) return <Window title="Notiz"><p className="quiet">{err}</p></Window>;
-  if (!note) return <Window title="Notiz"><NoteSkeleton /></Window>;
+  const Shell = dialog ? Sheet : Window; const back = () => { if (history.length > 1) history.back(); else location.hash = '#/apps'; };
+  if (err) return <Shell title="Notiz" onClose={back}><div className="grid gap-3"><p className="quiet">Die Notiz konnte nicht geladen werden ({err}).</p><div><Button variant="secondary" onPress={() => setErr(null) || api.note(path).then(setNote).catch((e) => setErr(e.message))}>Erneut versuchen</Button></div></div></Shell>;
+  if (!note) return <Shell title="Notiz" onClose={back}><NoteSkeleton /></Shell>;
   const m = note.meta; const isFlow = m.type === 'flow';
   const kind = { flow: 'flows', finding: 'findings', decision: 'decisions' }[m.type] || 'flows';
   const title = m.type === 'decision' ? (m.question || m.title) : (m.title || path.split('/').pop().replace(/\.md$/, ''));

@@ -30,7 +30,7 @@ const KIND = {
 };
 const ACCOUNT = {
   sidebar: 'Account at the bottom of the left sidebar: avatar, name, menu (profile, settings, workspace switch, log out). Calm, always in reach, no extra bar.',
-  topbar: 'Extra bar above the whole app in a distinct tone: logo, workspace switcher, search, notifications, avatar menu; optional slot for an announcement. Use when account, notifications and workspace matter more than the side navigation.',
+  topbar: 'Extra bar above the whole app in a distinct tone: logo, search, notifications, avatar menu (account, theme, log out), optional workspace switcher and announcement slot. The default for tools with accounts, notifications or workspaces.',
   header: 'Account in the top right of the working window header next to the primary action. Best for single-purpose tools with one area.',
   none: 'No account area (single user or public tool).',
 };

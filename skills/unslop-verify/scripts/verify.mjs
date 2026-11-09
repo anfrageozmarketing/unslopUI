@@ -61,6 +61,24 @@ export function inspect() {
       if (out.length > 80) break;
     }
   }
+  {
+    const area = document.querySelector('main, [role="main"], .window') || document.body;
+    const inView = (e) => { const r = e.getBoundingClientRect(); return r.bottom > 0 && r.top < innerHeight && r.width > 0 && r.height > 0; };
+    const sizes = new Set(); let words = 0; let controls = 0;
+    for (const e of area.querySelectorAll('*')) {
+      if (!vis(e) || !inView(e)) continue;
+      const own = [...e.childNodes].filter((c) => c.nodeType === 3).map((c) => c.textContent.trim()).join(' ').trim();
+      if (own) { words += own.split(/\s+/).length; sizes.add(Math.round(parseFloat(getComputedStyle(e).fontSize))); }
+      if (e.matches('a[href], button, input, select, textarea, [role="button"], [role="tab"]')) controls++;
+    }
+    if (sizes.size > 6) out.push({ kind: 'too-busy', msg: `${sizes.size} different type sizes in view (limit about 4-6)` });
+    if (words > 180) out.push({ kind: 'too-busy', msg: `${words} words in view (about 120 is a lot for an app screen)` });
+    if (controls > 24) out.push({ kind: 'too-busy', msg: `${controls} controls in view (about 15 is plenty)` });
+    for (const c of area.querySelectorAll('[class*="card" i], [class*="tile" i], [class*="panel" i]')) {
+      if (!vis(c)) continue; const outer = c.parentElement && c.parentElement.closest('[class*="card" i], [class*="tile" i], [class*="panel" i]');
+      if (outer && outer !== c && area.contains(outer) && getComputedStyle(c).backgroundColor !== 'rgba(0, 0, 0, 0)' && getComputedStyle(outer).backgroundColor !== 'rgba(0, 0, 0, 0)') { out.push({ kind: 'too-busy', msg: `${name(c)} is a box inside the box ${name(outer)}` }); break; }
+    }
+  }
   const small = innerWidth <= 480;
   for (const e of document.querySelectorAll('button, a[href], [role="button"], input, select, textarea, [role="tab"]')) {
     if (!vis(e)) continue; const r = e.getBoundingClientRect();
