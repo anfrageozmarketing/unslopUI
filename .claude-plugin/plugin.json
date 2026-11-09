@@ -1,0 +1,10 @@
+{
+  "name": "unslopui",
+  "description": "Skill pack that turns vibecoded, AI-looking apps into complete, deliberate products: audits structure and flows (login, onboarding, settings, states), then copy and visual craft.",
+  "version": "0.1.0",
+  "author": { "name": "OZ Marketing", "url": "https://github.com/anfrageozmarketing" },
+  "homepage": "https://github.com/anfrageozmarketing/unslopUI",
+  "repository": "https://github.com/anfrageozmarketing/unslopUI",
+  "license": "MIT",
+  "keywords": ["ui", "ux", "design", "audit", "flows", "unslop", "skills"]
+}

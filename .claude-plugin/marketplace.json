@@ -1,0 +1,11 @@
+{
+  "name": "unslopui",
+  "owner": { "name": "OZ Marketing" },
+  "plugins": [
+    {
+      "name": "unslopui",
+      "source": "./",
+      "description": "Audit and fix the structure, flows, states, copy and visuals of AI-generated apps."
+    }
+  ]
+}
