@@ -28,6 +28,12 @@ const KIND = {
   consumer: { density: 'roomy', ratio: 1.25, nav: 'Bottom bar on phone, top navigation on desktop', note: 'Onboarding and empty states carry the brand; larger type and images.' },
   marketing: { density: 'roomy', ratio: 1.25, nav: 'Top navigation bar, sticky and compact', note: 'Sections follow the product story, proof only if real.' },
 };
+const ACCOUNT = {
+  sidebar: 'Account at the bottom of the left sidebar: avatar, name, menu (profile, settings, workspace switch, log out). Calm, always in reach, no extra bar.',
+  topbar: 'Extra bar above the whole app in a distinct tone: logo, workspace switcher, search, notifications, avatar menu; optional slot for an announcement. Use when account, notifications and workspace matter more than the side navigation.',
+  header: 'Account in the top right of the working window header next to the primary action. Best for single-purpose tools with one area.',
+  none: 'No account area (single user or public tool).',
+};
 const uniq = (a) => [...new Set(a)];
 
 export function scope(brief) {
@@ -39,7 +45,8 @@ export function scope(brief) {
   return {
     name: brief.name ?? 'App', kind, feelings: brief.feeling ?? 'calm', features: feats, unknown,
     flows: pick('flows'), screens: pick('screens'), elements: pick('elements'),
-    design: { ...KIND[kind], phone, command: feats.includes('search') || feats.includes('admin') || kind === 'internal' },
+    design: { ...KIND[kind], phone, account: ACCOUNT[brief.account] ? { key: brief.account, text: ACCOUNT[brief.account] } : null, command: feats.includes('search') || feats.includes('admin') || kind === 'internal' },
+    questions: [...(feats.includes('accounts') && !ACCOUNT[brief.account] ? ['Where should the account area live: sidebar bottom, distinct top bar, or window header? (account: sidebar | topbar | header | none)'] : []), ...(brief.devices ? [] : ['Which devices: desktop only, phone too, phone first?'])],
     skipped: Object.keys(FEATURES).filter((f) => !feats.includes(f)),
   };
 }
@@ -59,9 +66,10 @@ Generated from the brief. Every line is a proposal: tick it, strike it with a re
 - Navigation: ${s.design.nav}
 - ${s.design.note}
 - Phone layout: ${s.design.phone ? 'required (bottom bar, reflow states)' : 'not required'}
+- Account area: ${s.design.account ? s.design.account.key + ': ' + s.design.account.text : 'not decided yet'}
 - Command palette: ${s.design.command ? 'yes' : 'optional'}
 
-## Flows (${s.flows.length})
+${s.questions.length ? `## Open questions\n\n${s.questions.map((q) => '- ' + q).join('\n')}\n\n` : ''}## Flows (${s.flows.length})
 
 ${li(s.flows)}
 

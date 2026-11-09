@@ -13,3 +13,7 @@
 - [ ] Say what was not checked.
 - [ ] `references/pitfalls.md` ticked: round badges, inset active tile with edge bar, edge collapse handle, docked panels, aligned bars, tonal focus, create at top, persisted state.
 - [ ] `unslop-verify` run with `scenarios.default.json` plus one scenario per promised function; clean.
+- [ ] No full page reload after any action (scenario with `mark` and `kept`); changes are optimistic with rollback and Undo.
+- [ ] No bare "Loading" text anywhere: boot screen, skeletons and progress exist for every wait (`plain-loading-text` is clean).
+- [ ] Text is editable by clicking it, without a pencil or Edit button.
+- [ ] Spacing per `references/spacing.md`: nothing within 16 px (phone 12 px) of its window or card edge, full-bleed only marked `data-edge`; `unslop-verify` has no `edge-touch`.

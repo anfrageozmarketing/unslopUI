@@ -78,7 +78,9 @@ Source of truth for every size. Components and screens use these values only. Re
 
 ${Object.entries(s.space).map(([k, v]) => `\`${k}\` = ${f(v)}`).join(' · ')}
 
-Use: inside a control 2-3, between related items 2-4, between groups 6-8, between sections 12-16, window padding 5-6.
+Use: inside a control 2-3, between related items 2-4, between groups 6-8, between sections 12-16, window padding 6-8 (24-32px), phone side margin 4 (16px).
+
+**Edges:** nothing closer than 16px (phone 12px) to the edge of its window or card. Full-bleed only on purpose (\`data-edge\`). Full rules: \`unslop-build/references/spacing.md\`.
 
 ## Type scale
 

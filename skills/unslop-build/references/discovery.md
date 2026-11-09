@@ -1,6 +1,6 @@
 # Discovery: ask first, then decide what goes in
 
-Before any screen, find out what the app or feature must do. Ask **one batch of at most seven questions** (skip what the code or the user already answered), then run `scripts/scope.mjs`.
+Before any screen, find out what the app or feature must do. Ask **one batch of at most eight questions** (skip what the code or the user already answered), then run `scripts/scope.mjs`.
 
 ## Questions
 
@@ -11,6 +11,7 @@ Before any screen, find out what the app or feature must do. Ask **one batch of 
 5. **Feeling**: calm, bold, warm or cool; brand colour or existing logo; font preference.
 6. **Language and form of address**: German Du or Sie, English; one language or several.
 7. **The one action** a user must complete in the first minute.
+8. **Where the account area lives** (if there are accounts): (a) bottom of the left sidebar, (b) an extra bar above the whole app in a distinct tone with logo, workspace switcher, search, notifications and avatar (optionally an announcement slot), (c) top right of the window header, (d) none. Show the three options as small sketches; do not pick silently.
 
 If the app already exists: derive answers from the code first (`unslop-ui` inventory), then ask only about the gaps.
 

@@ -20,3 +20,9 @@ test('no duplicates and feature names are listed as skipped', () => {
   assert.ok(s.skipped.includes('payments')); assert.equal(s.skipped.length, Object.keys(FEATURES).length - 2);
   assert.match(toMd(s), /## Screens/);
 });
+
+test('account placement is asked when accounts exist and not given', () => {
+  assert.ok(scope({ features: ['accounts'] }).questions.some((q) => /account area/i.test(q)));
+  const s = scope({ features: ['accounts'], account: 'topbar', devices: ['desktop'] });
+  assert.equal(s.questions.length, 0); assert.match(toMd(s), /Account area: topbar/);
+});

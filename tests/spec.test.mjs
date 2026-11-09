@@ -17,3 +17,5 @@ test('css maps HeroUI without borders and md has no hex', () => {
   const css = toCss(buildSpec()); assert.match(css, /--border-width: 0px/); assert.match(css, /@theme/); assert.doesNotMatch(css, /#[0-9a-f]{3,6}\b/i);
   assert.match(toMd(buildSpec()), /Type scale/);
 });
+
+test('SPEC.md states the edge rule', () => { assert.match(toMd(buildSpec()), /nothing closer than 16px/i); });

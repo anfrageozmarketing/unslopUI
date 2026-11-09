@@ -45,7 +45,7 @@ export const AREAS = [
   { key: 'flows', label: 'Flows', icon: 'route' },
   { key: 'focus', label: 'Fokus', icon: 'bolt' },
   { key: 'findings', label: 'Befunde', icon: 'alert' },
-  { key: 'decisions', label: 'Entscheide', icon: 'question' },
+  { key: 'decisions', label: 'Fragen', icon: 'question' },
 ];
 export const areaHref = (key, app) => (key === 'apps' || !app ? '#/apps' : `#/${key}/${encodeURIComponent(app)}`);
 export function parseHash(hash) {

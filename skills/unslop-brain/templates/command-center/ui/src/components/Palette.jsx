@@ -19,8 +19,8 @@ export default function Palette({ open, onOpenChange, apps }) {
   };
   return (
     <Modal.Backdrop isOpen={open} onOpenChange={onOpenChange} variant="blur">
-      <Modal.Container placement="top" size="md">
-        <Modal.Dialog className="glass p-3" aria-label="Suchen und springen">
+      <Modal.Container placement="top" size="lg">
+        <Modal.Dialog className="glass p-3 palette-dialog" aria-label="Suchen und springen">
           <SearchField aria-label="Suchen" autoFocus value={q} onChange={setQ} fullWidth>
             <SearchField.Group><SearchField.SearchIcon /><SearchField.Input placeholder="Apps, Flows, Befunde, Entscheidungen" onKeyDown={onKey} role="combobox" aria-expanded="true" aria-controls="pal-list" aria-activedescendant={results[active] ? `pal-${results[active].id}` : undefined} /><SearchField.ClearButton /></SearchField.Group>
           </SearchField>

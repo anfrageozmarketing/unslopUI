@@ -1,4 +1,4 @@
-import { Button } from '@heroui/react';
+import { Button, Modal } from '@heroui/react';
 import { AREAS, areaHref, appHref, blockersOf, openDecisionsOf, pct, safeUrl, totalsOf } from '../lib/model.js';
 import { Icon, Strip } from './ui.jsx';
 import { useShell } from '../lib/shell.jsx';
@@ -14,14 +14,14 @@ export function Rail({ route, apps, app, onSearch, onTheme, onReload }) {
       <a className="logo" href="#/apps" aria-label="Command Center"><Icon name="route" size={24} /></a>
       {AREAS.map((a) => (
         <a key={a.key} className="rail-btn" href={areaHref(a.key, app)} title={a.label} aria-current={current === a.key ? 'page' : undefined}>
-          <span className="rail-ic"><Icon name={a.icon} size={26} active={current === a.key} />{count[a.key] > 0 && <span className="badge cnt" role="img" aria-label={a.key === 'findings' ? `${count[a.key]} offene Blocker (alle Apps)` : `${count[a.key]} offene Entscheidungen (alle Apps)`} title={a.key === 'findings' ? `${count[a.key]} offene Blocker (alle Apps)` : `${count[a.key]} offene Entscheidungen (alle Apps)`}>{count[a.key] > 9 ? '9+' : count[a.key]}</span>}</span>
+          <span className="rail-ic"><Icon name={a.icon} size={26} active={current === a.key} />{count[a.key] > 0 && <span className="cnt-badge cnt" role="img" aria-label={a.key === 'findings' ? `${count[a.key]} offene Blocker (alle Apps)` : `${count[a.key]} offene Entscheidungen (alle Apps)`} title={a.key === 'findings' ? `${count[a.key]} offene Blocker (alle Apps)` : `${count[a.key]} offene Entscheidungen (alle Apps)`}>{count[a.key] > 9 ? '9+' : count[a.key]}</span>}</span>
           <span className="rail-lbl">{a.label}</span>
         </a>
       ))}
       <span className="sp" />
       <button type="button" className="rail-btn util" title="Suchen (Strg K)" onClick={onSearch}><span className="rail-ic"><Icon name="search" size={24} /></span><span className="rail-lbl">Suchen</span></button>
       <button type="button" className="rail-btn util" title="Hell oder dunkel" onClick={onTheme}><span className="rail-ic"><Icon name="contrast" size={24} /></span><span className="rail-lbl">Design</span></button>
-      <button type="button" className="rail-btn util" title="Aktualisieren" onClick={onReload}><span className="rail-ic"><Icon name="refresh" size={24} /></span><span className="rail-lbl">Laden</span></button>
+      <button type="button" className="rail-btn util" title="Aktualisieren" onClick={onReload}><span className="rail-ic"><Icon name="refresh" size={24} /></span><span className="rail-lbl">Neu laden</span></button>
     </nav>
   );
 }
@@ -36,7 +36,7 @@ export function Context({ area, apps, app }) {
         const bl = blockersOf(a).length;
         return (
           <a key={a.name} className="folder" href={area === 'apps' ? appHref(a.name) : areaHref(area, a.name)} aria-current={app === a.name && area !== 'apps' ? 'page' : undefined}>
-            <span className="nm"><span>{a.name}</span>{bl > 0 && <span className="badge" title={`${bl} offene Blocker`}>{bl > 9 ? '9+' : bl}</span>}</span>
+            <span className="nm"><span>{a.name}</span>{bl > 0 && <span className="cnt-badge" title={`${bl} offene Blocker`}>{bl > 9 ? '9+' : bl}</span>}</span>
             <Strip app={a} size="sm" />
           </a>
         );
@@ -64,6 +64,23 @@ export function Window({ title, sub, actions, children }) {
       </header>
       <div className="window-body">{children}</div>
     </main>
+  );
+}
+
+// Detail as a dialog over the list: close button, Esc and a click outside all lead back.
+export function Sheet({ title, sub, actions, onClose, children }) {
+  return (
+    <Modal.Backdrop isOpen onOpenChange={(o) => { if (!o) onClose(); }} variant="blur">
+      <Modal.Container size="lg" placement="center">
+        <Modal.Dialog className="note-dialog" aria-label={typeof title === 'string' ? title : 'Details'}>
+          <header className="window-head">
+            <div className="min-w-0"><h1>{title}</h1>{sub && <div className="sub-t">{sub}</div>}</div>
+            <div className="tools">{actions}<Button variant="secondary" size="sm" onPress={onClose}>Schließen <span className="kbd">Esc</span></Button></div>
+          </header>
+          <div className="window-body">{children}</div>
+        </Modal.Dialog>
+      </Modal.Container>
+    </Modal.Backdrop>
   );
 }
 

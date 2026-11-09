@@ -8,10 +8,11 @@ import Palette from './components/Palette.jsx';
 import { AppsView, DecisionsView, FindingsView, FlowsView, FocusView } from './views/Areas.jsx';
 import NotePage from './views/NotePage.jsx';
 import Gallery from './views/Gallery.jsx';
+import { BootScreen, ListSkeleton } from './components/Loading.jsx';
 
 function Shell() {
   const route = useRoute();
-  const { data, reload } = useData();
+  const { data, reload, state } = useData();
   const { ctxOpen } = useShell();
   const [palette, setPalette] = useState(false);
   const [theme, setTheme] = useState(() => { try { const t = localStorage.getItem('cc.theme'); return t === 'dark' || t === 'light' ? t : null; } catch { return null; } });
@@ -30,9 +31,10 @@ function Shell() {
   const toggleTheme = () => { const dark = theme ? theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches; setTheme(dark ? 'light' : 'dark'); };
   const app = useMemo(() => data.apps.find((a) => a.name === appName), [data, appName]);
   const area = route.name === 'note' || route.name === 'workspace' ? route.kind : route.name === 'gallery' ? 'apps' : route.name;
-  const needApp = <Window title="Wähle eine App"><p className="quiet">Lädt …</p></Window>;
+  const needApp = <Window title="Apps"><ListSkeleton label="Apps werden geladen" /></Window>;
   const view = route.name === 'apps' ? <AppsView />
     : route.name === 'gallery' ? <Gallery />
+    : route.name === 'note' && (route.kind === 'findings' || route.kind === 'decisions') && app ? <>{route.kind === 'findings' ? <FindingsView app={app} /> : <DecisionsView app={app} />}<NotePage key={route.path} path={route.path} appName={route.app} dialog /></>
     : route.name === 'note' ? <NotePage path={route.path} appName={route.app} />
     : route.name === 'workspace' ? (app ? <FlowsView app={app} /> : needApp)
     : !app ? needApp
@@ -40,11 +42,14 @@ function Shell() {
     : route.name === 'focus' ? <FocusView app={app} />
     : route.name === 'findings' ? <FindingsView app={app} />
     : <DecisionsView app={app} />;
+  if (state === 'loading') return <BootScreen />;
   return (
     <>
       <div className={`app${ctxOpen ? '' : ' no-ctx'}`}>
-        <Rail route={{ ...route, kind: route.kind }} apps={data.apps} app={appName} onSearch={() => setPalette(true)} onTheme={toggleTheme} onReload={reload} />
-        <Context area={area} apps={data.apps} app={appName} />
+        <div className="sidebar">
+          <Rail route={{ ...route, kind: route.kind }} apps={data.apps} app={appName} onSearch={() => setPalette(true)} onTheme={toggleTheme} onReload={reload} />
+          <Context area={area} apps={data.apps} app={appName} />
+        </div>
         {view}
       </div>
       {route.name === 'workspace' && <Workspace key={route.path} path={route.path} appName={route.app} />}

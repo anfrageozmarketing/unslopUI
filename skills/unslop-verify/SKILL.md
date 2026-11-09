@@ -18,7 +18,7 @@ Options: `--widths 1280,360`, `--themes light,dark`, `--auth user:pass` (basic a
 
 ## What you get
 
-`verify-out/REPORT.md` and one screenshot per route, width and theme. The report lists findings per view: `overflow-x`, `clipped-text`, `progress-thin | progress-empty | progress-over | progress-a11y`, `broken-image`, `tap-target`, `cursor`, `no-name`, `overlap`, plus console errors.
+`verify-out/REPORT.md` and one screenshot per route, width and theme. The report lists findings per view: `overflow-x`, `clipped-text`, `progress-thin | progress-empty | progress-over | progress-a11y`, `broken-image`, `badge-not-round`, `badge-big`, `glow`, `inset-highlight`, `plain-loading-text` (a bare "Lädt" or "Loading"), `inner-scroll-x`, `edge-touch` (text or control closer than 16 px to the window edge), `hover-noninteractive` (real mouse hover on elements that are not clickable), `hover-no-padding` (hover tone touching the text), `tap-target`, `cursor`, `no-name`, `overlap`, plus console errors. Hover checks run at desktop width; switch off with `--hover off`.
 
 ## Then
 
@@ -35,6 +35,7 @@ The same checks apply by hand: see `docs/ui-review.md` section 3b for the list a
 Pass `--scenarios scenarios.json` (see `scenarios.example.json`). Each scenario is a short click path plus expectations; a failed expectation is a finding in `REPORT.md`.
 
 - Steps: `goto`, `click` (selector or `text=Label`), `fill`, `press`, `reload`, `wait`, `emulate`.
+- More steps: `mark` (set a marker on the page), `type`, `clickText`. More expectations: `kept` (the marker survived, so the page did not reload), `noPlainLoading`.
 - Expectations: `attr`, `visible`, `hidden`, `text`, `count`, `storage` (localStorage value), `url`, `noOverflow`.
 
 Write one scenario per function the product promises: a setting survives a reload, a created item appears and stays after reload, delete offers Undo, login rejects a wrong password with a readable message, the back button returns to the same list position. Classic flows and screens (`unslop-flows`, `unslop-structure`) give the checklist; each flow that is marked built needs at least one scenario.

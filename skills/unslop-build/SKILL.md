@@ -9,7 +9,7 @@ Audit skills find what is wrong. This skill **builds**. The rule that makes the 
 
 ## Order (no skipping)
 
-0. **Discovery**: ask what the app or feature must do (`references/discovery.md`, at most seven questions), then `node scripts/scope.mjs brief.json --out design/SCOPE.md` decides which flows, screens, UI elements and design-system settings are in. The user confirms the scope before anything is built.
+0. **Discovery**: ask what the app or feature must do (`references/discovery.md`, at most eight questions, including where the account area lives), then `node scripts/scope.mjs brief.json --out design/SCOPE.md` decides which flows, screens, UI elements and design-system settings are in. The user confirms the scope before anything is built.
 1. **Define the spec** (nothing built yet)
    - Colours: `unslop-foundation/scripts/palette.mjs` writes `tokens.css` (checked contrast, light and dark).
    - Sizes: `node scripts/spec.mjs --out design --base 4 --ratio 1.2 --density comfortable --font "<font>"` writes `spec.css` (Tailwind v4 `@theme` + HeroUI variable mapping), `SPEC.md`, `spec.json`: spacing multiples, type scale, control heights, radii, breakpoints, 44 px tap target.
@@ -55,5 +55,6 @@ Limits: one idea per screen, tokens only, contrast checked, the plain version mu
 - `scripts/spec.mjs` - size spec generator
 - `references/element-map.md` - classic element to HeroUI / shadcn / Tailwind
 - `references/screen-recipes.md` - classic screen type to composition
+- `references/spacing.md` - spacing rules: nothing at the edge, distances by relationship, rhythm
 - `references/pitfalls.md` - known defects to avoid while building
 - `references/gate.md` - checks before done

@@ -17,7 +17,7 @@ export default function Gallery() {
         <section><h2>Leiste</h2><div className="grid-c">
           <Cell cap="Aktiv"><div className="rail-btn" aria-current="page" style={{ position: 'relative' }}><Icon name="route" size={26} /></div></Cell>
           <Cell cap="Standard"><div className="rail-btn"><Icon name="alert" size={26} /></div></Cell>
-          <Cell cap="Mit Zähler"><div className="rail-btn"><Icon name="question" size={26} /><span className="badge cnt">3</span></div></Cell>
+          <Cell cap="Mit Zähler"><div className="rail-btn"><Icon name="question" size={26} /><span className="cnt-badge cnt">3</span></div></Cell>
         </div></section>
         <section><h2>Bereiche</h2><div className="grid-c">{AREAS.map((a) => <Cell key={a.key} cap={a.label}><div className="inline-flex items-center gap-2 font-bold"><Icon name={a.icon} size={24} />{a.label}</div></Cell>)}</div></section>
         <section><h2>Status</h2><div className="grid-c">

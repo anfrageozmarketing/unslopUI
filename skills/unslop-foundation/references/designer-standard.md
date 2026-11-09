@@ -13,13 +13,16 @@ Quality bar: "Would a designer post this on Behance or Dribbble as a finished sh
 
 ## App shell pattern (desktop apps and tools)
 
-Three layers, no separator lines:
+**Two panels, never three.** One sidebar panel and one window, on the shell tone, 12 px apart, same radius (28 px), same surface tone (the sidebar is as light as the content).
 
-1. **Rail** (about 64 px): the product icon on top, then one app-like button per area. Unselected: muted icon. The tile is inset from the rail edge (about 14 px each side), never touching it. Selected: a raised tile (surface-2) with a soft drop shadow and the full-contrast icon, plus a thin accent bar (4 px, rounded on the inner side) exactly at the outer edge of the rail as the active mark. Utilities (search, theme, refresh) at the bottom.
-2. **Context column** (about 240 px): title of the area, then its sub-folders (list of items to switch between), compact status info at the bottom (for example sync or usage). Same tone as the rail, so the two read as one shell.
-3. **Window**: the working surface as a rounded container (radius 24 px) with a margin to the shell edge. It is clearly lighter than the shell in dark mode and whiter in light mode. Content scrolls inside it; its header carries title and the one primary action.
+1. **Sidebar panel** = rail + menu column merged into one rounded panel, no seam, no line, no third box:
+   - **Rail** (about 104 px, left part): the product icon on top, then one labelled app-like button per area (icon above label). Unselected: muted icon. Selected: a raised tile (surface-2), inset about 14 px from the panel edge, plus a 4 px accent bar exactly at the outer edge. Utilities (search, theme, reload) at the bottom, labelled.
+   - **Menu column** (about 264 px, right part): title of the area, then its sub-folders (apps), compact status info at the bottom. Selected sub-folder uses the same surface-2 tile. It collapses with a small handle on the window edge.
+2. **Window**: the working surface, rounded, margin to the shell edge. Content scrolls inside it; the header carries title and the one primary action.
 
-On a phone: the rail becomes a bottom bar, the context column a title row with a switcher, the window runs edge to edge with rounded top corners.
+This is the same structure as shadcn's sidebar blocks (an icon rail with a nested menu list, content as an inset rounded card). Build it from HeroUI and Tailwind parts, and take the shadcn block as the structural reference.
+
+On a phone: the rail becomes a bottom bar, the menu column a title row with a switcher, the window runs edge to edge with rounded top corners.
 
 ## Tile pattern, layered backgrounds, inversion
 
@@ -73,7 +76,8 @@ Every area has a **preview** and a **workspace**.
 |---|---|
 | Status or any small fixed set | Tap the marker, small popover with the options, keyboard arrows and Enter |
 | 2-4 exclusive options (priority, view) | Segmented control in place |
-| Short text (title, evidence, answer) | Click the text, it turns into an input, Enter saves, Esc cancels |
+| Short text (title, evidence, answer) | Click the text itself (no pencil icon or Edit button), it turns into an input, Enter saves, Esc cancels |
+| Paragraphs and sections | Click the rendered text, it becomes an auto-growing text area in place, saves on leaving, Esc cancels, Undo |
 | List of strings (screens, endpoints, tags) | Token field: chips with a remove mark, type and press Enter to add |
 | Yes / no | Switch |
 | Long text | Open an editor in a sheet or modal with live preview; the text stays rendered otherwise |
@@ -82,6 +86,13 @@ Every area has a **preview** and a **workspace**.
 | Several fields of one object | A property list: label left, value right, every value editable in place, autosave |
 
 Pick the lightest pattern that works. A labelled input with a Save button is not a pattern, it is a fallback.
+
+## Waiting states (never a bare "Loading")
+
+- **First load:** a loading screen that looks like the app (shell silhouette in skeletons) with one brand animation and a specific line. It hands over to the real screen without layout jump.
+- **Inside views:** skeletons in the shape of the content (rows, cards, diagram block).
+- **Actions:** optimistic change at once; the control shows its own progress; long jobs show real progress and the current step.
+- **No page reloads** after actions. A failure rolls back and says what happened and what to do.
 
 ## No borders as separators
 

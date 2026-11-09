@@ -8,6 +8,7 @@ import { STATUS_LABEL } from '../lib/constants.js';
 import { byPrio } from '../lib/model.js';
 import { Icon, Markdown, StatusPicker } from '../components/ui.jsx';
 import FlowEditor from '../components/FlowEditor.jsx';
+import { StageSkeleton } from '../components/Loading.jsx';
 import { Properties } from './NotePage.jsx';
 
 const graphOf = (note) => {
@@ -81,7 +82,7 @@ export default function Workspace({ path, appName }) {
           </div>
         </header>
         <div className={`ws-stage${panel && note ? ' has-panel' : ''}`}>
-          {!graph ? <p className="quiet p-8">Lädt …</p> : mode === 'flow'
+          {!graph ? <StageSkeleton /> : mode === 'flow'
             ? <FlowEditor graph={graph} onChange={apply} fitSignal={fit} />
             : <div className="ws-text"><textarea className="editor" value={text} onChange={(e) => onText(e.target.value)} aria-label="Notiztext (Markdown)" spellCheck={false} /><div className="pv"><Markdown text={text} /></div></div>}
           <button type="button" className="ws-nav l" aria-label="Vorheriger Flow" title="Vorheriger Flow" disabled={idx <= 0} onClick={() => go(-1)}><Icon name="back" size={22} /></button>

@@ -1,5 +1,96 @@
 [
-  { "name": "Theme choice survives reload", "route": "/", "steps": [{ "click": "text=Design" }, { "wait": 300 }, { "reload": true }], "expect": [{ "storage": ["cc.theme", "dark"] }] },
-  { "name": "No sideways scroll on a phone", "route": "/", "width": 360, "steps": [], "expect": [{ "noOverflow": true }] },
-  { "name": "No sideways scroll when narrow desktop", "route": "/", "width": 820, "steps": [], "expect": [{ "noOverflow": true }] }
+  {
+    "name": "Theme choice survives reload",
+    "route": "/",
+    "steps": [
+      {
+        "click": "text=Design"
+      },
+      {
+        "wait": 300
+      },
+      {
+        "reload": true
+      }
+    ],
+    "expect": [
+      {
+        "storage": [
+          "cc.theme",
+          "dark"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "No sideways scroll on a phone",
+    "route": "/",
+    "width": 360,
+    "steps": [],
+    "expect": [
+      {
+        "noOverflow": true
+      }
+    ]
+  },
+  {
+    "name": "No sideways scroll when narrow desktop",
+    "route": "/",
+    "width": 820,
+    "steps": [],
+    "expect": [
+      {
+        "noOverflow": true
+      }
+    ]
+  },
+  {
+    "name": "Command palette opens, fits, no sideways scroll",
+    "route": "/",
+    "steps": [
+      {
+        "press": "Control+k"
+      },
+      {
+        "wait": 400
+      }
+    ],
+    "expect": [
+      {
+        "visible": "[role=dialog]"
+      },
+      {
+        "noOverflow": true
+      }
+    ]
+  },
+  {
+    "name": "Acting does not reload the page",
+    "route": "/",
+    "steps": [
+      {
+        "mark": true
+      },
+      {
+        "press": "Control+k"
+      },
+      {
+        "wait": 300
+      },
+      {
+        "press": "Escape"
+      },
+      {
+        "wait": 200
+      }
+    ],
+    "expect": [
+      {
+        "kept": true
+      },
+      {
+        "noPlainLoading": true
+      }
+    ]
+  }
 ]
