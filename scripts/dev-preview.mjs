@@ -17,7 +17,7 @@ const PW = 'demo-preview-only-123';
 const APP_PORT = Number(process.env.APP_PORT || 18090);
 const PROXY_PORT = Number(process.env.PREVIEW_PORT || 18091);
 const tmp = mkdtempSync(join(tmpdir(), 'cc-preview-'));
-cpSync(join(ROOT, 'examples/demo-vault'), join(tmp, 'vault'), { recursive: true });
+cpSync(process.env.PREVIEW_VAULT || join(ROOT, 'examples/demo-vault'), join(tmp, 'vault'), { recursive: true });
 const user = spawnSync('node', [join(CC, 'hash-password.mjs'), 'demo'], { env: { ...process.env, CC_PASSWORD: PW }, encoding: 'utf8' }).stdout.trim();
 const app = spawn('node', [join(CC, 'server.mjs')], { env: { ...process.env, VAULT_DIR: join(tmp, 'vault'), CC_USERS: user, PORT: String(APP_PORT), HOST: '127.0.0.1' }, stdio: 'ignore' });
 const auth = 'Basic ' + Buffer.from(`demo:${PW}`).toString('base64');

@@ -92,16 +92,35 @@ const iconBtn = (name, label, onclick, cls = '') => h('button', { type: 'button'
 /* ---------- generated picture: every app gets a star chart of its own flows, seeded by its name ---------- */
 function hashStr(s) { let x = 2166136261; for (const c of String(s)) { x ^= c.codePointAt(0); x = Math.imul(x, 16777619); } return x >>> 0; }
 function mulberry(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
-// Only numbers and whitelisted status names go into the markup, so no note content can reach it.
-function artSvg(a, W = 800, H = 240) {
-  const rnd = mulberry(hashStr(a.name)); const areas = areasOf(a); const parts = [];
-  for (let i = 0; i < 3; i++) parts.push(`<circle class="ring" cx="${Math.round(rnd() * W)}" cy="${Math.round(rnd() * H)}" r="${Math.round(60 + rnd() * 150)}"/>`);
-  const band = H / (areas.length + 1);
+// A bold composition: big flat status-coloured fields, one thick route per area, one node shape per area.
+// Only numbers and whitelisted names go into the markup, so no note content can reach it.
+const AREA_SHAPE = { Zugang: 'sq', Onboarding: 'tri', Kernablauf: 'circ', Einstellungen: 'dia', System: 'hex' };
+function shapeAt(kind, x, y, r) {
+  const f = (n) => Math.round(n * 10) / 10;
+  if (kind === 'sq') return `<rect x="${f(x - r)}" y="${f(y - r)}" width="${f(r * 2)}" height="${f(r * 2)}" rx="${f(r * 0.3)}"`;
+  if (kind === 'tri') return `<polygon points="${f(x)},${f(y - r * 1.15)} ${f(x + r * 1.1)},${f(y + r * 0.85)} ${f(x - r * 1.1)},${f(y + r * 0.85)}"`;
+  if (kind === 'dia') return `<polygon points="${f(x)},${f(y - r * 1.25)} ${f(x + r * 1.25)},${f(y)} ${f(x)},${f(y + r * 1.25)} ${f(x - r * 1.25)},${f(y)}"`;
+  if (kind === 'hex') return `<polygon points="${[0, 1, 2, 3, 4, 5].map((i) => `${f(x + r * 1.15 * Math.cos(i * Math.PI / 3))},${f(y + r * 1.15 * Math.sin(i * Math.PI / 3))}`).join(' ')}"`;
+  return `<circle cx="${f(x)}" cy="${f(y)}" r="${f(r)}"`;
+}
+function artSvg(a, W = 800, H = 240, edge = false) {
+  const rnd = mulberry(hashStr(a.name)); const areas = areasOf(a); const parts = []; const sts = (s) => (LABEL[s] ? s : 'na');
+  const present = STATUS.map(([k]) => k).filter((k) => a.flows.some((f) => f.status === k)); const pool = present.length ? present : ['na'];
+  const pick = () => pool[Math.floor(rnd() * pool.length)];
+  const fields = edge ? 6 : 3;
+  for (let i = 0; i < fields; i++) {
+    const left = edge && i < 3; const r = Math.round(H * (0.45 + rnd() * 0.5));
+    const cx = left ? Math.round(rnd() * 200) : Math.round(rnd() * W); const cy = left ? Math.round(H * (0.12 + i * 0.32 + rnd() * 0.1)) : Math.round(rnd() * H);
+    parts.push(rnd() < 0.5 ? `<circle class="fld st-${pick()}" cx="${cx}" cy="${cy}" r="${r}"/>` : `<rect class="fld st-${pick()}" x="${cx - r}" y="${cy - Math.round(r * 0.45)}" width="${r * 2}" height="${Math.round(r * 0.9)}" rx="${Math.round(r * 0.45)}" transform="rotate(${Math.round(rnd() * 60 - 30)} ${cx} ${cy})"/>`);
+  }
+  const band = H / (areas.length + 1); const unit = edge ? 1.9 : 1;
   areas.forEach((ar, i) => {
-    const fl = a.flows.filter((f) => f.area === ar); let x = 24 + rnd() * 50;
-    const pts = fl.map((f) => { x += ((W - 90) / fl.length) * (0.7 + rnd() * 0.6); return { f, x: Math.min(W - 16, Math.round(x)), y: Math.round(band * (i + 1) + (rnd() - 0.5) * band * 0.7) }; });
-    if (pts.length > 1) parts.push(`<polyline class="rt" points="${pts.map((p) => `${p.x},${p.y}`).join(' ')}"/>`);
-    for (const p of pts) parts.push(`<circle class="st st-${LABEL[p.f.status] ? p.f.status : 'na'}" cx="${p.x}" cy="${p.y}" r="${p.f.prio === 'MVP' ? 6 : p.f.prio === 'V1' ? 4.5 : 3}"/>`);
+    const fl = a.flows.filter((f) => f.area === ar); const shape = AREA_SHAPE[ar] || 'circ'; let x = 30 + rnd() * 60;
+    const counts = {}; for (const f of fl) counts[sts(f.status)] = (counts[sts(f.status)] || 0) + 1;
+    const dom = Object.keys(counts).sort((p, q) => counts[q] - counts[p])[0] || 'na';
+    const pts = fl.map((f) => { x += ((W - 190) / fl.length) * (0.75 + rnd() * 0.5); return { f, x: Math.min(W - 70, Math.round(x)), y: Math.round(band * (i + 1) + (rnd() - 0.5) * band * 0.6) }; });
+    if (pts.length > 1) parts.push(`<polyline class="rt st-${dom}" points="${pts.map((p) => `${p.x},${p.y}`).join(' ')}"/>`);
+    for (const p of pts) { const r = (p.f.prio === 'MVP' ? 15 : p.f.prio === 'V1' ? 11 : 8) * unit; parts.push(`${shapeAt(shape, p.x, p.y, r)} class="nd st-${sts(p.f.status)}"/>`); }
   });
   return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">${parts.join('')}</svg>`;
 }
@@ -109,7 +128,7 @@ function artBox(a, cls) { const d = h('div', { class: `art ${cls}`, 'aria-hidden
 function setBackdrop() {
   const el = document.getElementById('backdrop'); if (!el) return;
   const cur = currentApp(); const a = data.apps.find((x) => x.name === cur);
-  el.innerHTML = artSvg(a || { name: 'Command Center', flows: data.apps.flatMap((x) => x.flows) }, 1200, 700);
+  el.innerHTML = artSvg(a || { name: 'Command Center', flows: data.apps.flatMap((x) => x.flows) }, 1200, 700, true);
 }
 
 /* ---------- direct manipulation: popover, segmented switch, inline text, undo ---------- */
@@ -263,13 +282,14 @@ function legend(a, active, onToggle) {
       h('span', { class: 'mk', 'aria-hidden': 'true' }), l, ' ', h('span', { class: 'num' }, a.counts[k]))));
 }
 // One sentence instead of KPI cards.
-function summary(a) {
+function summaryText(a) {
   const bl = blockersOf(a).length; const dc = decisionsOf(a).length;
   const parts = [`${a.total} Flows, ${pct(a.coverage)} abgedeckt`];
   if (bl) parts.push(`${bl} offene Blocker`);
   if (dc) parts.push(`${dc} offene Entscheidungen`);
-  return h('p', { class: 'summary' }, parts.join(' · '));
+  return parts.join(' · ');
 }
+const summary = (a) => h('p', { class: 'summary' }, summaryText(a));
 
 /* ---------- side + home ---------- */
 function renderSide() {
@@ -314,9 +334,8 @@ function appView(name) {
   const url = safeUrl(a.url);
   const root = h('div', {},
     h('header', { class: 'hero' }, artBox(a, 'hero-art'), h('div', { class: 'hero-body' },
-      h('div', { class: 'app-top' }, h('h1', {}, a.name),
-        h('span', { class: 'row' }, a.score != null ? h('span', { class: 'quiet num' }, `Score ${a.score}/36`) : null, url ? h('a', { class: 'btn-open', href: url, target: '_blank', rel: 'noopener noreferrer' }, 'App öffnen', icon('external', 16)) : null)),
-      strip(a), summary(a))),
+      h('div', { class: 'app-top' }, h('h1', {}, a.name), url ? h('a', { class: 'btn-open', href: url, target: '_blank', rel: 'noopener noreferrer' }, 'App öffnen', icon('external', 16)) : null),
+      strip(a), h('p', { class: 'summary' }, `${a.score != null ? `Score ${a.score}/36 · ` : ''}${summaryText(a)}`))),
     h('nav', { class: 'tabs', 'aria-label': 'Bereiche' }, TABS.map((t) => h('button', { type: 'button', 'aria-pressed': String(t.key === appTab), onclick: () => { appTab = t.key; appView(name); } },
       icon(t.ic, 18), t.label, t.n(a) != null ? h('span', { class: 'num cnt' }, t.n(a)) : null))));
   ({ flows: flowsTab, attention: attentionTab, findings: findingsTab, decisions: decisionsTab }[appTab])(a, root, name);
@@ -476,7 +495,7 @@ function splitSections(md) {
   return { pre: pre.join('\n').replace(/^\s*#\s+.*\n/, ''), secs: secs.map((s) => ({ title: s.title, md: s.lines.join('\n') })) };
 }
 /* ---------- flow canvas: the diagram as nodes and curves, not as a document ---------- */
-const NODE_W = 196; const NODE_H = 62; const DEC = 66; const GAP_X = 124; const GAP_Y = 44; const PAD = 70;
+const NODE_W = 180; const NODE_H = 72; const DEC = 80; const GAP_X = 84; const GAP_Y = 50; const PAD = 44;
 const cleanLabel = (s) => String(s || '').replace(/<br\s*\/?>/gi, ' ').replace(/^["'`]+|["'`]+$/g, '').replace(/\s+/g, ' ').trim();
 // Reads the usual mermaid flowchart subset: ids with [ ] ( ) { } shapes, chains, -- text --> and -->|text| labels.
 function parseFlow(src) {

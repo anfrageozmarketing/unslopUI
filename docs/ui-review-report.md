@@ -95,3 +95,44 @@ Screenshots (nur lokal, nicht im Repo): `/tmp/claude-0/-root/b2f0a340-d41f-49f7-
 - Mobil überlagert das Bildmuster im App-Kopf teils den Text "Score" (abgeschwächt, nicht ganz weg).
 - Sortierbare Tabellenköpfe entfallen, weil es keine echten Tabellen gibt.
 - Mit vielen Apps oder sehr vielen Flows nicht getestet (Seed-Bild, Palette mit mehr als 40 Treffern).
+
+---
+
+# Runde 3: kräftigere Bildsprache, sichtbares Glas, größere Leinwand-Knoten
+
+Screenshots (nur lokal): `/tmp/claude-0/-root/b2f0a340-d41f-49f7-95b0-8cb8f4055229/scratchpad/` in `s1` (erster Stand Runde 3), `s2` (gescrollt, Leinwand), `s3` (alle Seiten, 28 Seiten-Bilder plus je Tab, Popover, Palette; hell/dunkel, 1280 und 360), `s4` (nach den Korrekturen), `c1` (Kontrastmessung). Getestet mit einem Temp-Vault mit 3 Apps (`PREVIEW_VAULT=.../scratchpad/vault3`; `dev-preview.mjs` kennt jetzt diese Variable, `examples/demo-vault` blieb unverändert).
+
+## 1. Bildsprache
+
+- **Gesehen / falsch:** Haarlinien und kleine graue Punkte, wirkten wie zufällige Kreise.
+- **Geändert:** `artSvg` komponiert jetzt große flache Flächen (Kreise und gedrehte Pillen) in Statusfarben (Deckkraft 0,24), dicke Routenlinien pro Bereich (9 px, Farbe = häufigster Status des Bereichs) und große Knoten. Jeder Bereich hat eine eigene Form (Zugang Quadrat, Onboarding Dreieck, Kernablauf Kreis, Einstellungen Raute, System Sechseck); Größe nach Priorität, Status: leer/gefüllt/halb. Weiter deterministisch aus dem App-Namen, nur Zahlen und weiß-gelistete Namen im Markup (Test).
+- **Eingesetzt:** App-Kopf (Hero, Text links frei, Bild rechts), Startseite als Zeilen mit großem Bild rechts (mindestens 220 px hoch, auch mit einer App nicht leer), Seitenhintergrund hinter der Seitenleiste (mit Farbflächen am linken Rand), Bearbeiten-Feld. Handy: Bild als Streifen am unteren Rand der Karte, damit kein Text darüber liegt. "Score" steht nun links in der Zusammenfassung des Kopfs, nicht mehr im Bild.
+
+## 2. Glas
+
+- **Gesehen / falsch:** In Hell kaum erkennbar, weil nichts dahinter lag.
+- **Geändert:** Die Farbflächen aus 1) liegen unter Seitenleiste, Bearbeiten-Feld, Popover und Palette (Hell und Dunkel); auf der Leinwand liegen harte, flache Farbfelder (Teal, Orange) unter der Steuerung. Weiter nur eine Ebene.
+- **Im Screenshot geprüft:** Seitenleiste (s1, s3), Bearbeiten-Feld (s4 `finding-1280-light`), Popover auf der Leinwand (s3 `popover-1280-dark`), Palette (s3 `palette-1280-light`). Zuvor lag die Maske des Hintergrunds 90 px über die Seitenleiste hinaus (senkrechtes Band neben der Leiste); jetzt endet sie an der Kante.
+
+## 3. Leinwand
+
+- **Gesehen / falsch:** Knotenschrift beim Einpassen ca. 9 px, Diagramm klein in der Mitte.
+- **Geändert:** Knoten 180x72 (Weiche 80), Schrift 17 px, Kantenbeschriftung 16 px, Weichen-Beschriftung 15 px, Abstände 84 px und kleinerer Rand, damit der Ablauf die Fläche füllt.
+- **Gemessen bei 1280 px (Login):** Zoom 0,73, Knotenschrift 12,4 px, Kantenbeschriftung 11,7 px (nach Anhebung auf 16 px; vor der Anhebung 10,9 px gemessen). Handy: Mindestzoom 0,8, also Knotenschrift ca. 13,6 px (gerechnet, nicht gemessen).
+- **Bedient und geprüft:** Zoom +/− (Buttons), Verschieben per Maus, Mausrad-Zoom, Tasten `+` `-` `0`, Einpassen-Button: Transformationen ändern sich jeweils wie erwartet, Einpassen stellt den Ausgangszustand wieder her, keine Fehler.
+
+## 4. Offene Punkte aus Runde 2, erledigt
+
+- **Jede Seite einzeln angesehen:** Startseite, App (Flows), Aufmerksamkeit, Befunde, Entscheidungen, Notizseiten Flow/Befund/Entscheidung (Bearbeiten-Feld offen), Popover, Palette, hell und dunkel bei 1280 und 360 (s3). Stichproben bewusst beurteilt: Startseite 360 hell, App 360 dunkel, Befund 1280 hell, Login 1280 dunkel, Popover/Palette 1280. Die übrigen Bilder per Skript auf Fehler und Seitwärtsscrollen geprüft (28 Kombinationen: keine Konsolenfehler, `scrollWidth` = Viewportbreite), aber nicht alle einzeln beurteilt.
+- **Mehrere Apps:** Startseite, Seitenleiste (Blocker-Marker, Striche pro App) und Palette (Apps, Flows, Befunde aus allen drei) mit 3 Apps angesehen. Mit sehr vielen Apps nicht getestet.
+- **Tap-Ziele bei 360 px (unter 44 px gefunden und behoben):** Marke "Command Center" (20 px hoch), Schalter MVP/V1/V2 (40 px), Zustandsschalter Befund/Entscheidung und Schwere (40 px), Eingabefeld Schnell-Anlegen/Bereich (39 px), Zeilenlinks in "Als Nächstes bauen" (40 px). Nach der Korrektur kein erneuter Gesamtscan, nur die Änderungen in CSS (siehe Offen).
+- **Seitenleiste beim Scrollen:** bleibt sichtbar (Oberkante 57 px, Unterkante = Viewport-Unterkante bei Scroll 125 von 125 px); die Lücke im vollen Seiten-Screenshot war ein Artefakt von `fullPage`.
+- **Kontrast an echten Pixeln:** Textfarbe aus dem Browser, Hintergrund aus den freien Randzeilen über und unter dem Text im Screenshot, schlechtester Pixel. 32 Textproben (Seitenleiste, Zusammenfassung, Karten, Bearbeiten-Feld, Popover, Palette; hell und dunkel): niedrigster Wert 5,1:1. Nicht messbar mit dieser Methode (Überschriften und der Rahmen des aktiven Tabs füllen das Textband): `h1`, Tab, Zeilen-`h2`.
+
+## Offen / nicht geprüft
+
+- Nach den Tap-Ziel-Korrekturen und der Handy-Maske kein vollständiger zweiter Scan; nur die Bereiche aus den Screenshots (s4) wurden erneut gesehen.
+- Kontrast der Statusfarben als Linien und Marker im Bild wurde nicht gemessen (kein Text); Marker bleiben zusätzlich über die Form lesbar.
+- Handy-Knotenschrift auf der Leinwand gerechnet (0,8 x 17 px), nicht gemessen.
+- Palette und Seed-Bild mit sehr vielen Apps oder mehr als 40 Treffern nicht getestet.
+- Screenreader nicht geprüft.
