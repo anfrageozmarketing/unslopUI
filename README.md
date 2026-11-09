@@ -25,8 +25,12 @@ Order matters: **inventory → audit → flows → structure → states → copy
 Reading code is not seeing the screen. Give the AI a browser once, so it can open the app, take screenshots and check phone and desktop widths itself:
 
 ```
-claude mcp add playwright npx @playwright/mcp@latest
+claude mcp add playwright --scope user -- npx @playwright/mcp@latest
 ```
+
+`--scope user` makes it available in every project, not only the folder where you ran the command. Check with `claude mcp list` (`playwright ... Connected`).
+
+**Where the session runs matters.** A stdio MCP starts on the machine that runs the session. In a **local** session (your laptop) Playwright works with its browser. In an **SSH/remote** session the desktop app hands the entry over from your laptop, and this hand-off can break (symptom: `ENOENT ... posix_spawn 'stdio'`, no `playwright` tools); the server also has no screen and usually no Playwright browser (`npx playwright install chromium`). So for UI work use a local session, and let it work on a clone of the repo; deploy to the server afterwards.
 
 The skills (`unslop-ui`, `unslop-components`, `unslop-visual`, `unslop-brain`) tell the AI to use it for the verify step. Without it, the AI can only say what it did not check.
 

@@ -28,7 +28,7 @@ AI-built apps fail in two ways. They **look** generic (glow, gradients, emoji la
 
 ### Seeing the UI
 
-Use the Playwright MCP tools to navigate to the running app, take screenshots and read the page. If the MCP is not installed, tell the user the one-line command above and say plainly that the visual result was **not checked**. Never claim a UI "looks good" from code alone. For apps behind a login, ask the user for a test account or a way in; never guess credentials.
+Use the Playwright MCP tools to navigate to the running app, take screenshots and read the page. The MCP runs where the session runs: in a remote/SSH session it may be missing or broken (`posix_spawn 'stdio'`); then ask the user to continue in a local session on a clone of the repo, serving the app locally with demo data, instead of looking for workarounds. If the MCP is not installed, tell the user the one-line command above and say plainly that the visual result was **not checked**. Never claim a UI "looks good" from code alone. For apps behind a login, ask the user for a test account or a way in; never guess credentials.
 
 ## Output
 
