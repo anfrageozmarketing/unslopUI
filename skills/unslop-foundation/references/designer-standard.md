@@ -11,6 +11,25 @@ Quality bar: "Would a designer post this on Behance or Dribbble as a finished sh
 - **Considered motion.** One clear idea per component, 120-420 ms, easing from tokens.
 - **Own parts.** Components designed for this product's data, not a library's default card/table/dropdown.
 
+## App shell pattern (desktop apps and tools)
+
+Three layers, no separator lines:
+
+1. **Rail** (about 64 px): the product icon on top, then one app-like button per area. Unselected: muted icon. Selected: a raised tile (surface-2) with a soft drop shadow and the full-contrast icon, plus a thin accent bar at the outer edge as the active mark. Utilities (search, theme, refresh) at the bottom.
+2. **Context column** (about 240 px): title of the area, then its sub-folders (list of items to switch between), compact status info at the bottom (for example sync or usage). Same tone as the rail, so the two read as one shell.
+3. **Window**: the working surface as a rounded container (radius 24 px) with a margin to the shell edge. It is clearly lighter than the shell in dark mode and whiter in light mode. Content scrolls inside it; its header carries title and the one primary action.
+
+On a phone: the rail becomes a bottom bar, the context column a title row with a switcher, the window runs edge to edge with rounded top corners.
+
+## Preview and workspace (two levels per area)
+
+Every area has a **preview** and a **workspace**.
+
+- **Preview**: what the area looks like at a glance, drawn visually from its data (a map of regions, a landscape of stacks, cards with a picture), never a list or a table. Hover and focus show a hint; one click opens the workspace.
+- **Workspace**: a focused mode where the window grows (the context column folds away), a slim floating tool strip (glass) holds the tools, and the editing itself is visual: move, connect, add, drop onto a column, pick a card. Autosave with Undo, a clear way out (back button and Esc), the properties of the selected object in a floating panel instead of a form page.
+- Choose the visual form from the data: sequence → canvas, status by category → board, choices → cards side by side, parts of a whole → regions.
+- The workspace never shows less than the preview did, and its edits show up in the preview immediately.
+
 ## Edit patterns (use these instead of forms)
 
 | Value | Pattern |

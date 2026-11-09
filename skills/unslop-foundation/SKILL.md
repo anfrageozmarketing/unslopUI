@@ -33,6 +33,8 @@ Look at strong work to learn **principles**: how a bold icon set keeps one strok
 - **Little text.** Short labels, no explanatory paragraphs, no helper text unless an error. Empty states are an illustration and one verb.
 - **One primary action per screen**, always where the thumb or the eye already is.
 - **Undo instead of confirm.** Change immediately, offer Undo.
+- **Human-friendly and interactive.** Every control answers: hover, press, focus and success are visible; things the user can change look changeable; targets are at least 44 px; wording is plain and speaks to the person.
+- **Contrast by layering.** Build depth from three tones, not lines: shell (darkest in dark mode, lightest-gray in light mode), window (the working surface, clearly lighter or whiter than the shell) and raised parts (selected tile, popover) with a soft shadow. Text and icon contrast stays at or above the palette checks in both modes.
 
 ## Rules
 

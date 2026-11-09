@@ -32,11 +32,13 @@
   "themes": {
     "light": {
       "bg": "#eef5f3",
+      "shell": "#dfe9e5",
       "surface": "#f9fefc",
+      "window": "#f9fefc",
       "surface-2": "#e4ece9",
       "line": "#cfd6d4",
-      "ink": "#292f2d",
-      "ink-muted": "#626967",
+      "ink": "#222826",
+      "ink-muted": "#5b6260",
       "accent": "#2c6053",
       "accent-text": "#275b4d",
       "on-accent": "#ffffff",
@@ -53,7 +55,9 @@
     },
     "dark": {
       "bg": "#101513",
+      "shell": "#050a08",
       "surface": "#191d1b",
+      "window": "#191d1b",
       "surface-2": "#222826",
       "line": "#333a37",
       "ink": "#d8e0dd",
@@ -80,7 +84,7 @@
       "fg": "ink",
       "bg": "bg",
       "min": 7,
-      "ratio": 12.34,
+      "ratio": 13.57,
       "pass": true
     },
     {
@@ -89,7 +93,25 @@
       "fg": "ink",
       "bg": "surface",
       "min": 7,
-      "ratio": 13.39,
+      "ratio": 14.73,
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "name": "ink on shell",
+      "fg": "ink",
+      "bg": "shell",
+      "min": 7,
+      "ratio": 12.09,
+      "pass": true
+    },
+    {
+      "theme": "light",
+      "name": "muted on shell",
+      "fg": "ink-muted",
+      "bg": "shell",
+      "min": 4.5,
+      "ratio": 5.04,
       "pass": true
     },
     {
@@ -98,7 +120,7 @@
       "fg": "ink-muted",
       "bg": "bg",
       "min": 4.5,
-      "ratio": 5.08,
+      "ratio": 5.65,
       "pass": true
     },
     {
@@ -107,7 +129,7 @@
       "fg": "ink-muted",
       "bg": "surface",
       "min": 4.5,
-      "ratio": 5.52,
+      "ratio": 6.13,
       "pass": true
     },
     {
@@ -216,6 +238,24 @@
       "bg": "surface",
       "min": 7,
       "ratio": 12.67,
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "name": "ink on shell",
+      "fg": "ink",
+      "bg": "shell",
+      "min": 7,
+      "ratio": 14.83,
+      "pass": true
+    },
+    {
+      "theme": "dark",
+      "name": "muted on shell",
+      "fg": "ink-muted",
+      "bg": "shell",
+      "min": 4.5,
+      "ratio": 8.04,
       "pass": true
     },
     {

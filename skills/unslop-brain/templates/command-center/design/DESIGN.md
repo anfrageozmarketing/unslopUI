@@ -37,11 +37,13 @@ Use the role tokens, never raw hex. Both modes use the same token names; CSS res
 | Purpose | Token | Light | Dark |
 | --- | --- | --- | --- |
 | Page background | `--bg` | `#eef5f3` | `#101513` |
+| App shell: rail and context column | `--shell` | `#dfe9e5` | `#050a08` |
 | Cards and raised containers | `--surface` | `#f9fefc` | `#191d1b` |
+| The working window inside the shell | `--window` | `#f9fefc` | `#191d1b` |
 | Nested or lower-emphasis regions | `--surface-2` | `#e4ece9` | `#222826` |
 | Borders and quiet dividers | `--line` | `#cfd6d4` | `#333a37` |
-| Primary text | `--ink` | `#292f2d` | `#d8e0dd` |
-| Supporting text and secondary icons | `--ink-muted` | `#626967` | `#9fa6a4` |
+| Primary text | `--ink` | `#222826` | `#d8e0dd` |
+| Supporting text and secondary icons | `--ink-muted` | `#5b6260` | `#9fa6a4` |
 | Fills: primary actions, selected states, focus | `--accent` | `#2c6053` | `#7cb1a1` |
 | Accent used as text or thin lines | `--accent-text` | `#275b4d` | `#548879` |
 | Text and icons on an accent fill | `--on-accent` | `#ffffff` | `#101513` |

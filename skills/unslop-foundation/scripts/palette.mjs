@@ -47,7 +47,8 @@ const MOODS = {
 // Move lightness from `start` toward `dir` (+1 lighter, -1 darker) until `min` contrast against `against` is met.
 function fit(h, C, start, dir, against, min) {
   let L = start;
-  for (let i = 0; i < 200; i++) { const hex = oklchToHex(L, C, h); if (contrast(hex, against) >= min) return hex; L += dir * 0.005; if (L < 0 || L > 1) break; }
+  const list = Array.isArray(against) ? against : [against];
+  for (let i = 0; i < 200; i++) { const hex = oklchToHex(L, C, h); if (list.every((a) => contrast(hex, a) >= min)) return hex; L += dir * 0.005; if (L < 0 || L > 1) break; }
   return oklchToHex(Math.min(1, Math.max(0, L)), C, h);
 }
 export function buildPalette(seedHex, mood = 'calm', sparkHue = null) {
@@ -68,14 +69,16 @@ export function buildPalette(seedHex, mood = 'calm', sparkHue = null) {
     const surface = oklchToHex(light ? 0.992 : 0.225, m.nC * 0.6, nh);
     const surface2 = oklchToHex(light ? 0.935 : 0.27, m.nC, nh);
     const line = oklchToHex(light ? 0.87 : 0.34, m.nC, nh);
-    const ink = fit(nh, m.nC, light ? 0.3 : 0.9, light ? -1 : 1, bg, 12);
-    const inkMuted = fit(nh, m.nC, light ? 0.55 : 0.72, light ? -1 : 1, bg, 5);
+    const shell = oklchToHex(light ? 0.925 : 0.135, m.nC * 1.2, nh); // app shell (rail and context column): darker than the window in dark mode, light gray in light mode
+    const win = surface; // the window: clearly lighter/whiter than the shell
+    const ink = fit(nh, m.nC, light ? 0.3 : 0.9, light ? -1 : 1, [bg, shell], 12);
+    const inkMuted = fit(nh, m.nC, light ? 0.55 : 0.72, light ? -1 : 1, [bg, shell, surface], 5);
     const accentText = fit(h, accC, seed.L, light ? -1 : 1, bg, 4.5);
     const accentFill = fit(h, accC, light ? 0.45 : 0.72, light ? -1 : 1, bg, 4.5);
     const onAccent = [ '#ffffff', ink, bg ].map((c) => [c, contrast(c, accentFill)]).sort((a, b) => b[1] - a[1])[0][0];
     const accentSoft = oklchToHex(light ? 0.93 : 0.27, accC * 0.35, h);
     const spark = oklchToHex(light ? 0.74 : 0.78, Math.min(0.17, accC * 1.1 + 0.03), sparkH);
-    const roles = { bg, surface, 'surface-2': surface2, line, ink, 'ink-muted': inkMuted, accent: accentFill, 'accent-text': accentText, 'on-accent': onAccent, 'accent-soft': accentSoft, spark };
+    const roles = { bg, shell, surface, window: win, 'surface-2': surface2, line, ink, 'ink-muted': inkMuted, accent: accentFill, 'accent-text': accentText, 'on-accent': onAccent, 'accent-soft': accentSoft, spark };
     for (const [k, hue] of Object.entries(SEM)) {
       roles[k] = fit(hue, 0.15, light ? 0.5 : 0.75, light ? -1 : 1, bg, 4.5);
       roles[`${k}-soft`] = oklchToHex(light ? 0.94 : 0.27, 0.04, hue);
@@ -85,7 +88,7 @@ export function buildPalette(seedHex, mood = 'calm', sparkHue = null) {
   const checks = [];
   for (const [theme, r] of Object.entries(themes)) {
     const add = (name, fg, bgc, min) => checks.push({ theme, name, fg, bg: bgc, min, ratio: Math.round(contrast(r[fg], r[bgc]) * 100) / 100 });
-    add('ink on bg', 'ink', 'bg', 7); add('ink on surface', 'ink', 'surface', 7); add('muted on bg', 'ink-muted', 'bg', 4.5); add('muted on surface', 'ink-muted', 'surface', 4.5);
+    add('ink on bg', 'ink', 'bg', 7); add('ink on surface', 'ink', 'surface', 7); add('ink on shell', 'ink', 'shell', 7); add('muted on shell', 'ink-muted', 'shell', 4.5); add('muted on bg', 'ink-muted', 'bg', 4.5); add('muted on surface', 'ink-muted', 'surface', 4.5);
     add('accent text on bg', 'accent-text', 'bg', 4.5); add('on-accent on accent', 'on-accent', 'accent', 4.5);
     for (const k of Object.keys(SEM)) { add(`${k} on bg`, k, 'bg', 4.5); add(`${k} on ${k}-soft`, k, `${k}-soft`, 4.5); }
   }
@@ -154,7 +157,7 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',sync);sync(
 }
 
 const PURPOSE = {
-  bg: 'Page background', surface: 'Cards and raised containers', 'surface-2': 'Nested or lower-emphasis regions', line: 'Borders and quiet dividers',
+  bg: 'Page background', shell: 'App shell: rail and context column', window: 'The working window inside the shell', surface: 'Cards and raised containers', 'surface-2': 'Nested or lower-emphasis regions', line: 'Borders and quiet dividers',
   ink: 'Primary text', 'ink-muted': 'Supporting text and secondary icons', accent: 'Fills: primary actions, selected states, focus', 'accent-text': 'Accent used as text or thin lines',
   'on-accent': 'Text and icons on an accent fill', 'accent-soft': 'Soft accent backgrounds, hover and selected rows', spark: 'Illustration and motion highlights only, never text',
   ok: 'Positive outcome (text, marker)', 'ok-soft': 'Background for ok', warn: 'Caution (text, marker)', 'warn-soft': 'Background for warn',
