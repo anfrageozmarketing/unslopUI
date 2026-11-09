@@ -10,6 +10,7 @@ esac
 [ -e "$target/vault" ] && { echo "Refusing: $target/vault already exists." >&2; exit 1; }
 mkdir -p "$target/command-center"
 cp -R "$here/skills/unslop-brain/templates/vault" "$target/vault"
+cp "$here/skills/unslop-brain/references/schema.md" "$target/vault/Schema.md"   # so agents without the skill can read the schema
 cp -R "$here/skills/unslop-brain/templates/command-center/." "$target/command-center/"
 cp "$target/command-center/.env.example" "$target/command-center/.env"
 chmod 600 "$target/command-center/.env"
@@ -25,5 +26,6 @@ Next:
   1. cd $target/command-center && CC_PASSWORD='<12+ chars>' node hash-password.mjs <name>   -> put into .env as CC_USERS
   2. Fill CC_HOST and CC_ALLOW_IPS in .env, set VAULT_PATH=$target/vault
   3. Try locally: VAULT_DIR=$target/vault CC_USERS=... node server.mjs  (binds to 127.0.0.1)
-  4. Deploy only after reading skills/unslop-brain/references/deploy.md
+  4. Connect each app so its AI sessions know the brain: $here/scripts/connect-app.sh <app-dir> <app-name> --vault $target/vault
+  5. Deploy only after reading skills/unslop-brain/references/deploy.md
 MSG

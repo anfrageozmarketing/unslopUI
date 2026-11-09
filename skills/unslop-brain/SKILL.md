@@ -24,7 +24,8 @@ Never write real app details (paths, hosts, customers, keys, internal findings) 
    - Any later skill or build step updates `status` on the same notes. Set `built` only after a test, gate or manual check passed, and write the evidence in the note.
 4. **Create users** for the Command Center (`node hash-password.mjs <name>`) and put the output in `.env` as `CC_USERS`. The app refuses to start without users.
 5. **Deploy privately** following `references/deploy.md`: bind to localhost or put it behind the reverse proxy with TLS and, if possible, an IP allow-list. Do not publish ports.
-6. **Verify**: open the app, check that an unauthenticated request gets 401, the overview shows the apps, a flow note renders its diagram, and changing a status writes back to the markdown file.
+6. **Connect every app** (mandatory, otherwise nobody knows the brain exists): run `scripts/connect-app.sh <app-dir> <app-name> --vault <vault> --url <command-center-url>`. It writes a marked block into the app's `CLAUDE.md` telling every AI session where the notes are, to read them before work, and to update `status`, `evidence` and findings after work. Re-run it after moving the vault; it replaces only its own block. If the app lives in a public repo, check that the block contains no private hostnames before committing.
+7. **Verify**: open the app, check that an unauthenticated request gets 401, the overview shows the apps, a flow note renders its diagram, and changing a status writes back to the markdown file.
 
 ## Rules
 
@@ -36,6 +37,7 @@ Never write real app details (paths, hosts, customers, keys, internal findings) 
 
 ## Files
 
+- `scripts/connect-app.sh` - the pointer that makes AI sessions use the brain
 - `references/schema.md` - note types, fields, allowed values, folder layout
 - `references/deploy.md` - private deployment, access control, backups
 - `templates/vault/` - empty vault skeleton and note templates
