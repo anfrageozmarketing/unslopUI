@@ -1,0 +1,22 @@
+/* Command Center motion language. One idea per component. Durations and easing come from tokens.css; reduced motion zeroes them. */
+@keyframes cc-pop   { 0% { transform: scale(.7); opacity: 0 } 60% { transform: scale(1.08); opacity: 1 } 100% { transform: scale(1); opacity: 1 } }
+@keyframes cc-draw  { from { stroke-dashoffset: 1 } to { stroke-dashoffset: 0 } }
+@keyframes cc-beam  { from { stroke-dashoffset: 1.12 } to { stroke-dashoffset: -.12 } }
+@keyframes cc-rise  { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: none } }
+@keyframes cc-sweep { from { background-position: 200% 0 } to { background-position: -200% 0 } }
+@keyframes cc-toast { from { opacity: 0; transform: translateY(14px) scale(.98) } to { opacity: 1; transform: none } }
+
+.m-pop   { animation: cc-pop var(--dur-2) var(--ease-out) both; }                       /* a status changes */
+.m-draw  { stroke-dasharray: 1; animation: cc-draw var(--dur-3) var(--ease-out) both; }  /* a route appears (path needs pathLength="1") */
+.m-beam  { stroke-dasharray: .09 1.4; animation: cc-beam calc(var(--dur-3) * 4) linear 1 both; } /* an active connection, once per event */
+.m-rise  { animation: cc-rise var(--dur-3) var(--ease-out) both; animation-delay: calc(var(--i, 0) * 35ms); } /* lists, lanes */
+.m-toast { animation: cc-toast var(--dur-2) var(--ease-out) both; }
+.m-skeleton { background: linear-gradient(90deg, var(--surface-2) 30%, var(--line) 50%, var(--surface-2) 70%) 0 0 / 200% 100%; animation: cc-sweep 1400ms linear infinite; border-radius: var(--radius-s); } /* loading only */
+.m-press { transition: transform var(--dur-1) var(--ease-out); }
+.m-press:active { transform: scale(.97); }
+
+@media (prefers-reduced-motion: reduce) {
+  .m-pop, .m-draw, .m-beam, .m-rise, .m-toast, .m-skeleton { animation: none; }
+  .m-draw { stroke-dasharray: none; }
+  .m-beam { stroke-dasharray: none; opacity: 0; }
+}
