@@ -37,6 +37,19 @@ Interactions: drag the canvas, mouse wheel zoom, buttons `-`, `+`, `Einpassen`, 
 - Canvas specifics: labels clipped or overlapping, edge labels colliding with nodes, router captions overlapping the next layer,
   back-edge (loop) routing, fit on load, nodes unreadable at the fitted zoom, canvas too tall/short on a phone.
 
+## 3b. Rendering defects to hunt for (every screen, both themes, both widths)
+
+Look at the pixels, not the code. Typical defects an AI-built UI ships:
+
+- **Progress and loading bars**: track nearly invisible (under 3:1 against its background), fill missing at 0 or tiny values, fill wider than the track, clipped end caps, no label or number, stuck or never-ending animation, bar with no `role="progressbar"` and no value.
+- Skeletons that never resolve, spinners without text, empty states that flash before data arrives.
+- Clipped text (ellipsis where the meaning is lost), overlapping elements, controls cut off at the edge, content hidden behind a fixed bar.
+- Icons with different weights or sizes in one row, misaligned baselines, wrong colour in dark mode.
+- Zero-value and extreme data: 0 %, 100 %, 1 item, 200 items, a very long name. Open the screen with each.
+- Any element whose boundary is under 3:1 against its surround.
+
+For each defect report: screen, theme, width, what is wrong in one line, and a screenshot path. The designing session fixes it in the component (not per screen) and re-captures the same view.
+
 ## 4. Fix
 
 - Edit only `skills/unslop-brain/templates/command-center/public/app.js` and `style.css` (and `server.mjs` only if a bug demands it).

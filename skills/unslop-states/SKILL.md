@@ -32,3 +32,11 @@ For each screen and each async action fill the row. A blank cell is a finding.
 - Motion respects `prefers-reduced-motion`.
 - Pages for 404, 403, 500 and offline exist and keep the app shell.
 - Test each state: write it down as a screenshot or a test case, not as a hope.
+
+## Progress and loading bars
+
+- Track at least 3:1 against its surround; fill clearly stronger than the track.
+- Show a minimum visible fill for any value above 0, clamp to 0-100 %, never wider than the track.
+- Always a label or number ("Abdeckung 42 %"); `role="progressbar"` with `aria-valuenow`, `aria-valuemin`, `aria-valuemax`.
+- Unknown duration: an indeterminate bar with text of what is loading; it must end in a result or an error.
+- Check by looking at the rendered pixels at 0 %, 1 %, 50 % and 100 %, in light and dark.

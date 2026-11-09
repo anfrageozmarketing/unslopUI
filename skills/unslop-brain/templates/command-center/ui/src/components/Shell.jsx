@@ -43,7 +43,7 @@ export function Context({ area, apps, app }) {
       })}
       <div className="info">
         <div className="row"><span className="muted">Abdeckung</span><b className="num">{pct(t.coverage)}</b></div>
-        <div className="meter" aria-hidden="true"><i style={{ width: `${Math.round((t.coverage || 0) * 100)}%` }} /></div>
+        <div className="meter" role="progressbar" aria-label="Abdeckung" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round((t.coverage || 0) * 100)}><i style={{ width: `${Math.min(100, Math.max(0, Math.round((t.coverage || 0) * 100)))}%` }} /></div>
         <div className="row"><span className="muted">Flows</span><b className="num">{t.flows}</b></div>
         <div className="row"><span className="muted">Blocker</span><b className="num">{t.blockers}</b></div>
       </div>
