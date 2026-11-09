@@ -22,10 +22,10 @@ const ENUMS = {
 };
 const WRITABLE = {
   flow: ['status', 'prio', 'screens', 'endpoints', 'evidence'],
-  finding: ['state', 'severity'],
-  decision: ['state', 'answer'],
+  finding: ['state', 'severity', 'where'],
+  decision: ['state', 'answer', 'question'],
 };
-const FIELD_KIND = { screens: 'list', endpoints: 'list', evidence: 'text', answer: 'text' };
+const FIELD_KIND = { screens: 'list', endpoints: 'list', evidence: 'text', answer: 'text', question: 'text', where: 'text' };
 const MANAGED = ['flow', 'finding', 'decision'];
 const MAX_BODY = 64 * 1024;
 const STATE_VALUES = { finding: ['open', 'fixed', 'wontfix'], decision: ['open', 'decided'] };
@@ -319,6 +319,38 @@ const server = http.createServer(async (req, res) => {
         if (parts[0] !== 'Apps' || parts.length < 4) return send(res, 400, { error: 'unexpected location' });
         const dest = join(VAULT, parts[0], parts[1], '_Archiv', `${new Date().toISOString().replace(/[:.]/g, '-')}-${basename(abs)}`);
         return guard(async () => { await mkdir(join(dest, '..'), { recursive: true }); await rename(abs, dest); return send(res, 200, { ok: true }); });
+      }
+
+      if (req.method === 'POST' && (url.pathname === '/api/finding' || url.pathname === '/api/decision')) {
+        const isFinding = url.pathname === '/api/finding';
+        const { apps } = await scan();
+        const app = apps.find((a) => a.name === data.app && a.path);
+        if (!app) return send(res, 404, { error: 'app not found' });
+        const title = safeName(data.title);
+        if (!title) return send(res, 400, { error: 'title required' });
+        let fm;
+        if (isFinding) {
+          const severity = data.severity ?? 'Gap';
+          if (!ENUMS.severity.includes(severity)) return send(res, 400, { error: 'invalid value' });
+          const where = fmtValue('text', data.where ?? '');
+          if (where === null) return send(res, 400, { error: 'invalid value' });
+          fm = `type: finding\napp: ${app.name}\nseverity: ${severity}\nstate: open\nwhere: ${where}\nupdated: ${today()}`;
+        } else {
+          const question = fmtValue('text', data.question ?? '');
+          if (question === null) return send(res, 400, { error: 'invalid value' });
+          fm = `type: decision\napp: ${app.name}\nstate: open\nquestion: ${question}\nanswer:\nupdated: ${today()}`;
+        }
+        const rel = `${app.path.split('/').slice(0, -1).join('/')}/${isFinding ? 'Findings' : 'Entscheidungen'}/${title}.md`;
+        const abs = resolve(VAULT, rel);
+        if (!abs.startsWith(VAULT + sep)) return send(res, 400, { error: 'invalid name' });
+        const body = isFinding
+          ? `# ${title}\n\n**Was:** \n**Warum es zählt:** \n**Kleinster Fix:** \n`
+          : `# ${title}\n\n## Optionen\n\n| Option | Folge |\n|---|---|\n|  |  |\n\n## Empfehlung\n\n`;
+        return guard(async () => {
+          await mkdir(join(abs, '..'), { recursive: true });
+          try { await writeFile(abs, `---\n${fm}\n---\n${body}`, { encoding: 'utf8', flag: 'wx' }); } catch (e) { if (e.code === 'EEXIST') return send(res, 409, { error: 'a note with this title already exists' }); throw e; }
+          return send(res, 201, { ok: true, path: rel });
+        });
       }
 
       if (req.method === 'POST' && url.pathname === '/api/flow') {

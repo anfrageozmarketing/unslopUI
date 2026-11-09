@@ -74,6 +74,6 @@ Status meaning: `missing` not in the code · `partial` exists but with gaps · `
 ## Command Center rules
 
 - Notes without a recognized `type` are shown only in search and via links.
-- The app may write only whitelisted fields, validated: flows `status`, `prio`, `screens`, `endpoints`, `evidence`; findings `state`, `severity`; decisions `state`, `answer`. It also creates flows (`Apps/<App>/Flows/<Area>/<Title>.md`), replaces the text below the frontmatter of flows, findings and decisions, and **archives** them to `Apps/<App>/_Archiv/` (never deletes; archived notes are ignored by the index).
+- The app may write only whitelisted fields, validated: flows `status`, `prio`, `screens`, `endpoints`, `evidence`; findings `state`, `severity`, `where`; decisions `state`, `answer`, `question`. It also creates flows (`Apps/<App>/Flows/<Area>/<Title>.md`), findings (`Findings/<Title>.md`) and decisions (`Entscheidungen/<Title>.md`), replaces the text below the frontmatter of flows, findings and decisions, and **archives** them to `Apps/<App>/_Archiv/` (never deletes; archived notes are ignored by the index).
 - Every write sets `updated` to today. Lists cannot contain commas, quotes or brackets; text fields are single-line, up to 300 characters.
 - Coverage = (`exists` + `built` + 0.5 x `partial`) / all flows.

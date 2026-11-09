@@ -33,6 +33,15 @@ const newBtn=find(byId.view,n=>n.tagName==='button'&&n.children.some(c=>c.text==
 if(!newBtn.length) throw new Error('new flow button missing');
 newBtn[0].listeners.click[0]();
 const form=find(byId.view,n=>n.tagName==='form');
+for (const label of ['Befunde','Entscheidungen']) {
+  const tb=find(byId.view,n=>n.tagName==='button'&&n.listeners.click&&n.children.some(c=>c.text&&c.text.startsWith(label)));
+  if(!tb.length) throw new Error(label+' tab missing');
+  tb[0].listeners.click[0]();
+  const nb=find(byId.view,n=>n.tagName==='button'&&n.children.some(c=>c.text&&/^\+ Neu/.test(c.text)));
+  if(!nb.length) throw new Error('new button missing in '+label);
+  nb[0].listeners.click[0]();
+  if(!find(byId.view,n=>n.tagName==='form').length) throw new Error('create form missing in '+label);
+}
 console.log('ok: tabs',tabs.length,'rows',rows.length,'newflow form',form.length);`;
 test('UI renders the app view, Flows tab and new-flow form', () => {
   const dir = mkdtempSync(join(tmpdir(), 'ui-'));

@@ -167,6 +167,31 @@ test('archive moves the note out of the index and never deletes', async () => {
   assert.equal((await post('/api/note', { path: 'Apps/Demo-App/_App.md' }, 'DELETE')).status, 400);
 });
 
+test('create finding and decision; edit their text fields; validate', async () => {
+  const f = await post('/api/finding', { app: 'Demo-App', title: 'Neuer Befund', severity: 'Blocker', where: 'server.js' });
+  assert.equal(f.status, 201);
+  const fp = (await f.json()).path;
+  assert.equal(fp, 'Apps/Demo-App/Findings/Neuer Befund.md');
+  assert.match(readVault(fp), /^severity: Blocker$/m);
+  assert.match(readVault(fp), /^where: "server.js"$/m);
+  assert.equal((await post('/api/finding', { app: 'Demo-App', title: 'Neuer Befund' })).status, 409);
+  assert.equal((await post('/api/finding', { app: 'Demo-App', title: 'X', severity: 'Huge' })).status, 400);
+  assert.equal((await post('/api/finding', { app: 'Demo-App', title: '' })).status, 400);
+  assert.equal((await post('/api/note', { path: fp, field: 'where', value: 'lib/db.js' }, 'PATCH')).status, 200);
+  assert.match(readVault(fp), /^where: "lib\/db.js"$/m);
+  const d = await post('/api/decision', { app: 'Demo-App', title: 'Neue Entscheidung', question: 'Was nun?' });
+  assert.equal(d.status, 201);
+  const dp = (await d.json()).path;
+  assert.equal(dp, 'Apps/Demo-App/Entscheidungen/Neue Entscheidung.md');
+  assert.equal((await post('/api/note', { path: dp, field: 'question', value: 'Anders?' }, 'PATCH')).status, 200);
+  assert.equal((await post('/api/note', { path: dp, field: 'state', value: 'decided' }, 'PATCH')).status, 200);
+  const idx = await (await get('/api/index')).json();
+  const app = idx.apps[0];
+  assert.ok(app.findings.some((x) => x.title === 'Neuer Befund' && x.severity === 'Blocker' && x.where === 'lib/db.js'));
+  assert.ok(app.decisions.some((x) => x.title === 'Neue Entscheidung' && x.state === 'decided' && x.question === 'Anders?'));
+  assert.equal((await post('/api/decision', { app: 'Nope', title: 'X' })).status, 404);
+});
+
 test('state-changing calls need the header and JSON', async () => {
   const bad = await fetch(BASE + '/api/flow', { method: 'POST', headers: { authorization: auth, 'content-type': 'text/plain' }, body: '{}' });
   assert.equal(bad.status, 400);

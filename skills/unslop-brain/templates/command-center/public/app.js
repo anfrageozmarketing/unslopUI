@@ -108,13 +108,8 @@ const TABS = [
         next.length ? table(['Flow', 'Bereich', 'Prio', 'Status'], next.map((f) => [noteLink(f), f.area, f.prio, STATUS_LABEL[f.status]])) : h('p', { class: 'empty' }, 'Alles umgesetzt.'));
   } },
   { key: 'flows', label: (a) => `Flows (${a.total})`, render: (a, root, name, _f, areas) => flowsTab(a, root, name, areas) },
-  { key: 'findings', label: (a) => `Befunde (${a.findings.length})`, render: (a, root, name) => {
-      const fs = [...a.findings].sort((x, y) => (SEVERITY_RANK[x.severity] ?? 9) - (SEVERITY_RANK[y.severity] ?? 9));
-      root.append(fs.length ? table(['Schwere', 'Befund', 'Wo', 'Status'], fs.map((f) => [h('span', { class: `badge ${f.severity === 'Blocker' ? 'blocker' : ''}` }, f.severity), noteLink(f), f.where, select(f, 'state', ['open', 'fixed', 'wontfix'], name)])) : h('p', { class: 'empty' }, 'Keine Befunde.'));
-  } },
-  { key: 'decisions', label: (a) => `Entscheidungen (${a.decisions.length})`, render: (a, root, name) => {
-      root.append(a.decisions.length ? table(['Entscheidung', 'Frage', 'Antwort', 'Status'], a.decisions.map((d) => [noteLink(d), d.question, d.answer, select(d, 'state', ['open', 'decided'], name)])) : h('p', { class: 'empty' }, 'Keine Entscheidungen.'));
-  } },
+  { key: 'findings', label: (a) => `Befunde (${a.findings.length})`, render: (a, root, name) => findingsTab(a, root, name) },
+  { key: 'decisions', label: (a) => `Entscheidungen (${a.decisions.length})`, render: (a, root, name) => decisionsTab(a, root, name) },
 ];
 
 /* ---------- flows management ---------- */
@@ -218,10 +213,10 @@ function managePanel(path, note, appName) {
     text('screens', 'Screens', (m.screens || []).join(', '), 'Komma trennt'); text('endpoints', 'Endpoints', (m.endpoints || []).join(', '), 'Komma trennt');
     text('evidence', 'Nachweis (für "Gebaut")', m.evidence, 'Test, Gate oder Link');
   } else if (t === 'decision') {
-    pick('state', 'Status', [['open', 'Offen'], ['decided', 'Entschieden']], m.state); text('answer', 'Antwort', m.answer);
+    pick('state', 'Status', [['open', 'Offen'], ['decided', 'Entschieden']], m.state); text('question', 'Frage', m.question); text('answer', 'Antwort', m.answer);
   } else {
     pick('state', 'Status', [['open', 'Offen'], ['fixed', 'Behoben'], ['wontfix', 'Wird nicht behoben']], m.state);
-    pick('severity', 'Schwere', ['Blocker', 'Gap', 'Rough', 'Polish'].map((v) => [v, v]), m.severity);
+    pick('severity', 'Schwere', ['Blocker', 'Gap', 'Rough', 'Polish'].map((v) => [v, v]), m.severity); text('where', 'Wo', m.where);
   }
   for (const k of Object.keys(inputs)) orig[k] = inputs[k].value;
   const value = (k) => (k === 'screens' || k === 'endpoints' ? splitList(inputs[k].value) : inputs[k].value);
@@ -252,6 +247,87 @@ function bodyEditor(path, note) {
   });
   const cancel = h('button', { type: 'button', class: 'ghost', onclick: () => { editBody = false; route(); } }, 'Abbrechen');
   return h('div', {}, h('p', { class: 'muted' }, 'Markdown. Diagramme als ```mermaid-Block. Die Eigenschaften oben bleiben unverändert.'), ta, h('div', { class: 'row', style: 'justify-content:flex-start;margin-top:12px' }, save, cancel));
+}
+
+
+/* ---------- findings + decisions management ---------- */
+const SEVERITIES = ['Blocker', 'Gap', 'Rough', 'Polish'];
+const FQF = { q: '', severity: '', state: '' };
+const FQD = { q: '', state: '' };
+let showNewF = false;
+let showNewD = false;
+function pairSelect(item, field, pairs, appName) {
+  const s = h('select', { 'aria-label': field }, pairs.map(([v, l]) => h('option', { value: v, selected: item[field] === v }, l)));
+  s.addEventListener('change', () => patch(item.path, field, s.value, appName));
+  return s;
+}
+function mkFilter(state, key, label, pairs, draw) {
+  const s = h('select', { 'aria-label': label }, h('option', { value: '' }, label), pairs.map(([v, l]) => h('option', { value: v, selected: state[key] === v }, l)));
+  s.addEventListener('change', () => { state[key] = s.value; draw(); });
+  return s;
+}
+function simpleCreateForm(title, appName, endpoint, fields, onDone) {
+  const inputs = {};
+  const rows = fields.map(([key, label, el]) => { inputs[key] = el; return h('label', { class: 'fld' }, h('span', {}, label), el); });
+  const form = h('form', { class: 'newflow card' }, h('h3', {}, title), h('div', { class: 'fgrid' }, rows),
+    h('div', { class: 'row', style: 'justify-content:flex-start' }, h('button', { class: 'ghost', type: 'submit' }, 'Anlegen')));
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    try {
+      const body = { app: appName }; for (const [k, el] of Object.entries(inputs)) body[k] = el.value;
+      const r = await api(endpoint, { method: 'POST', body: JSON.stringify(body) });
+      onDone(); await load(); renderSide(); location.hash = `#/note/${encodeURIComponent(r.path)}`;
+    } catch (err) { toast(err.message); }
+  });
+  return form;
+}
+const FSTATES = [['open', 'Offen'], ['fixed', 'Behoben'], ['wontfix', 'Wird nicht behoben']];
+const DSTATES = [['open', 'Offen'], ['decided', 'Entschieden']];
+
+function findingsTab(a, root, name) {
+  const search = h('input', { type: 'search', placeholder: 'Befund oder Ort suchen', value: FQF.q, 'aria-label': 'Befunde durchsuchen' });
+  const newBtn = h('button', { type: 'button', class: 'ghost', onclick: () => { showNewF = !showNewF; appView(name); } }, showNewF ? 'Abbrechen' : '+ Neuer Befund');
+  const host = h('div'); const count = h('p', { class: 'muted num' });
+  const draw = () => {
+    const q = FQF.q.trim().toLowerCase();
+    const list = a.findings.filter((f) => (!FQF.severity || f.severity === FQF.severity) && (!FQF.state || f.state === FQF.state) && (!q || `${f.title} ${f.where}`.toLowerCase().includes(q)))
+      .sort((x, y) => (SEVERITY_RANK[x.severity] ?? 9) - (SEVERITY_RANK[y.severity] ?? 9) || x.title.localeCompare(y.title));
+    count.textContent = `${list.length} von ${a.findings.length} Befunden`;
+    host.replaceChildren(list.length ? table(['Schwere', 'Befund', 'Wo', 'Status'], list.map((f) => [pairSelect(f, 'severity', SEVERITIES.map((v) => [v, v]), name), noteLink(f), f.where, pairSelect(f, 'state', FSTATES, name)]))
+      : h('p', { class: 'empty' }, a.findings.length ? 'Kein Befund passt zu den Filtern.' : 'Noch keine Befunde.'));
+  };
+  search.addEventListener('input', () => { FQF.q = search.value; draw(); });
+  root.append(h('div', { class: 'toolbar' }, search, mkFilter(FQF, 'severity', 'Alle Schweregrade', SEVERITIES.map((v) => [v, v]), draw), mkFilter(FQF, 'state', 'Alle Status', FSTATES, draw), newBtn));
+  if (showNewF) {
+    const sev = h('select', {}, SEVERITIES.map((v) => h('option', { value: v, selected: v === 'Gap' }, v)));
+    root.append(simpleCreateForm('Neuer Befund', name, '/api/finding', [
+      ['title', 'Titel', h('input', { required: true, maxlength: 80, placeholder: 'Was ist das Problem?' })],
+      ['severity', 'Schwere', sev],
+      ['where', 'Wo (Datei, Route)', h('input', { maxlength: 300, placeholder: 'z. B. server.js' })],
+    ], () => { showNewF = false; }));
+  }
+  root.append(count, host); draw();
+}
+
+function decisionsTab(a, root, name) {
+  const search = h('input', { type: 'search', placeholder: 'Entscheidung oder Frage suchen', value: FQD.q, 'aria-label': 'Entscheidungen durchsuchen' });
+  const newBtn = h('button', { type: 'button', class: 'ghost', onclick: () => { showNewD = !showNewD; appView(name); } }, showNewD ? 'Abbrechen' : '+ Neue Entscheidung');
+  const host = h('div'); const count = h('p', { class: 'muted num' });
+  const draw = () => {
+    const q = FQD.q.trim().toLowerCase();
+    const list = a.decisions.filter((d) => (!FQD.state || d.state === FQD.state) && (!q || `${d.title} ${d.question} ${d.answer}`.toLowerCase().includes(q)))
+      .sort((x, y) => (x.state === 'open' ? 0 : 1) - (y.state === 'open' ? 0 : 1) || x.title.localeCompare(y.title));
+    count.textContent = `${list.length} von ${a.decisions.length} Entscheidungen`;
+    host.replaceChildren(list.length ? table(['Entscheidung', 'Frage', 'Antwort', 'Status'], list.map((d) => [noteLink(d), d.question, d.answer, pairSelect(d, 'state', DSTATES, name)]))
+      : h('p', { class: 'empty' }, a.decisions.length ? 'Keine Entscheidung passt zu den Filtern.' : 'Noch keine Entscheidungen.'));
+  };
+  search.addEventListener('input', () => { FQD.q = search.value; draw(); });
+  root.append(h('div', { class: 'toolbar' }, search, mkFilter(FQD, 'state', 'Alle Status', DSTATES, draw), newBtn));
+  if (showNewD) root.append(simpleCreateForm('Neue Entscheidung', name, '/api/decision', [
+    ['title', 'Titel', h('input', { required: true, maxlength: 80, placeholder: 'z. B. Eigener oder zentraler Login' })],
+    ['question', 'Frage', h('input', { maxlength: 300, placeholder: 'Was muss entschieden werden?' })],
+  ], () => { showNewD = false; }));
+  root.append(count, host); draw();
 }
 
 function stat(label, value, cls = '') {
