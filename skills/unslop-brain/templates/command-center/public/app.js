@@ -7,6 +7,7 @@ const AREA_ORDER = ['Zugang', 'Onboarding', 'Kernablauf', 'Einstellungen', 'Syst
 const SEVERITY_RANK = { Blocker: 0, Gap: 1, Rough: 2, Polish: 3 };
 const $view = document.getElementById('view');
 const $crumbs = document.getElementById('crumbs');
+const $side = document.getElementById('side');
 let data = { apps: [] };
 
 function h(tag, props = {}, ...kids) {
@@ -40,6 +41,31 @@ function statusBar(counts, total) {
 }
 function legend(counts) {
   return h('div', { class: 'legend' }, STATUS.map(([k, l]) => h('span', {}, h('span', { class: `dot s-${k}` }), `${l} `, h('span', { class: 'num' }, counts[k]))));
+}
+function safeUrl(u) {
+  try { const x = new URL(String(u)); return x.protocol === 'https:' || x.protocol === 'http:' ? x.href : null; } catch { return null; }
+}
+function currentApp() {
+  const hash = location.hash.replace(/^#\/?/, '');
+  if (hash.startsWith('app/')) return decodeURIComponent(hash.slice(4));
+  if (hash.startsWith('note/')) { const p = decodeURIComponent(hash.slice(5)).split('/'); return p[0] === 'Apps' ? p[1] : null; }
+  return null;
+}
+function renderSide() {
+  const cur = currentApp();
+  const items = data.apps.map((a) => {
+    const blockers = a.findings.filter((f) => f.severity === 'Blocker' && f.state === 'open').length;
+    const link = h('a', { class: 'side-item', href: `#/app/${encodeURIComponent(a.name)}`, 'aria-current': cur === a.name ? 'page' : null },
+      h('div', { class: 'row' }, h('span', { class: 'name' }, a.name), blockers ? h('span', { class: 'badge blocker num', title: 'Offene Blocker' }, blockers) : null),
+      h('div', { class: 'sub num' }, a.total ? `${pct(a.coverage)} abgedeckt · ${a.total} Flows` : 'Noch keine Flows'),
+      a.total ? statusBar(a.counts, a.total) : null);
+    const url = safeUrl(a.url);
+    return h('li', {}, link, url ? h('a', { class: 'side-open', href: url, target: '_blank', rel: 'noopener noreferrer' }, 'App öffnen ↗') : null);
+  });
+  $side.replaceChildren(
+    h('h2', {}, 'Apps'),
+    h('ul', {}, h('li', {}, h('a', { class: 'side-item', href: '#/', 'aria-current': !location.hash.replace(/^#\/?/, '') ? 'page' : null }, h('div', { class: 'name' }, 'Übersicht'))), items),
+  );
 }
 function crumbs(parts) {
   $crumbs.replaceChildren(...parts.flatMap((p, i) => [i ? h('span', {}, '/') : null, p.href ? h('a', { href: p.href }, p.label) : h('span', {}, p.label)]).filter(Boolean));
@@ -77,7 +103,8 @@ function appView(name) {
   if (!a) { $view.replaceChildren(h('p', { class: 'empty' }, 'App nicht gefunden.')); return; }
   crumbs([{ label: 'Apps', href: '#/' }, { label: a.name }]);
   const areas = [...new Set(a.flows.map((f) => f.area))].sort((x, y) => (AREA_ORDER.indexOf(x) + 1 || 99) - (AREA_ORDER.indexOf(y) + 1 || 99));
-  const root = h('div', {}, h('div', { class: 'row' }, h('h1', {}, a.name), h('span', { class: 'muted num' }, `Abdeckung ${pct(a.coverage)}`)));
+  const appUrl = safeUrl(a.url);
+  const root = h('div', {}, h('div', { class: 'row' }, h('h1', {}, a.name), h('span', { class: 'row' }, h('span', { class: 'muted num' }, `Abdeckung ${pct(a.coverage)}`), appUrl ? h('a', { class: 'btn-open', href: appUrl, target: '_blank', rel: 'noopener noreferrer' }, 'App öffnen ↗') : null)));
   if (a.total) root.append(statusBar(a.counts, a.total), legend(a.counts));
 
   root.append(h('div', { class: 'tabs', style: 'margin-top:16px' }, [['board', 'Board'], ['areas', 'Bereiche'], ['findings', `Befunde (${a.findings.length})`], ['decisions', `Entscheidungen (${a.decisions.length})`]]
@@ -125,7 +152,7 @@ function flowCard(f, appName) {
 async function patch(path, field, value, appName) {
   try {
     await api('/api/note', { method: 'PATCH', body: JSON.stringify({ path, field, value }) });
-    await load(); appView(appName); toast('Gespeichert');
+    await load(); renderSide(); appView(appName); toast("Gespeichert");
   } catch (e) { toast(e.message); await load(); appView(appName); }
 }
 
@@ -164,6 +191,7 @@ async function noteView(path) {
 
 /* ---------- routing ---------- */
 async function route() {
+  renderSide();
   const hash = location.hash.replace(/^#\/?/, '');
   try {
     if (hash.startsWith('app/')) appView(decodeURIComponent(hash.slice(4)));
