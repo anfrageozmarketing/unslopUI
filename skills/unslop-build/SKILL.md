@@ -21,6 +21,28 @@ Audit skills find what is wrong. This skill **builds**. The rule that makes the 
 5. **Simplify** (`unslop-simplify`): run the element test on every screen, remove what does not earn its place.
 6. **Gate** (`references/gate.md`): run before reporting done; fix, then re-check. Verify rendering and functions with `unslop-verify` (screenshots, measurements, click-path scenarios).
 
+## Rebuild or extend an existing app (classic elements as the worklist)
+
+1. `node scripts/audit-elements.mjs <src-dir>` lists which classic elements the code uses, which are missing and which cross-cutting states exist (empty, loading, error, undo, dark mode, focus, reduced motion).
+2. Combine it with `SCOPE.md` (what this app needs): every needed element that is missing is **built**; every used element that is hand-rolled, inconsistent or weak is **rebuilt** with `unslop-element` on the HeroUI part; every unneeded one is marked `na`.
+3. Do the same for the classic flows and screens (`unslop-flows`, `unslop-structure` catalogs). Gaps become findings, then work.
+4. Start from the shell starter (`templates/app-shell/`) when the app has no shell of this kind.
+
+## Previews and workspaces (decide per area, then build both)
+
+Every area of the product gets a **preview** (what it looks like at a glance, drawn from its data) and, where people build or arrange something, a **workspace** (full-screen editor). Decide by the data shape:
+
+| Data shape | Preview | Workspace | Build with |
+|---|---|---|---|
+| Sequence (flows, steps, pipelines) | route map | node canvas editor, properties docked, path strip | `templates/app-shell/Workspace.jsx` + canvas |
+| Status by category (tasks, findings) | landscape or board | kanban with drag between columns | board + dialog for details |
+| Choices (decisions, plans) | cards side by side | compare view, pick one, answer in place | dialog sheet or comparison workspace |
+| Parts of a whole (budgets, storage) | regions | proportional editor | sliders and inline values |
+| Documents (notes, text) | tile with picture and name | click-to-edit page, full-screen on demand | click-to-edit text |
+| Records (people, orders) | list rows | detail dialog or page | dialog sheet |
+
+Rules: a workspace never shows less than its preview; edits show up in the preview at once; autosave with Undo; a labelled way out (Schließen, Esc); a plain detail view is enough where nothing is arranged (use a dialog, not a full workspace). If an area has the shape of a table or list only, it does not need a workspace.
+
 ## Stack rules
 
 - HeroUI components first, styled through its CSS variables (mapped in `spec.css`), Tailwind utilities for layout. shadcn patterns only where HeroUI lacks the part (command palette, data table, resizable panels). One system, not both for the same job.
@@ -51,6 +73,8 @@ Limits: one idea per screen, tokens only, contrast checked, the plain version mu
 
 ## References
 
+- `templates/app-shell/` - shell, workspace window, loading, tokens-ready CSS (starter)
+- `scripts/audit-elements.mjs` - classic element coverage of a source tree
 - `references/discovery.md` - the questions and how they decide the scope
 - `scripts/scope.mjs` - brief to SCOPE.md (flows, screens, elements, design settings)
 - `scripts/spec.mjs` - size spec generator
