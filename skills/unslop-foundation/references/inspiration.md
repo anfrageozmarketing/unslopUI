@@ -12,6 +12,8 @@ Checked 2026-11-09 from the sites' public pages. Terms change: verify before rel
 | HeroUI `DESIGN.md` (heroui.com/react/DESIGN.md) | A design-system contract written for coding agents: frontmatter, then fixed sections (setup, direction, colour roles with light/dark/purpose, type, layout, shapes, elevation, components, interaction, do/don't, sources) | A design system is easiest for an agent to follow as one short file with role tokens in a table, explicit do/don't lists and a stated source of truth. We adopt the **structure**, with our own text, tokens and rules (`DESIGN.md` from `palette.mjs`) | Fetched 2026-11-09 for reading only, not stored in this repository. Licence of the file not checked: do not copy its text or its colour values |
 | RareUI (rareui.com) | Component/design resource (unverified) | Could not be read when checked (blocked): nothing learned | Unknown: do not rely on any claim about it |
 
+| Mobbin (mobbin.com) | Library of real app screens and flows from shipped products | How real products solve the same job: navigation shapes, list rows, in-place editing, empty states, onboarding, command palettes; flows as screen sequences | Screenshots belong to the product makers and to Mobbin: look, learn the pattern, never copy a screen, never save or redistribute images. Plan: pick 3 relevant patterns per screen, write the pattern in your own words into `design/PLAN.md` |
+
 ## How to use a source
 
 1. Name what you want to learn in one sentence ("one motion idea per component").

@@ -9,11 +9,13 @@ Generic apps look generic because they start from components. Designers start fr
 
 ## Order (do not skip ahead)
 
+0. **Think like an app designer, in this order:** components first (what are the 8-12 building blocks of this product?), then screens made only of those blocks, then pixels. Never start from a page and invent parts as you go.
 1. **Brief** (5 lines): who uses it, the one feeling to evoke (calm, sharp, playful, serious), the product's world (what objects and metaphors belong to it), constraints (brand colour, dark mode, languages).
 2. **Palette**: `node scripts/palette.mjs --seed "<hex>" --mood calm|bold|warm|cool --out design/`. Add `--name "Product"`. Writes `tokens.css`, `palette.json`, `PALETTE.md` (all contrast checks), **`DESIGN.md`** (the agent-facing design contract: setup, direction, role tokens for light and dark, type, spacing, shapes, elevation, motion, do/don't) and `preview.html`. Complete the brief-specific lines in `DESIGN.md` (mood sentence, product world) and extend it as icons, illustration and the component sheet are added. Pick the seed from the brief, not from habit. Exit code 1 means a contrast check failed: change the seed or mood, do not ship it.
 3. **Type, icons, illustration, motion**: define each in one short page under `design/`, following `references/icons.md`, `references/illustration.md`, `references/motion.md`. Sans-serif only unless the brief asks otherwise.
 4. **Component sheet**: build `design/components.html` (one self-contained page, light and dark) with the product's core components in all states. This is the Dribbble shot: review it before touching a screen. Standard in `references/designer-standard.md`.
-5. **Screens** come last (`unslop-components`, `unslop-visual`), built only from tokens and sheet components.
+5. **Plan** (`design/PLAN.md`, template in `references/plan-template.md`): principles, screens with their one primary action and signature component, the component inventory, the edit patterns, the build order and the checkpoints where screenshots are taken. Written before building; changed only deliberately.
+6. **Screens** come last (`unslop-components`, `unslop-visual`), built only from tokens and sheet components, in the order of the plan.
 
 ## Inspiration, not imitation
 
@@ -22,6 +24,15 @@ Look at strong work to learn **principles**: how a bold icon set keeps one strok
 - Never copy an asset, a code snippet, a layout or a page's text. Never trace an icon or illustration. Never ship a third-party asset in the public skill pack.
 - If a product does use a third-party asset, follow its licence and record it in `design/CREDITS.md` (name, source URL, licence, where used). Licence facts and sources are in `references/inspiration.md`; terms change, so check the site.
 - Test for imitation: if a person who knows the source would say "that is the X set", redraw it.
+
+## App-designer principles (apply to every screen)
+
+- **Components first.** Build and review the parts (in a gallery or component sheet) before any screen. A screen is a composition of existing parts.
+- **No borders as separators.** Separate with space, tonal surfaces (surface vs background) and, sparingly, soft shadow. A line is allowed only for a focus ring, a drop target, or when the data is a true table. No bordered boxes around every group, no hairline between every row.
+- **Interactive instead of forms.** Editing happens where the value is: tap the status to change it, tap a text to edit it in place, add items by typing and pressing Enter, pick from a small popover or segmented control. A form grid with labelled fields and a Save button is the last resort (`references/designer-standard.md`, edit patterns).
+- **Little text.** Short labels, no explanatory paragraphs, no helper text unless an error. Empty states are an illustration and one verb.
+- **One primary action per screen**, always where the thumb or the eye already is.
+- **Undo instead of confirm.** Change immediately, offer Undo.
 
 ## Rules
 

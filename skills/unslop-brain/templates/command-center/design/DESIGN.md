@@ -101,6 +101,9 @@ Core components and their states live in `components.html` if present. Build new
 - Don't hardcode colours, shadows, radii or spacing.
 - Don't use colour alone to show state.
 - Don't make static content look interactive.
+- Don't separate with borders or hairlines: use space and surface tone. No outlined boxes around every group.
+- Don't edit through a grid of labelled form fields with a Save button: edit in place (tap a status, click a text, type and Enter), with Undo.
+- Don't explain with paragraphs: short labels, empty states with one picture and one verb.
 - Don't use rows of KPI cards, uniform card grids, or tables with controls in cells as the main element.
 - Don't add serif fonts, gradient text, glow, emoji as icons, or purple-blue mesh backgrounds.
 

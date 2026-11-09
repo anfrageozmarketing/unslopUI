@@ -11,6 +11,26 @@ Quality bar: "Would a designer post this on Behance or Dribbble as a finished sh
 - **Considered motion.** One clear idea per component, 120-420 ms, easing from tokens.
 - **Own parts.** Components designed for this product's data, not a library's default card/table/dropdown.
 
+## Edit patterns (use these instead of forms)
+
+| Value | Pattern |
+|---|---|
+| Status or any small fixed set | Tap the marker, small popover with the options, keyboard arrows and Enter |
+| 2-4 exclusive options (priority, view) | Segmented control in place |
+| Short text (title, evidence, answer) | Click the text, it turns into an input, Enter saves, Esc cancels |
+| List of strings (screens, endpoints, tags) | Token field: chips with a remove mark, type and press Enter to add |
+| Yes / no | Switch |
+| Long text | Open an editor in a sheet or modal with live preview; the text stays rendered otherwise |
+| Create | One line at the end of the list, type and Enter; extra fields appear only on request |
+| Delete or archive | Do it, show a toast with Undo; no confirm dialog |
+| Several fields of one object | A property list: label left, value right, every value editable in place, autosave |
+
+Pick the lightest pattern that works. A labelled input with a Save button is not a pattern, it is a fallback.
+
+## No borders as separators
+
+Groups are separated by space and by surface tone. Rows have no hairlines between them; a hover or selected state uses a tonal background. Cards do not need an outline: tone plus space plus (rarely) a soft shadow. Remove default component borders through tokens (for example HeroUI `--border-width: 0`) instead of overriding each component.
+
 ## Component sheet (`design/components.html`)
 
 One self-contained page, tokens only, light and dark switchable, that shows each core component:

@@ -11,7 +11,10 @@ Build on the foundation first (`unslop-foundation`): palette tokens, icon style,
 
 ## The ban list (default look)
 
-Do not ship a screen whose main content is any of these, unless the data truly is that:
+Think in components first: name the building blocks of the product, build and review them, then compose screens. Do not ship a screen whose main content is any of these, unless the data truly is that:
+
+- rows or groups separated by borders and hairlines (separate with space and tone)
+- a labelled form (grid of fields plus Save) as the way to edit; use the edit patterns in `unslop-foundation/references/designer-standard.md`
 
 - a row of KPI/stat cards (use one sentence, or show the number inside the thing it measures)
 - a table with edit dropdowns in cells (tables are for comparing many attributes of many rows)
