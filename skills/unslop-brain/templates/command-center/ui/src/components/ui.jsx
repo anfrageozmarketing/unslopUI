@@ -41,6 +41,8 @@ export function Portrait({ app, width = 960, height = 280, calm = false }) {
   return <div className={`portrait-wrap${calm ? ' calm' : ''}`} aria-hidden="true" dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
+export const mdToHtml = (text) => DOMPurify.sanitize(marked.parse(String(text || ''), { gfm: true }));
+
 export function Markdown({ text }) {
   const html = useMemo(() => DOMPurify.sanitize(marked.parse(String(text || ''), { gfm: true })), [text]);
   return <div className="md" dangerouslySetInnerHTML={{ __html: html }} />;
@@ -123,4 +125,16 @@ export function QuickAdd({ placeholder, onSubmit, children }) {
       <span className="kbd" aria-hidden="true">Enter</span>
     </form>
   );
+}
+
+// A title you edit by clicking it. Long titles wrap; Enter saves, Esc cancels.
+export function InlineTitle({ value, onSave, label = 'Titel' }) {
+  const [editing, setEditing] = useState(false); const [v, setV] = useState(value || ''); const ref = useRef(null);
+  useEffect(() => { if (!editing) setV(value || ''); }, [value, editing]);
+  const grow = (t) => { if (t) { t.style.height = 'auto'; t.style.height = `${t.scrollHeight}px`; } };
+  useEffect(() => { if (editing && ref.current) { ref.current.focus(); ref.current.select(); grow(ref.current); } }, [editing]);
+  const commit = () => { setEditing(false); const t = v.trim(); if (t && t !== (value || '')) onSave(t); else setV(value || ''); };
+  if (!editing) return <span className="title-inline" role="button" tabIndex={0} aria-label={`${label} bearbeiten`} onClick={() => setEditing(true)} onKeyDown={(e) => { if (e.key === 'Enter') setEditing(true); }}>{value}</span>;
+  return <textarea ref={ref} className="title-area" rows={1} value={v} aria-label={label} onChange={(e) => { setV(e.target.value.replace(/\n/g, ' ')); grow(e.target); }} onBlur={commit}
+    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); commit(); } else if (e.key === 'Escape') { setV(value || ''); setEditing(false); } }} />;
 }

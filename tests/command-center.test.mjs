@@ -143,7 +143,9 @@ test('edit flow fields: lists, text, enum; touches updated', async () => {
   assert.match(readVault(P), /^evidence: "Test e2e_invite grün"$/m);
   assert.equal((await post('/api/note', { path: P, field: 'evidence', value: 'mit "Quote"' }, 'PATCH')).status, 400);
   assert.equal((await post('/api/note', { path: P, field: 'screens', value: 'nicht-liste' }, 'PATCH')).status, 400);
-  assert.equal((await post('/api/note', { path: P, field: 'title', value: 'x' }, 'PATCH')).status, 400);
+  assert.equal((await post('/api/note', { path: P, field: 'title', value: 'Einladung annehmen und beitreten' }, 'PATCH')).status, 200);
+  assert.match(readVault(P), /^title: "Einladung annehmen und beitreten"$/m);
+  assert.equal((await post('/api/note', { path: P, field: 'nonsense', value: 'x' }, 'PATCH')).status, 400);
   assert.match(readVault(P), new RegExp(`^updated: ${new Date().toISOString().slice(0, 10)}$`, 'm'));
   // a block list in the old file is replaced cleanly
   const D = 'Apps/Demo-App/Entscheidungen/Single- oder Multi-Tenant.md';

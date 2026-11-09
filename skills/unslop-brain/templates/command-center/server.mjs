@@ -22,11 +22,11 @@ const ENUMS = {
   severity: ['Blocker', 'Gap', 'Rough', 'Polish'],
 };
 const WRITABLE = {
-  flow: ['status', 'prio', 'screens', 'endpoints', 'evidence', 'reason'],
-  finding: ['state', 'severity', 'where'],
-  decision: ['state', 'answer', 'question'],
+  flow: ['title', 'status', 'prio', 'screens', 'endpoints', 'evidence', 'reason'],
+  finding: ['title', 'state', 'severity', 'where'],
+  decision: ['title', 'state', 'answer', 'question'],
 };
-const FIELD_KIND = { screens: 'list', endpoints: 'list', evidence: 'text', reason: 'text', answer: 'text', question: 'text', where: 'text' };
+const FIELD_KIND = { title: 'text', screens: 'list', endpoints: 'list', evidence: 'text', reason: 'text', answer: 'text', question: 'text', where: 'text' };
 const MANAGED = ['flow', 'finding', 'decision'];
 const MAX_BODY = 64 * 1024;
 const STATE_VALUES = { finding: ['open', 'fixed', 'wontfix'], decision: ['open', 'decided'] };

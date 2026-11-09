@@ -79,6 +79,10 @@ export function inspect() {
       if (outer && outer !== c && area.contains(outer) && getComputedStyle(c).backgroundColor !== 'rgba(0, 0, 0, 0)' && getComputedStyle(outer).backgroundColor !== 'rgba(0, 0, 0, 0)') { out.push({ kind: 'too-busy', msg: `${name(c)} is a box inside the box ${name(outer)}` }); break; }
     }
   }
+  for (const e of document.querySelectorAll('textarea, [contenteditable="true"]')) {
+    if (!vis(e)) continue; const t = e.tagName === 'TEXTAREA' ? e.value : (e.innerText || '');
+    if (/^\s{0,3}#{1,6}\s\S/m.test(t) || /\*\*[^*\s][^*]*\*\*/.test(t) || /^\s*[-*]\s\S.*\n\s*[-*]\s\S/m.test(t)) out.push({ kind: 'markdown-visible', msg: `${name(e)} shows markdown source; edit text as formatted text, not as .md` });
+  }
   const small = innerWidth <= 480;
   for (const e of document.querySelectorAll('button, a[href], [role="button"], input, select, textarea, [role="tab"]')) {
     if (!vis(e)) continue; const r = e.getBoundingClientRect();

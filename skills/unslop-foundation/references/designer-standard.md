@@ -75,7 +75,8 @@ Every area has a **preview** and a **workspace**.
 | Status or any small fixed set | Tap the marker, small popover with the options, keyboard arrows and Enter |
 | 2-4 exclusive options (priority, view) | Segmented control in place |
 | Short text (title, evidence, answer) | Click the text itself (no pencil icon or Edit button), it turns into an input, Enter saves, Esc cancels |
-| Paragraphs and sections | Click the rendered text, it becomes an auto-growing text area in place, saves on leaving, Esc cancels, Undo |
+| Paragraphs and sections | Click the rendered text, it becomes formatted text you edit in place (never markdown source), a small labelled toolbar (Fett, Kursiv, Liste, Link) appears, saves on leaving, Esc cancels, Undo |
+| Titles and names | Click the title itself, it wraps and edits in place, Enter saves; every object name is editable |
 | List of strings (screens, endpoints, tags) | Token field: chips with a remove mark, type and press Enter to add |
 | Yes / no | Switch |
 | Long text | Open an editor in a sheet or modal with live preview; the text stays rendered otherwise |

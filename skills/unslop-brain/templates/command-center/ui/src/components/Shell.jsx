@@ -1,6 +1,6 @@
 import { Button, Modal, Popover } from '@heroui/react';
 import { AREAS, areaHref, appHref, blockersOf, openDecisionsOf, pct, safeUrl, totalsOf } from '../lib/model.js';
-import { Icon, Strip } from './ui.jsx';
+import { Icon } from './ui.jsx';
 import { useShell } from '../lib/shell.jsx';
 
 // Rail (areas), context column (apps as folders, info at the bottom), window (the working surface).
@@ -59,7 +59,6 @@ export function Context({ area, apps, app }) {
         return (
           <a key={a.name} className="folder" href={area === 'apps' ? appHref(a.name) : areaHref(area, a.name)} aria-current={app === a.name && area !== 'apps' ? 'page' : undefined}>
             <span className="nm"><span>{a.name}</span>{bl > 0 && <span className="cnt-badge" title={`${bl} offene Blocker`}>{bl > 9 ? '9+' : bl}</span>}</span>
-            <Strip app={a} size="sm" />
           </a>
         );
       })}
