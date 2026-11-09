@@ -24,7 +24,11 @@ AI-built apps fail in two ways. They **look** generic (glow, gradients, emoji la
 6. **Copy.** Use `unslop-copy`. Replace slop phrases and raw backend errors. German copy rules are included.
 7. **Components, then visuals.** Use `unslop-components` first: pick a signature component per screen from the shape of the data, no default table/KPI-card/form look. Then `unslop-visual` last. If the separate `unslop` skill by Damir Sokolovsky (CC BY 4.0) is installed, hand the visual craft pass to it and keep this skill's checklist as the gate.
 8. **Brain.** Update statuses in the vault (`unslop-brain`). `built` needs evidence.
-9. **Verify.** Build, run tests, open the screens at phone and desktop width, re-run the audit and report the score change.
+9. **Verify.** Build, run tests, then **look at the screens**: open them with the Playwright MCP (`claude mcp add playwright npx @playwright/mcp@latest`, see below), take screenshots at 360 px and 1280 px, in light and dark mode, and judge what you see against the `unslop-components` and `unslop-visual` gates. Re-run the audit and report the score change.
+
+### Seeing the UI
+
+Use the Playwright MCP tools to navigate to the running app, take screenshots and read the page. If the MCP is not installed, tell the user the one-line command above and say plainly that the visual result was **not checked**. Never claim a UI "looks good" from code alone. For apps behind a login, ask the user for a test account or a way in; never guess credentials.
 
 ## Output
 

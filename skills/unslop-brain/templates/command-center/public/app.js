@@ -296,20 +296,175 @@ function splitSections(md) {
   }
   return { pre: pre.join('\n').replace(/^\s*#\s+.*\n/, ''), secs: secs.map((s) => ({ title: s.title, md: s.lines.join('\n') })) };
 }
-// Flow page: facts first, the diagram as hero, "Soll" and "Lücken" side by side.
+/* ---------- flow canvas: the diagram as nodes and curves, not as a document ---------- */
+const NODE_W = 196; const NODE_H = 62; const DEC = 66; const GAP_X = 124; const GAP_Y = 44; const PAD = 70;
+const cleanLabel = (s) => String(s || '').replace(/<br\s*\/?>/gi, ' ').replace(/^["'`]+|["'`]+$/g, '').replace(/\s+/g, ' ').trim();
+// Reads the usual mermaid flowchart subset: ids with [ ] ( ) { } shapes, chains, -- text --> and -->|text| labels.
+function parseFlow(src) {
+  const nodes = new Map(); const edges = [];
+  const NODE = /^([A-Za-z0-9_]+)(?:\[\[(.*?)\]\]|\(\((.*?)\)\)|\(\[(.*?)\]\)|\[\((.*?)\)\]|\[(.*?)\]|\{(.*?)\}|\((.*?)\)|>(.*?)\])?/;
+  const ARROW = /^(?:--\s*([^->|]+?)\s*-->|-\.\s*([^->|]+?)\s*\.->|==\s*([^=>|]+?)\s*==>|-->|---|-\.->|==>)\s*(?:\|([^|]*)\|)?\s*/;
+  const SKIP = /^(flowchart|graph|subgraph|end|classDef|class|style|linkStyle|direction|click|%%)/i;
+  for (const raw of String(src || '').split('\n')) {
+    let rest = raw.trim();
+    if (!rest || SKIP.test(rest)) continue;
+    let prev = null; let label = null;
+    while (rest) {
+      const m = rest.match(NODE);
+      if (!m) break;
+      const id = m[1]; const text = [2, 3, 4, 5, 6, 7, 8, 9].map((i) => m[i]).find((v) => v !== undefined);
+      const shape = m[7] !== undefined ? 'decision' : (m[3] !== undefined || m[4] !== undefined) ? 'terminal' : 'step';
+      const cur = nodes.get(id) || { id, label: id, shape: 'step', order: nodes.size };
+      if (text !== undefined) { cur.label = cleanLabel(text) || id; cur.shape = shape; }
+      nodes.set(id, cur);
+      if (prev) edges.push({ from: prev, to: id, label });
+      rest = rest.slice(m[0].length).trim();
+      const am = rest.match(ARROW);
+      if (!am) break;
+      const l = am[1] ?? am[2] ?? am[3] ?? am[4];
+      label = l ? cleanLabel(l) : null;
+      rest = rest.slice(am[0].length); prev = id;
+    }
+  }
+  return { nodes: [...nodes.values()], edges };
+}
+function layoutFlow(g) {
+  const ids = g.nodes.map((n) => n.id);
+  const out = new Map(ids.map((i) => [i, []])); const inn = new Map(ids.map((i) => [i, []]));
+  for (const e of g.edges) { out.get(e.from).push(e); inn.get(e.to).push(e); }
+  const state = new Map(); const back = new Set();
+  const dfs = (u) => { state.set(u, 1); for (const e of out.get(u)) { const s = state.get(e.to); if (s === 1) back.add(e); else if (!s) dfs(e.to); } state.set(u, 2); };
+  for (const id of ids) if (!state.get(id) && !inn.get(id).length) dfs(id);
+  for (const id of ids) if (!state.get(id)) dfs(id);
+  const rank = new Map(ids.map((i) => [i, 0]));
+  for (let k = 0; k < ids.length; k++) {
+    let changed = false;
+    for (const e of g.edges) { if (back.has(e)) continue; const r = rank.get(e.from) + 1; if (r > rank.get(e.to)) { rank.set(e.to, r); changed = true; } }
+    if (!changed) break;
+  }
+  const maxRank = Math.max(0, ...rank.values());
+  const layers = Array.from({ length: maxRank + 1 }, () => []);
+  for (const n of g.nodes) layers[rank.get(n.id)].push(n);
+  const pos = new Map(); const idx = new Map();
+  layers.forEach((layer, li) => {
+    if (li > 0) {
+      const bary = (n) => { const p = inn.get(n.id).filter((e) => !back.has(e)).map((e) => idx.get(e.from)).filter((v) => v !== undefined); return p.length ? p.reduce((s, v) => s + v, 0) / p.length : n.order; };
+      layer.sort((x, y) => bary(x) - bary(y) || x.order - y.order);
+    } else layer.sort((x, y) => x.order - y.order);
+    layer.forEach((n, i) => idx.set(n.id, i));
+  });
+  const slotH = (n) => (n.shape === 'decision' ? DEC : NODE_H);
+  const totals = layers.map((l) => l.reduce((s, n) => s + slotH(n), 0) + Math.max(0, l.length - 1) * GAP_Y);
+  const tallest = Math.max(NODE_H, ...totals);
+  const hasBack = back.size > 0;
+  layers.forEach((layer, li) => {
+    let y = PAD + (tallest - totals[li]) / 2;
+    for (const n of layer) {
+      const w = n.shape === 'decision' ? DEC : NODE_W; const hh = slotH(n);
+      pos.set(n.id, { x: PAD + li * (NODE_W + GAP_X) + (NODE_W - w) / 2, y, w, h: hh });
+      y += hh + GAP_Y;
+    }
+  });
+  const kind = (n) => (!inn.get(n.id).filter((e) => !back.has(e)).length ? 'start' : n.shape === 'decision' || out.get(n.id).length > 1 ? 'router' : !out.get(n.id).length || n.shape === 'terminal' ? 'end' : 'step');
+  g.nodes.forEach((n, i) => { n.kind = kind(n); n.n = i + 1; });
+  return { pos, back, w: PAD * 2 + maxRank * (NODE_W + GAP_X) + NODE_W, h: PAD * 2 + tallest + (hasBack ? 70 : 0) };
+}
+const KIND_LABEL = { start: 'Start', router: 'Weiche', step: 'Schritt', end: 'Ende' };
+function edgePath(a, b, isBack) {
+  const sx = a.x + a.w; const sy = a.y + a.h / 2; const tx = b.x; const ty = b.y + b.h / 2;
+  if (isBack || tx <= sx + 20) { const dy = Math.max(a.y + a.h, b.y + b.h) + 54 - Math.min(sy, ty); return { d: `M${sx} ${sy} C${sx + 90} ${sy + dy} ${tx - 90} ${ty + dy} ${tx} ${ty}`, mx: (sx + tx) / 2, my: Math.max(sy, ty) + dy * 0.75 }; }
+  const dx = Math.max(48, (tx - sx) / 2);
+  return { d: `M${sx} ${sy} C${sx + dx} ${sy} ${tx - dx} ${ty} ${tx} ${ty}`, mx: (sx + tx) / 2, my: (sy + ty) / 2 };
+}
+const ROUTER_ICON = '<svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true"><path d="M4 16h8m0 0c6 0 6-8 14-8m0 0l-4-3m4 3l-4 3M12 16c6 0 6 8 14 8m0 0l-4-3m4 3l-4 3" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function flowCanvas(g, onEdit) {
+  const stage = h('div', { class: 'fstage', tabindex: '0', role: 'group', 'aria-label': 'Ablauf als Diagramm. Ziehen zum Verschieben, Mausrad zum Zoomen.' });
+  if (!g.nodes.length) {
+    stage.classList.add('empty');
+    stage.append(h('div', { class: 'fempty' }, h('p', {}, 'Für diesen Flow gibt es noch keinen Ablauf.'), h('button', { type: 'button', class: 'plain strong', onclick: onEdit }, 'Ablauf als Text zeichnen')));
+    return stage;
+  }
+  const lay = layoutFlow(g);
+  const world = h('div', { class: 'fworld', style: `width:${lay.w}px;height:${lay.h}px` });
+  const paths = [];
+  const labels = [];
+  for (const e of g.edges) {
+    const a = lay.pos.get(e.from); const b = lay.pos.get(e.to); if (!a || !b) continue;
+    const p = edgePath(a, b, lay.back.has(e));
+    paths.push(`<path d="${p.d}" class="fedge${lay.back.has(e) ? ' back' : ''}" marker-end="url(#arr)"/>`);
+    if (e.label) labels.push(h('span', { class: 'elabel', style: `left:${Math.round(p.mx)}px;top:${Math.round(p.my)}px` }, e.label));
+  }
+  const svg = h('div', { class: 'fsvg', 'aria-hidden': 'true' });
+  svg.innerHTML = `<svg width="${lay.w}" height="${lay.h}" viewBox="0 0 ${lay.w} ${lay.h}"><defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 1 L9 5 L0 9z" class="farrow"/></marker></defs>${paths.join('')}</svg>`;
+  world.append(svg);
+  for (const n of g.nodes) {
+    const p = lay.pos.get(n.id);
+    const dec = n.shape === 'decision';
+    const icon = dec ? h('span', { class: 'ficon' }) : null;
+    if (icon) icon.innerHTML = ROUTER_ICON;
+    const body = dec ? [icon, h('span', { class: 'fcap' }, n.label)] : [h('span', { class: 'flabel' }, n.label)];
+    const node = h('div', { class: `fnode k-${n.kind}${dec ? ' dec' : ''}`, style: `left:${p.x}px;top:${p.y}px;width:${p.w}px;height:${p.h}px`, title: n.label },
+      h('span', { class: 'fbadge' }, KIND_LABEL[n.kind], h('b', { class: 'fnum' }, String(n.n))), ...body, h('i', { class: 'port in' }), h('i', { class: 'port out' }));
+    world.append(node);
+  }
+  for (const l of labels) world.append(l);
+  stage.append(world);
+
+  let k = 1; let x = 0; let y = 0;
+  const apply = () => { world.style.transform = `translate(${x}px, ${y}px) scale(${k})`; };
+  const fit = () => {
+    const w = stage.clientWidth || 900; const hh = stage.clientHeight || 480;
+    k = Math.min(1, (w - 24) / lay.w, (hh - 24) / lay.h); x = (w - lay.w * k) / 2; y = (hh - lay.h * k) / 2; apply();
+  };
+  const zoomAt = (f, cx, cy) => { const k2 = Math.max(0.3, Math.min(2, k * f)); x = cx - (cx - x) * (k2 / k); y = cy - (cy - y) * (k2 / k); k = k2; apply(); };
+  const ctl = h('div', { class: 'fctl' },
+    h('button', { type: 'button', 'aria-label': 'Verkleinern', onclick: () => zoomAt(0.85, (stage.clientWidth || 900) / 2, (stage.clientHeight || 480) / 2) }, '−'),
+    h('button', { type: 'button', 'aria-label': 'Vergrößern', onclick: () => zoomAt(1.18, (stage.clientWidth || 900) / 2, (stage.clientHeight || 480) / 2) }, '+'),
+    h('button', { type: 'button', onclick: fit }, 'Einpassen'));
+  stage.append(ctl);
+  let drag = null;
+  stage.addEventListener('pointerdown', (e) => { if (e.target.closest && e.target.closest('.fctl')) return; drag = { sx: e.clientX - x, sy: e.clientY - y }; stage.classList.add('grab'); stage.setPointerCapture?.(e.pointerId); });
+  stage.addEventListener('pointermove', (e) => { if (!drag) return; x = e.clientX - drag.sx; y = e.clientY - drag.sy; apply(); });
+  const end = () => { drag = null; stage.classList.remove('grab'); };
+  stage.addEventListener('pointerup', end); stage.addEventListener('pointercancel', end);
+  stage.addEventListener('wheel', (e) => { e.preventDefault(); const r = stage.getBoundingClientRect(); zoomAt(e.deltaY < 0 ? 1.1 : 0.9, e.clientX - r.left, e.clientY - r.top); }, { passive: false });
+  stage.addEventListener('keydown', (e) => { if (e.key === '+' || e.key === '=') zoomAt(1.18, 300, 200); else if (e.key === '-') zoomAt(0.85, 300, 200); else if (e.key === '0') fit(); });
+  apply(); setTimeout(fit, 0);
+  return stage;
+}
+
+// No diagram in the note: derive a plain chain from the "Soll" section so the canvas is never empty.
+function sollChain(title, secs) {
+  const s = secs.find((x) => /^soll/i.test(x.title));
+  if (!s) return null;
+  const md = s.md.trim();
+  let items = md.split('\n').map((l) => l.match(/^\s*[-*]\s+(.*\S)/)).filter(Boolean).map((m) => m[1]);
+  if (!items.length) items = md.split(/[,;]\s+|\.\s+/);
+  const clip = (t) => { const c = cleanLabel(t.replace(/[`*_]/g, '').replace(/\.$/, '')); return c.length > 52 ? `${c.slice(0, 49).trim()}…` : c; };
+  items = items.map(clip).filter((t) => t.length > 1).slice(0, 7);
+  if (!items.length) return null;
+  const nodes = [{ id: 'n0', label: clip(title) || 'Start', shape: 'step', order: 0 }, ...items.map((t, i) => ({ id: `n${i + 1}`, label: t, shape: 'step', order: i + 1 }))];
+  return { nodes, edges: nodes.slice(1).map((n, i) => ({ from: nodes[i].id, to: n.id, label: null })) };
+}
+function takeMermaid(md) {
+  const m = md.match(/```mermaid[ \t]*\r?\n([\s\S]*?)```/);
+  return m ? { code: m[1], rest: md.replace(m[0], '') } : { code: null, rest: md };
+}
+// Flow page: the canvas is the page. Facts, the area's route and the notes sit around it.
 async function flowPage(path, note, body, appName) {
   const m = note.meta; const a = data.apps.find((x) => x.name === appName);
-  const page = h('div', { class: 'flowpage' });
-  page.append(h('header', { class: 'fp-head', 'data-s': m.status }, h('span', { class: 'mk big', 'aria-hidden': 'true' }),
+  const { pre, secs } = splitSections(body);
+  const { code, rest } = takeMermaid(pre);
+  const head = h('header', { class: 'fp-head', 'data-s': m.status }, h('span', { class: 'mk big', 'aria-hidden': 'true' }),
     h('div', {}, h('h1', {}, m.title || path.split('/').pop().replace(/\.md$/, '')),
-      h('p', { class: 'flowmeta' }, `${LABEL[m.status] || m.status} · ${m.area || ''} · ${m.prio || ''}${m.reason ? ` · ${m.reason}` : ''}`))));
-  const facts = [];
+      h('p', { class: 'flowmeta' }, `${LABEL[m.status] || m.status} · ${m.area || ''} · ${m.prio || ''}${m.reason ? ` · ${m.reason}` : ''}`)));
+  const drawn = code ? parseFlow(code) : { nodes: [], edges: [] };
+  const derived = !drawn.nodes.length ? sollChain(m.title || '', secs) : null;
+  const canvas = flowCanvas(derived || drawn, () => { editBody = true; route(); });
   const tags = (label, list) => (list && list.length ? h('div', { class: 'fact' }, h('span', { class: 'quiet' }, label), h('span', { class: 'tags' }, list.map((x) => h('code', { class: 'tag' }, x)))) : null);
-  facts.push(tags('Screens', m.screens), tags('Endpoints', m.endpoints));
-  if (m.evidence) facts.push(h('div', { class: 'fact' }, h('span', { class: 'quiet' }, 'Nachweis'), h('span', {}, m.evidence)));
-  if (facts.some(Boolean)) page.append(h('div', { class: 'facts' }, facts));
-  if (a && m.area) page.append(h('div', { class: 'miniroute' }, makeLane(a, m.area, new Set(), path)));
-  return { page, ...splitSections(body) };
+  const facts = [tags('Screens', m.screens), tags('Endpoints', m.endpoints), m.evidence ? h('div', { class: 'fact' }, h('span', { class: 'quiet' }, 'Nachweis'), h('span', {}, m.evidence)) : null].filter(Boolean);
+  const mini = a && m.area ? h('div', { class: 'miniroute' }, makeLane(a, m.area, new Set(), path)) : null;
+  return { head, canvas, derived: !!derived, facts: facts.length ? h('div', { class: 'facts' }, facts) : null, mini, rest, secs };
 }
 async function noteView(path) {
   if (lastNote !== path) { editBody = false; lastNote = path; }
@@ -323,16 +478,20 @@ async function noteView(path) {
   const mp = managePanel(path, note, appName);
   const body = note.body.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_, t, alias) => alias || t);
   if (note.meta.type === 'flow') {
-    const { page, pre, secs } = await flowPage(path, note, body, appName);
+    const fp = await flowPage(path, note, body, appName);
     box.classList.add('wide');
-    box.append(page);
-    if (mp) box.append(mp);
-    if (editBody && mp) { box.append(bodyEditor(path, note)); $view.replaceChildren(box); return; }
-    if (pre.trim()) box.append(await renderMd(pre));
+    box.append(fp.head);
+    if (editBody && mp) { box.append(mp, bodyEditor(path, note)); $view.replaceChildren(box); return; }
+    box.append(fp.canvas);
+    if (fp.derived) box.append(h('p', { class: 'quiet fcaption' }, 'Aus "Soll" abgeleitet, kein gezeichneter Ablauf. ', h('button', { type: 'button', class: 'plain', onclick: () => { editBody = true; route(); } }, 'Ablauf als Text zeichnen')));
+    if (fp.facts) box.append(fp.facts);
+    if (fp.mini) box.append(fp.mini);
+    if (fp.rest.trim()) box.append(await renderMd(fp.rest));
     const want = (t) => /^(soll|l[uü]cken)/i.test(t);
-    const pair = secs.filter((s) => want(s.title)); const rest = secs.filter((s) => !want(s.title));
+    const pair = fp.secs.filter((s) => want(s.title)); const others = fp.secs.filter((s) => !want(s.title));
     if (pair.length) box.append(h('div', { class: 'cols' }, await Promise.all(pair.map(async (s) => h('section', { class: 'col' }, h('h2', {}, s.title), await renderMd(s.md))))));
-    for (const s of rest) box.append(h('section', { class: 'sec' }, h('h2', {}, s.title), await renderMd(s.md)));
+    for (const s of others) box.append(h('section', { class: 'sec' }, h('h2', {}, s.title), await renderMd(s.md)));
+    if (mp) box.append(mp);
     $view.replaceChildren(box);
     return;
   }

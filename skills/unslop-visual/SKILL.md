@@ -26,5 +26,5 @@ Run `unslop-components` before this pass: a clean table of KPI cards is still sl
 - No gradient text, no emoji labels, no "New ✨" badges.
 - Spacing, radius and font sizes come from tokens only.
 - Contrast passes; focus states are visible; tap targets ≥ 44px.
-- Phone (360px) and desktop (1280px) screenshots both look intentional.
+- Phone (360px) and desktop (1280px) screenshots both look intentional. Take them yourself with the Playwright MCP (`claude mcp add playwright npx @playwright/mcp@latest`); if it is not available, say the visual check was not done.
 - Dark mode, if offered, is designed, not inverted.

@@ -41,6 +41,40 @@ await route();
 const cls=(n,c)=>find(byId.view,x=>(x.className||'').split(' ').includes(c));
 if(!cls(0,'fp-head').length) throw new Error('flow page header missing');
 if(!cls(0,'miniroute').length) throw new Error('mini route missing');
+if(!cls(0,'fstage').length) throw new Error('flow canvas missing');
+if(cls(0,'fnode').length!==2) throw new Error('expected 2 canvas nodes, got '+cls(0,'fnode').length);
+const svgHolder=cls(0,'fsvg')[0]; if(!svgHolder||!String(svgHolder._h).includes('<path')) throw new Error('canvas edges missing');
 if(cls(0,'cols').length!==1 || cls(0,'col').length!==2) throw new Error('Soll/Lücken columns missing');
 if(!cls(0,'node').some(n=>(n.className||'').includes('cur'))) throw new Error('current node not marked');
+// parser and layout
+const sample=`flowchart TD
+  A[Seite öffnen] --> B{Session gültig?}
+  B -- ja --> W[Workspace]
+  B -- nein --> L[Login]
+  L --> C{Daten korrekt?}
+  C -- ja --> W
+  C -- nein --> E[Fehler + Zähler]
+  E -- 5 Fehlversuche --> K[Sperre 15 Min]`;
+const g=parseFlow(sample);
+if(g.nodes.length!==7||g.edges.length!==7) throw new Error('parse: '+g.nodes.length+' nodes '+g.edges.length+' edges');
+if(!g.edges.some(e=>e.from==='B'&&e.to==='W'&&e.label==='ja')) throw new Error('edge label lost');
+if(!g.edges.some(e=>e.from==='E'&&e.to==='K'&&e.label==='5 Fehlversuche')) throw new Error('multi-word label lost');
+if(g.nodes.find(n=>n.id==='B').shape!=='decision') throw new Error('decision shape lost');
+const lay=layoutFlow(g);
+const xs=(id)=>lay.pos.get(id).x;
+if(!(xs('A')<xs('B')&&xs('B')<xs('L')&&xs('L')<xs('C')&&xs('C')<xs('E')&&xs('E')<xs('K'))) throw new Error('layers not left to right');
+for(const p of lay.pos.values()) if(![p.x,p.y,p.w,p.h].every(Number.isFinite)) throw new Error('bad coordinates');
+const kinds=Object.fromEntries(g.nodes.map(n=>[n.id,n.kind]));
+if(kinds.A!=='start'||kinds.B!=='router'||kinds.K!=='end') throw new Error('kinds '+JSON.stringify(kinds));
+const cyc=parseFlow('flowchart LR\n A-->B\n B-->C\n C-->A'); const cl=layoutFlow(cyc);
+if(cl.back.size!==1) throw new Error('cycle should yield one back edge');
+if(parseFlow('').nodes.length!==0) throw new Error('empty source');
+// every mermaid block of the demo vault must parse into a drawable graph
+const walk=(d)=>fs.readdirSync(d,{withFileTypes:true}).flatMap(e=>e.isDirectory()?walk(d+'/'+e.name):e.name.endsWith('.md')?[d+'/'+e.name]:[]);
+const vault=process.argv[3];
+if(vault){ let n=0; for(const f of walk(vault)){ const m=fs.readFileSync(f,'utf8').match(/```mermaid\s*\n([\s\S]*?)```/); if(!m) continue; const gg=parseFlow(m[1]); n++; if(gg.nodes.length<2||gg.edges.length<1) throw new Error('unparsable diagram in '+f); const ll=layoutFlow(gg); for(const p of ll.pos.values()) if(![p.x,p.y].every(Number.isFinite)) throw new Error('layout in '+f); } console.log('diagrams parsed:',n); }
+const sc=sollChain('Login',[{title:'Soll',md:'E-Mail + Passwort, generische Fehlermeldung, Rate-Limit pro IP und Konto.'},{title:'Lücken',md:'x'}]);
+if(!sc||sc.nodes.length!==4||sc.edges.length!==3) throw new Error('soll chain: '+JSON.stringify(sc&&sc.nodes.map(n=>n.label)));
+if(sollChain('X',[{title:'Lücken',md:'a'}])!==null) throw new Error('soll chain without Soll must be null');
+const bl=sollChain('Y',[{title:'Soll',md:'- Eins\n- Zwei'}]); if(bl.nodes.length!==3) throw new Error('bullet chain');
 console.log('ok: tabs',tabs.length,'rows',rows.length,'newflow form',form.length);

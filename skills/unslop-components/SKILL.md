@@ -37,6 +37,7 @@ Do not ship a screen whose main content is any of these, unless the data truly i
 - Read-first: no screen has more than a handful of dropdowns or inputs visible without a click.
 - The component still works at 360 px (wraps, stacks or scrolls on purpose) and is keyboard-reachable with visible focus.
 - Reduced motion is respected; nothing animates just to decorate.
+- **You have looked at it**: screenshots taken with the Playwright MCP (`claude mcp add playwright npx @playwright/mcp@latest`) at 360 px and 1280 px. If you could not look, say so; do not call a screen creative or finished from code alone.
 
 ## When tables are right
 

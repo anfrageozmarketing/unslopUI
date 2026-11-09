@@ -20,6 +20,16 @@ Most "unslop" tools fix the surface: glow, gradients, emoji. AI-built apps are a
 
 Order matters: **inventory → audit → flows → structure → states → copy → visuals → verify**.
 
+## Let the AI look at the UI (recommended)
+
+Reading code is not seeing the screen. Give the AI a browser once, so it can open the app, take screenshots and check phone and desktop widths itself:
+
+```
+claude mcp add playwright npx @playwright/mcp@latest
+```
+
+The skills (`unslop-ui`, `unslop-components`, `unslop-visual`, `unslop-brain`) tell the AI to use it for the verify step. Without it, the AI can only say what it did not check.
+
 ## Install
 
 As a Claude Code plugin:

@@ -33,6 +33,7 @@ Run this only when the user asks ("check the base flows", "what is missing compa
 
 ## Rules
 
+- Every flow note carries a mermaid `flowchart` of its steps and decisions (nodes = steps, `{}` = decisions, labelled edges). The Command Center draws it as a node canvas; without it only a chain derived from `Soll` is shown.
 - Name real routes, files and statuses. A flow without a screen name is not finished.
 - Security flows first: password reset always answers the same way; invite and reset links are single-use and expire; lockout is per account and per IP.
 - Every outbound action (mail, webhook, delete) needs: preview, confirmation, history, rate limit.

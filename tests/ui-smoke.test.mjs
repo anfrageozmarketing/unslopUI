@@ -8,6 +8,6 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const APP = join(HERE, '..', 'skills/unslop-brain/templates/command-center/public/app.js');
 
 test('UI renders home, app tabs, create forms and the flow page', () => {
-  const r = spawnSync('node', [join(HERE, 'ui-smoke-runner.mjs'), APP], { encoding: 'utf8' });
+  const r = spawnSync('node', [join(HERE, 'ui-smoke-runner.mjs'), APP, join(HERE, '..', 'examples/demo-vault')], { encoding: 'utf8' });
   if (r.status !== 0) throw new Error(r.stderr || r.stdout);
 });

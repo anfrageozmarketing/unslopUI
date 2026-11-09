@@ -190,3 +190,34 @@ input, select, textarea { font: inherit; font-size: 14px; background: var(--pane
 .sec { margin-top: var(--s5); }
 .diagram { margin: var(--s4) 0; overflow-x: auto; }
 @media (max-width: 700px) { .cols { grid-template-columns: 1fr; gap: var(--s4); } .fact { grid-template-columns: 1fr; gap: 0; } .miniroute .lane { grid-template-columns: 1fr; } }
+
+/* flow canvas */
+.note.wide { max-width: 1080px; }
+.fstage { --edge: #f4622f; position: relative; height: clamp(360px, 62vh, 620px); overflow: hidden; border-radius: 12px; border: 1px solid #2a2536; cursor: grab; touch-action: none; user-select: none;
+  background: radial-gradient(rgba(255,255,255,.13) 1px, transparent 1.4px) 0 0 / 22px 22px, radial-gradient(120% 90% at 85% 110%, rgba(110, 54, 190, .32), transparent 60%), #14111c; color: #f1eef7; margin-bottom: var(--s5); }
+.fstage.grab { cursor: grabbing; }
+.fworld { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.fsvg { position: absolute; inset: 0; pointer-events: none; }
+.fedge { fill: none; stroke: var(--edge); stroke-width: 2.4; }
+.fedge.back { stroke-dasharray: 5 6; opacity: .8; }
+.farrow { fill: var(--edge); }
+.fnode { position: absolute; display: flex; align-items: center; background: #231f2e; border: 1px solid #3a3449; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,.35); }
+.fnode .flabel { padding: 0 20px; font-size: 14px; font-weight: 600; line-height: 1.25; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.fnode.dec { justify-content: center; border-radius: 50%; background: #2a2536; }
+.fnode.dec .ficon { color: var(--edge); display: grid; place-items: center; }
+.fcap { position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); width: 150px; text-align: center; font-size: 12.5px; color: #cfc9dd; line-height: 1.25; }
+.fbadge { position: absolute; left: 4px; top: -25px; display: inline-flex; gap: 6px; align-items: center; font-size: 11.5px; font-weight: 600; color: var(--bc, #6cb4ff); background: color-mix(in srgb, var(--bc, #6cb4ff) 14%, transparent); border: 1px solid color-mix(in srgb, var(--bc, #6cb4ff) 35%, transparent); border-radius: 6px; padding: 1px 8px; white-space: nowrap; }
+.fnum { font: 600 11px ui-monospace, monospace; color: #cfc9dd; background: rgba(255,255,255,.08); border-radius: 5px; padding: 0 5px; }
+.fnode.k-start { --bc: #ff8a5c; } .fnode.k-router { --bc: #b794f6; } .fnode.k-step { --bc: #6cb4ff; } .fnode.k-end { --bc: #a7a2b3; }
+.fnode.dec .fbadge { left: -2px; }
+.port { position: absolute; top: 50%; width: 14px; height: 14px; margin-top: -7px; border-radius: 50%; border: 2.5px solid var(--edge); background: #14111c; }
+.port.in { left: -7px; } .port.out { right: -7px; }
+.elabel { position: absolute; transform: translate(-50%, -50%); font-size: 11.5px; color: #e9e5f3; background: #14111c; border: 1px solid #3a3449; border-radius: 999px; padding: 1px 9px; white-space: nowrap; }
+.fctl { position: absolute; left: 12px; bottom: 12px; display: flex; gap: 6px; z-index: 2; }
+.fctl button { background: #231f2e; color: #f1eef7; border: 1px solid #3a3449; border-radius: 8px; padding: 4px 12px; font-size: 14px; }
+.fctl button:hover { border-color: #6b6485; }
+.fempty { height: 100%; display: grid; place-content: center; gap: var(--s2); text-align: center; color: #cfc9dd; }
+.fempty .plain { color: #fff; text-decoration-color: #fff; }
+.fstage:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+
+.fcaption { margin: calc(var(--s3) * -1) 0 var(--s5); }

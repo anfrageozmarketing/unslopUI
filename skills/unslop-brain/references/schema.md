@@ -48,7 +48,7 @@ vault/
 | `reason` | one line, required in spirit for `na`: why this app does not need the flow |
 | `updated` | `YYYY-MM-DD` |
 
-Body: one `mermaid` diagram if the flow branches, then `## Soll`, `## Lücken`, `## Hinweise`.
+Body: a `mermaid` `flowchart` of the flow's steps (`[]` step, `{}` decision, `-- label -->` for branches; always draw one, the Command Center renders it as a node canvas with start, steps, switches and end), then `## Soll`, `## Lücken`, `## Hinweise`. Without a diagram the canvas falls back to a chain derived from `## Soll`.
 
 Status meaning: `na` the flow does not make sense for this app (for example roles in a one-user tool); it is excluded from coverage and must not be proposed again.  `missing` not in the code · `partial` exists but with gaps · `exists` complete as found · `built` created or completed during the unslop work and verified (needs `evidence`).
 
