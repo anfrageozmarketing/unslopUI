@@ -22,19 +22,15 @@ const tabs=find(view,n=>n.tagName==='button'&&n.listeners.click);
 const flowsBtn=tabs.find(b=>b.children.some(c=>c.text&&c.text.startsWith('Flows')));
 if(!flowsBtn) throw new Error('Flows tab missing');
 flowsBtn.listeners.click[0]();
-const rows=find(byId.view,n=>n.tagName==='tr');
-const newBtn=find(byId.view,n=>n.tagName==='button'&&n.children.some(c=>c.text==='+ Neuer Flow'));
-if(!newBtn.length) throw new Error('new flow button missing');
-newBtn[0].listeners.click[0]();
-const form=find(byId.view,n=>n.tagName==='form');
+const cls0=(c)=>find(byId.view,x=>(x.className||'').split(' ').includes(c));
+if(cls0('hero').length!==1) throw new Error('app hero (generated picture) missing');
+if(!cls0('quick').length) throw new Error('quick-add line missing in Flows');
+if(find(byId.view,n=>n.tagName==='select').length) throw new Error('no <select> allowed in the app view');
 for (const label of ['Befunde','Entscheidungen']) {
   const tb=find(byId.view,n=>n.tagName==='button'&&n.listeners.click&&n.children.some(c=>c.text&&c.text.startsWith(label)));
   if(!tb.length) throw new Error(label+' tab missing');
   tb[0].listeners.click[0]();
-  const nb=find(byId.view,n=>n.tagName==='button'&&n.children.some(c=>c.text&&/^\+ Neu/.test(c.text)));
-  if(!nb.length) throw new Error('new button missing in '+label);
-  nb[0].listeners.click[0]();
-  if(!find(byId.view,n=>n.tagName==='form').length) throw new Error('create form missing in '+label);
+  if(!cls0('quick').length) throw new Error('quick-add line missing in '+label);
 }
 location.hash='#/note/'+encodeURIComponent('Apps/Demo/Flows/Zugang/Login.md');
 await route();
@@ -69,6 +65,19 @@ if(kinds.A!=='start'||kinds.B!=='router'||kinds.K!=='end') throw new Error('kind
 const cyc=parseFlow('flowchart LR\n A-->B\n B-->C\n C-->A'); const cl=layoutFlow(cyc);
 if(cl.back.size!==1) throw new Error('cycle should yield one back edge');
 if(parseFlow('').nodes.length!==0) throw new Error('empty source');
+// generated picture: deterministic per app name, numbers only, differs between apps
+const A1={name:'Demo',flows:idx.apps[0].flows}; const A2={name:'Andere',flows:idx.apps[0].flows};
+if(artSvg(A1)!==artSvg(A1)) throw new Error('seed picture not deterministic');
+if(artSvg(A1)===artSvg(A2)) throw new Error('seed picture identical for different names');
+if(/NaN|undefined|<script/.test(artSvg(A1))) throw new Error('seed picture has bad content');
+if(artSvg({name:'<img onerror=x>',flows:[{area:'<b>',status:'<x>',prio:'MVP'}]}).includes('<img')) throw new Error('seed picture leaked text');
+// command palette: filter by every word, actions only inside an app
+const base=paletteItems('',idx,null); if(!base.some(i=>i.kind==='App')||base.some(i=>i.label==='Neuen Flow anlegen')) throw new Error('palette base items');
+if(!paletteItems('',idx,'Demo').some(i=>i.label==='Neuen Flow anlegen')) throw new Error('palette actions in app');
+const hit=paletteItems('login zugang',idx,null); if(!hit.length||!hit.every(i=>/login/i.test(i.label+i.sub)&&/zugang/i.test(i.label+i.sub))) throw new Error('palette filter '+JSON.stringify(hit.map(i=>i.label)));
+if(paletteItems('zzzz-none',idx,null).length) throw new Error('palette should be empty for nonsense');
+// icons come from a fixed set; unknown names fall back to a dot
+if(!String(icon('key')._h).includes('stroke-width="2.6"')||String(icon('<img onerror=x>')._h).includes('<img')) throw new Error('icon set');
 // an edge that skips a layer is lifted over the node in between; a neighbouring edge stays a plain curve
 const sk=parseFlow('flowchart LR\n A-->B\n B-->C\n A-->C'); const sl=layoutFlow(sk); const all=[...sl.pos.values()];
 const skip=edgePath(sl.pos.get('A'),sl.pos.get('C'),false,all); const near=edgePath(sl.pos.get('A'),sl.pos.get('B'),false,all);
@@ -82,4 +91,4 @@ const sc=sollChain('Login',[{title:'Soll',md:'E-Mail + Passwort, generische Fehl
 if(!sc||sc.nodes.length!==4||sc.edges.length!==3) throw new Error('soll chain: '+JSON.stringify(sc&&sc.nodes.map(n=>n.label)));
 if(sollChain('X',[{title:'Lücken',md:'a'}])!==null) throw new Error('soll chain without Soll must be null');
 const bl=sollChain('Y',[{title:'Soll',md:'- Eins\n- Zwei'}]); if(bl.nodes.length!==3) throw new Error('bullet chain');
-console.log('ok: tabs',tabs.length,'rows',rows.length,'newflow form',form.length);
+console.log('ok: tabs',tabs.length);

@@ -25,10 +25,11 @@ function h(tag, props = {}, ...kids) {
   for (const kid of kids.flat()) if (kid != null && kid !== false) el.append(kid.nodeType ? kid : document.createTextNode(String(kid)));
   return el;
 }
-function toast(msg) {
+function toast(msg, action) {
   const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2500);
+  t.replaceChildren(msg, action ? h('button', { type: 'button', class: 'toast-act', onclick: () => { t.classList.remove('show'); action.run(); } }, icon('undo', 16), action.label) : null);
+  t.classList.add('show');
+  clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), action ? 7000 : 2500);
 }
 async function api(path, opts) {
   const r = await fetch(path, { headers: { 'x-requested-with': 'command-center', ...(opts?.body ? { 'content-type': 'application/json' } : {}) }, ...opts });
@@ -55,6 +56,176 @@ function currentApp() {
   return null;
 }
 
+/* ---------- icon set: one 24px grid, 2.6px round strokes, drawn here (never from note content) ---------- */
+const ICONS = {
+  key: '<circle cx="8" cy="15" r="4"/><path d="M11 12 20 3M16 7l3 3"/>',
+  flag: '<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>',
+  route: '<circle cx="6" cy="19" r="2.5"/><circle cx="18" cy="5" r="2.5"/><path d="M8.5 19H15a3.5 3.5 0 0 0 0-7H9a3.5 3.5 0 0 1 0-7h6.5"/>',
+  sliders: '<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>',
+  server: '<rect x="3.5" y="4" width="17" height="6.5" rx="2"/><rect x="3.5" y="13.5" width="17" height="6.5" rx="2"/><path d="M7.5 7.25h.01M7.5 16.75h.01"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  pencil: '<path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19z"/>',
+  archive: '<rect x="3.5" y="4" width="17" height="5" rx="1.5"/><path d="M5 9v9a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9M10 13h4"/>',
+  zoomIn: '<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.5-4.5M11 8v6M8 11h6"/>',
+  zoomOut: '<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.5-4.5M8 11h6"/>',
+  fit: '<path d="M4 9V5a1 1 0 0 1 1-1h4M15 4h4a1 1 0 0 1 1 1v4M20 15v4a1 1 0 0 1-1 1h-4M9 20H5a1 1 0 0 1-1-1v-4"/>',
+  search: '<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.5-4.5"/>',
+  alert: '<path d="M12 4 3 19.5h18z"/><path d="M12 10v4.5M12 17.5h.01"/>',
+  question: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17h.01"/>',
+  bolt: '<path d="M13 3 5 13.5h6L10 21l9-11h-6z"/>',
+  check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  external: '<path d="M14 4h6v6M20 4l-9 9M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/>',
+  apps: '<rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/>',
+  refresh: '<path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/>',
+  undo: '<path d="M9 6 4 11l5 5M4 11h10.5a5.5 5.5 0 0 1 0 11H11"/>',
+  more: '<path d="M5 12h.01M12 12h.01M19 12h.01"/>',
+  dot: '<circle cx="12" cy="12" r="3"/>',
+};
+const AREA_ICON = { Zugang: 'key', Onboarding: 'flag', Kernablauf: 'route', Einstellungen: 'sliders', System: 'server' };
+function icon(name, size = 20) {
+  const s = h('span', { class: 'ic', 'aria-hidden': 'true' });
+  s.innerHTML = `<svg viewBox="0 0 24 24" width="${Number(size)}" height="${Number(size)}" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">${ICONS[name] || ICONS.dot}</svg>`;
+  return s;
+}
+const iconBtn = (name, label, onclick, cls = '') => h('button', { type: 'button', class: `ibtn ${cls}`.trim(), 'aria-label': label, title: label, onclick }, icon(name, 18));
+
+/* ---------- generated picture: every app gets a star chart of its own flows, seeded by its name ---------- */
+function hashStr(s) { let x = 2166136261; for (const c of String(s)) { x ^= c.codePointAt(0); x = Math.imul(x, 16777619); } return x >>> 0; }
+function mulberry(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+// Only numbers and whitelisted status names go into the markup, so no note content can reach it.
+function artSvg(a, W = 800, H = 240) {
+  const rnd = mulberry(hashStr(a.name)); const areas = areasOf(a); const parts = [];
+  for (let i = 0; i < 3; i++) parts.push(`<circle class="ring" cx="${Math.round(rnd() * W)}" cy="${Math.round(rnd() * H)}" r="${Math.round(60 + rnd() * 150)}"/>`);
+  const band = H / (areas.length + 1);
+  areas.forEach((ar, i) => {
+    const fl = a.flows.filter((f) => f.area === ar); let x = 24 + rnd() * 50;
+    const pts = fl.map((f) => { x += ((W - 90) / fl.length) * (0.7 + rnd() * 0.6); return { f, x: Math.min(W - 16, Math.round(x)), y: Math.round(band * (i + 1) + (rnd() - 0.5) * band * 0.7) }; });
+    if (pts.length > 1) parts.push(`<polyline class="rt" points="${pts.map((p) => `${p.x},${p.y}`).join(' ')}"/>`);
+    for (const p of pts) parts.push(`<circle class="st st-${LABEL[p.f.status] ? p.f.status : 'na'}" cx="${p.x}" cy="${p.y}" r="${p.f.prio === 'MVP' ? 6 : p.f.prio === 'V1' ? 4.5 : 3}"/>`);
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">${parts.join('')}</svg>`;
+}
+function artBox(a, cls) { const d = h('div', { class: `art ${cls}`, 'aria-hidden': 'true' }); d.innerHTML = artSvg(a); return d; }
+function setBackdrop() {
+  const el = document.getElementById('backdrop'); if (!el) return;
+  const cur = currentApp(); const a = data.apps.find((x) => x.name === cur);
+  el.innerHTML = artSvg(a || { name: 'Command Center', flows: data.apps.flatMap((x) => x.flows) }, 1200, 700);
+}
+
+/* ---------- direct manipulation: popover, segmented switch, inline text, undo ---------- */
+let openPop = null;
+function closePopover(focusBack = true) {
+  if (!openPop) return; const { el, anchor, off } = openPop; openPop = null;
+  el.remove(); document.removeEventListener('pointerdown', off, true); if (focusBack) anchor.focus?.();
+}
+function popover(anchor, options, current, onPick, label) {
+  closePopover(false);
+  const list = h('div', { class: 'pop glass', role: 'listbox', 'aria-label': label });
+  const items = options.map(([v, l, st]) => h('button', { type: 'button', role: 'option', class: 'pop-item', tabindex: '-1', 'aria-selected': String(v === current), 'data-s': st || null,
+    onclick: () => { closePopover(); if (v !== current) onPick(v); } }, st ? h('span', { class: 'mk', 'aria-hidden': 'true' }) : null, l, v === current ? icon('check', 16) : null));
+  list.append(...items);
+  const off = (e) => { if (!list.contains(e.target) && e.target !== anchor && !anchor.contains(e.target)) closePopover(false); };
+  list.addEventListener('keydown', (e) => {
+    const i = items.indexOf(document.activeElement);
+    if (e.key === 'ArrowDown') { e.preventDefault(); items[(i + 1) % items.length].focus(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); items[(i - 1 + items.length) % items.length].focus(); }
+    else if (e.key === 'Escape') { e.preventDefault(); closePopover(); }
+    else if (e.key === 'Tab') closePopover(false);
+  });
+  document.body.append(list); document.addEventListener('pointerdown', off, true);
+  const r = anchor.getBoundingClientRect();
+  list.style.left = `${Math.max(8, Math.min(window.innerWidth - 220, r.left))}px`; list.style.top = `${Math.min(window.innerHeight - items.length * 46 - 16, r.bottom + 6)}px`;
+  openPop = { el: list, anchor, off };
+  (items[Math.max(0, options.findIndex(([v]) => v === current))] || items[0]).focus();
+}
+// 2-3 values as a switch; el.value holds the current one.
+function segmented(options, current, onPick, label) {
+  const el = h('div', { class: 'seg3', role: 'radiogroup', 'aria-label': label }); el.value = current;
+  const btns = options.map(([v, l]) => h('button', { type: 'button', role: 'radio', 'aria-checked': String(v === current), 'data-v': v, onclick: () => pick(v) }, l));
+  const pick = (v) => { if (v === el.value) return; el.value = v; btns.forEach((b) => b.setAttribute('aria-checked', String(b.getAttribute('data-v') === v))); onPick?.(v); };
+  el.addEventListener('keydown', (e) => { const i = btns.indexOf(document.activeElement); if (e.key === 'ArrowRight' && i < btns.length - 1) { e.preventDefault(); btns[i + 1].focus(); } else if (e.key === 'ArrowLeft' && i > 0) { e.preventDefault(); btns[i - 1].focus(); } });
+  el.append(...btns); return el;
+}
+function inlineText({ value, placeholder, label, onSave }) {
+  const view = h('button', { type: 'button', class: 'inl', 'aria-label': `${label} bearbeiten` }, value ? value : h('span', { class: 'ph' }, placeholder));
+  view.addEventListener('click', () => {
+    const inp = h('input', { class: 'inl-in', value: value || '', placeholder, maxlength: 300, 'aria-label': label });
+    view.replaceWith(inp); inp.focus(); let done = false;
+    const finish = (save) => { if (done) return; done = true; if (save && inp.value !== (value || '')) onSave(inp.value); else inp.replaceWith(view); };
+    inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); finish(true); } else if (e.key === 'Escape') { e.preventDefault(); finish(false); } });
+    inp.addEventListener('blur', () => finish(true));
+  });
+  return view;
+}
+async function patchNote(path, field, value) { await api('/api/note', { method: 'PATCH', body: JSON.stringify({ path, field, value }) }); }
+// Optimistic change: apply(v) updates the screen at once, the request follows, undo goes back to prev.
+async function change(path, field, value, prev, apply) {
+  const commit = async (v) => { await patchNote(path, field, v); await load(); renderSide(); };
+  try {
+    apply?.(value); await commit(value); await route();
+    toast('Gespeichert', { label: 'Rückgängig', run: async () => { try { await commit(prev); await route(); toast('Zurückgesetzt'); } catch (e) { toast(e.message); } } });
+  } catch (e) { apply?.(prev); toast(e.message); }
+}
+
+/* ---------- command palette (Ctrl/Cmd+K) ---------- */
+function paletteItems(q, d = data, cur = currentApp()) {
+  const items = [];
+  if (cur) for (const [label, tab] of [['Neuen Flow anlegen', 'flows'], ['Neuen Befund anlegen', 'findings'], ['Neue Entscheidung anlegen', 'decisions']]) items.push({ kind: 'Aktion', ic: 'plus', label, sub: cur, run: () => gotoNew(cur, tab) });
+  items.push({ kind: 'Aktion', ic: 'refresh', label: 'Daten aktualisieren', run: async () => { await load(); await route(); toast('Aktualisiert'); } });
+  for (const a of d.apps) items.push({ kind: 'App', ic: 'apps', label: a.name, sub: a.stack || '', href: `#/app/${encodeURIComponent(a.name)}` });
+  for (const a of d.apps) {
+    for (const f of a.flows) items.push({ kind: 'Flow', ic: AREA_ICON[f.area] || 'route', st: f.status, label: f.title, sub: `${a.name} · ${f.area} · ${LABEL[f.status] || f.status}`, href: noteHref(f) });
+    for (const f of a.findings) items.push({ kind: 'Befund', ic: 'alert', label: f.title, sub: `${a.name} · ${f.severity}`, href: noteHref(f) });
+    for (const x of a.decisions) items.push({ kind: 'Entscheidung', ic: 'question', label: x.question || x.title, sub: `${a.name} · ${x.title}`, href: noteHref(x) });
+  }
+  const toks = String(q || '').toLowerCase().split(/\s+/).filter(Boolean);
+  return items.filter((i) => { const hay = `${i.label} ${i.sub || ''} ${i.kind}`.toLowerCase(); return toks.every((t) => hay.includes(t)); }).slice(0, 40);
+}
+let pal = null;
+function closePalette() { if (!pal) return; const { back, prev } = pal; pal = null; back.remove(); prev?.focus?.(); }
+function openPalette() {
+  if (pal) return; closePopover(false);
+  const input = h('input', { class: 'pal-in', type: 'text', role: 'combobox', 'aria-expanded': 'true', 'aria-controls': 'pal-list', 'aria-autocomplete': 'list', placeholder: 'Apps, Flows, Befunde, Entscheidungen suchen …', 'aria-label': 'Suchen und springen', autocomplete: 'off' });
+  const list = h('ul', { class: 'pal-list', id: 'pal-list', role: 'listbox', 'aria-label': 'Treffer' });
+  const box = h('div', { class: 'pal glass', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Befehlspalette' }, h('div', { class: 'pal-top' }, icon('search', 20), input), list);
+  const back = h('div', { class: 'pal-back' }, box);
+  let res = []; let sel = 0;
+  const draw = () => {
+    res = paletteItems(input.value);
+    list.replaceChildren(...(res.length ? res.map((it, i) => h('li', { id: `pal-${i}`, role: 'option', class: 'pal-item', 'aria-selected': String(i === sel), 'data-s': it.st || null, onclick: () => run(it) },
+      it.st ? h('span', { class: 'mk', 'aria-hidden': 'true' }) : icon(it.ic, 18), h('span', { class: 'pal-l' }, it.label), h('span', { class: 'quiet pal-s' }, it.sub || ''), h('span', { class: 'pal-k' }, it.kind)))
+      : [h('li', { class: 'quiet pal-none' }, 'Nichts gefunden.')]));
+    input.setAttribute('aria-activedescendant', res.length ? `pal-${sel}` : '');
+    list.children[sel]?.scrollIntoView?.({ block: 'nearest' });
+  };
+  const run = (it) => { closePalette(); if (it.href) location.hash = it.href; else it.run?.(); };
+  input.addEventListener('input', () => { sel = 0; draw(); });
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); sel = Math.min(res.length - 1, sel + 1); draw(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); sel = Math.max(0, sel - 1); draw(); }
+    else if (e.key === 'Enter') { e.preventDefault(); if (res[sel]) run(res[sel]); }
+    else if (e.key === 'Escape') { e.preventDefault(); closePalette(); }
+  });
+  back.addEventListener('pointerdown', (e) => { if (e.target === back) closePalette(); });
+  document.body.append(back); pal = { back, prev: document.activeElement }; draw(); input.focus();
+}
+function gotoNew(name, tab) {
+  lastApp = name; appTab = tab; focusQuick = true;
+  const target = `#/app/${encodeURIComponent(name)}`;
+  if (location.hash === target) route(); else location.hash = target;
+}
+// j/k walk through the rows of the current list; Enter follows the focused link.
+function walkRows(dir) {
+  const rows = [...$view.querySelectorAll('[data-nav]')]; if (!rows.length) return;
+  const i = rows.indexOf(document.activeElement); rows[Math.max(0, Math.min(rows.length - 1, i < 0 ? (dir > 0 ? 0 : rows.length - 1) : i + dir))].focus();
+}
+window.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); pal ? closePalette() : openPalette(); return; }
+  const t = e.target; if (pal || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable)) return;
+  if (e.key === 'j') walkRows(1); else if (e.key === 'k') walkRows(-1); else if (e.key === '/') { e.preventDefault(); openPalette(); }
+});
+
 /* ---------- signature components ---------- */
 // Strip: the whole app in one line. One tick per flow, grouped by area, coloured by status.
 function strip(a, { compact = false } = {}) {
@@ -79,11 +250,11 @@ function makeLane(a, ar, active, current) {
     return h('a', { class: `node p-${f.prio}${dim ? ' dim' : ''}${cur ? ' cur' : ''}`, 'data-s': f.status, 'aria-current': cur ? 'page' : null, href: noteHref(f), title: `${f.title} · ${LABEL[f.status]} · ${f.prio}${f.reason ? ` · ${f.reason}` : ''}` },
       h('span', { class: 'mk', 'aria-hidden': 'true' }), h('span', { class: 'lbl' }, f.title), f.prio === 'MVP' ? h('span', { class: 'mvp' }, 'MVP') : null);
   }));
-  return h('section', { class: 'lane', 'aria-label': ar }, h('header', {}, h('h3', {}, ar), h('span', { class: 'quiet num' }, `${done}/${flows.length}`)), track);
+  return h('section', { class: 'lane', 'aria-label': ar }, h('header', {}, h('h3', {}, icon(AREA_ICON[ar] || 'route', 22), ar), h('span', { class: 'quiet num' }, `${done}/${flows.length}`)), track);
 }
 function routeMap(a, active) {
   const areas = areasOf(a);
-  if (!areas.length) return h('p', { class: 'quiet' }, 'Noch keine Flows. Lege den ersten mit "+ Neuer Flow" an.');
+  if (!areas.length) return h('p', { class: 'quiet' }, 'Noch keine Flows. Lege den ersten unten mit "Neuer Flow" an.');
   return h('div', { class: 'map' }, areas.map((ar) => makeLane(a, ar, active, null)));
 }
 function legend(a, active, onToggle) {
@@ -104,13 +275,13 @@ function summary(a) {
 function renderSide() {
   const cur = currentApp();
   $side.replaceChildren(
-    h('a', { class: 'side-item home', href: '#/', 'aria-current': !location.hash.replace(/^#\/?/, '') ? 'page' : null }, 'Alle Apps'),
+    h('a', { class: 'side-item home', href: '#/', 'aria-current': !location.hash.replace(/^#\/?/, '') ? 'page' : null }, icon('apps', 18), 'Alle Apps'),
     h('ul', {}, data.apps.map((a) => {
       const bl = blockersOf(a).length; const url = safeUrl(a.url);
       return h('li', {},
         h('a', { class: 'side-item', href: `#/app/${encodeURIComponent(a.name)}`, 'aria-current': cur === a.name ? 'page' : null },
           h('span', { class: 'row' }, h('span', { class: 'name' }, a.name), bl ? h('span', { class: 'dotbad', title: `${bl} offene Blocker` }, bl) : null), strip(a, { compact: true })),
-        url ? h('a', { class: 'side-open', href: url, target: '_blank', rel: 'noopener noreferrer' }, 'App öffnen ↗') : null);
+        url ? h('a', { class: 'side-open', href: url, target: '_blank', rel: 'noopener noreferrer' }, 'App öffnen', icon('external', 14)) : null);
     })));
 }
 function homeView() {
@@ -118,7 +289,7 @@ function homeView() {
   const root = h('div', {}, h('h1', {}, 'Apps'));
   if (!data.apps.length) root.append(h('p', { class: 'quiet' }, 'Noch keine Apps im Vault. Lege unter Apps/<Name>/ eine _App.md an.'));
   root.append(h('div', { class: 'apps' }, data.apps.map((a) =>
-    h('a', { class: 'app-row', href: `#/app/${encodeURIComponent(a.name)}` },
+    h('a', { class: 'app-row', href: `#/app/${encodeURIComponent(a.name)}`, 'data-nav': true }, artBox(a, 'row-art'),
       h('div', { class: 'app-head' }, h('h2', {}, a.name), a.stack ? h('span', { class: 'quiet' }, a.stack) : null),
       strip(a), summary(a)))));
   $view.replaceChildren(root);
@@ -127,92 +298,109 @@ function homeView() {
 /* ---------- app view ---------- */
 let appTab = 'flows';
 let lastApp = null;
+let focusQuick = false;
 const active = new Set();
-let showNew = false;
 const TABS = [
-  { key: 'flows', label: (a) => `Flows (${a.total})` },
-  { key: 'attention', label: () => 'Aufmerksamkeit' },
-  { key: 'findings', label: (a) => `Befunde (${a.findings.length})` },
-  { key: 'decisions', label: (a) => `Entscheidungen (${a.decisions.length})` },
+  { key: 'flows', ic: 'route', label: 'Flows', n: (a) => a.total },
+  { key: 'attention', ic: 'bolt', label: 'Aufmerksamkeit', n: () => null },
+  { key: 'findings', ic: 'alert', label: 'Befunde', n: (a) => a.findings.length },
+  { key: 'decisions', ic: 'question', label: 'Entscheidungen', n: (a) => a.decisions.length },
 ];
 function appView(name) {
   const a = data.apps.find((x) => x.name === name);
   if (!a) { $view.replaceChildren(h('p', { class: 'quiet' }, 'App nicht gefunden.')); return; }
-  if (lastApp !== name) { lastApp = name; appTab = 'flows'; active.clear(); showNew = false; }
+  if (lastApp !== name) { lastApp = name; appTab = 'flows'; active.clear(); }
   crumbs([{ label: 'Apps', href: '#/' }, { label: a.name }]);
   const url = safeUrl(a.url);
   const root = h('div', {},
-    h('header', { class: 'app-top' }, h('h1', {}, a.name),
-      h('span', { class: 'row' }, a.score != null ? h('span', { class: 'quiet num' }, `Score ${a.score}/36`) : null, url ? h('a', { class: 'btn-open', href: url, target: '_blank', rel: 'noopener noreferrer' }, 'App öffnen ↗') : null)),
-    strip(a), summary(a),
-    h('nav', { class: 'tabs', 'aria-label': 'Bereiche' }, TABS.map((t) => h('button', { type: 'button', 'aria-pressed': String(t.key === appTab), onclick: () => { appTab = t.key; showNew = false; appView(name); } }, t.label(a)))));
+    h('header', { class: 'hero' }, artBox(a, 'hero-art'), h('div', { class: 'hero-body' },
+      h('div', { class: 'app-top' }, h('h1', {}, a.name),
+        h('span', { class: 'row' }, a.score != null ? h('span', { class: 'quiet num' }, `Score ${a.score}/36`) : null, url ? h('a', { class: 'btn-open', href: url, target: '_blank', rel: 'noopener noreferrer' }, 'App öffnen', icon('external', 16)) : null)),
+      strip(a), summary(a))),
+    h('nav', { class: 'tabs', 'aria-label': 'Bereiche' }, TABS.map((t) => h('button', { type: 'button', 'aria-pressed': String(t.key === appTab), onclick: () => { appTab = t.key; appView(name); } },
+      icon(t.ic, 18), t.label, t.n(a) != null ? h('span', { class: 'num cnt' }, t.n(a)) : null))));
   ({ flows: flowsTab, attention: attentionTab, findings: findingsTab, decisions: decisionsTab }[appTab])(a, root, name);
   $view.replaceChildren(root);
-}
-function addButton(label, name) {
-  return h('button', { type: 'button', class: 'plain', onclick: () => { showNew = !showNew; appView(name); } }, showNew ? 'Abbrechen' : label);
+  if (focusQuick) { focusQuick = false; $view.querySelector?.('.quick input')?.focus(); }
 }
 function flowsTab(a, root, name) {
-  root.append(h('div', { class: 'bar' }, legend(a, active, (k) => { if (active.has(k)) active.delete(k); else active.add(k); appView(name); }), addButton('+ Neuer Flow', name)));
-  if (showNew) root.append(createForm('Neuer Flow', name, '/api/flow', [
-    ['title', 'Titel', h('input', { required: true, maxlength: 80, placeholder: 'z. B. Passwort zurücksetzen' })],
-    ['area', 'Bereich', h('input', { required: true, maxlength: 60, list: 'areas', placeholder: 'z. B. Zugang' })],
-    ['prio', 'Prio', h('select', {}, PRIOS.map((v) => h('option', { value: v, selected: v === 'V1' }, v)))],
+  root.append(h('div', { class: 'bar' }, legend(a, active, (k) => { if (active.has(k)) active.delete(k); else active.add(k); appView(name); })));
+  root.append(routeMap(a, active));
+  root.append(quickAdd('Neuer Flow', name, '/api/flow', 'Neuer Flow: Titel tippen, Enter', [
+    ['area', 'Bereich', h('input', { required: true, maxlength: 60, list: 'areas', placeholder: 'Bereich, z. B. Zugang', value: areasOf(a)[0] || '' }), true],
+    ['prio', 'Priorität', segmented(PRIOS.map((v) => [v, v]), 'V1', null, 'Priorität')],
     ['screens', 'Screens', h('input', { placeholder: '/login, /forgot' })],
     ['endpoints', 'Endpoints', h('input', { placeholder: 'POST /api/auth/login' })],
   ], (b) => ({ ...b, screens: splitList(b.screens), endpoints: splitList(b.endpoints) }),
   h('datalist', { id: 'areas' }, [...new Set([...AREA_ORDER, ...areasOf(a)])].map((x) => h('option', { value: x })))));
-  root.append(routeMap(a, active));
 }
 function attentionTab(a, root) {
   const bl = blockersOf(a); const dc = decisionsOf(a);
   const next = a.flows.filter((f) => f.status === 'missing' || f.status === 'partial').sort((x, y) => PRIOS.indexOf(x.prio) - PRIOS.indexOf(y.prio)).slice(0, 6);
-  const group = (title, items, empty) => h('section', { class: 'stream' }, h('h2', {}, title),
+  const group = (title, ic, items, empty) => h('section', { class: 'stream' }, h('h2', {}, icon(ic, 22), title),
     items.length ? h('ul', {}, items) : h('p', { class: 'quiet' }, empty));
   root.append(
-    group('Blocker', bl.map((b) => h('li', {}, h('a', { href: noteHref(b), class: 'line bad' }, h('b', {}, b.title), b.where ? h('span', { class: 'quiet' }, b.where) : null))), 'Keine offenen Blocker.'),
-    group('Offene Entscheidungen', dc.map((d) => h('li', {}, h('a', { href: noteHref(d), class: 'line ask' }, h('b', {}, d.question || d.title), h('span', { class: 'quiet' }, d.title)))), 'Keine offenen Entscheidungen.'),
-    group('Als Nächstes bauen', next.map((f) => h('li', {}, h('a', { href: noteHref(f), class: 'line', 'data-s': f.status }, h('span', { class: 'mk', 'aria-hidden': 'true' }), h('b', {}, f.title), h('span', { class: 'quiet' }, `${f.area} · ${f.prio}`)))), 'Alles Wichtige ist umgesetzt.'));
+    group('Blocker', 'alert', bl.map((b) => h('li', {}, h('a', { href: noteHref(b), class: 'line bad', 'data-nav': true }, h('b', {}, b.title), b.where ? h('span', { class: 'quiet' }, b.where) : null))), 'Keine offenen Blocker.'),
+    group('Offene Entscheidungen', 'question', dc.map((d) => h('li', {}, h('a', { href: noteHref(d), class: 'line ask', 'data-nav': true }, h('b', {}, d.question || d.title), h('span', { class: 'quiet' }, d.title)))), 'Keine offenen Entscheidungen.'),
+    group('Als Nächstes bauen', 'route', next.map((f) => h('li', { class: 'line', 'data-s': f.status },
+      statusButton(f, `${f.title} (${f.area})`), h('a', { href: noteHref(f), class: 'ltitle', 'data-nav': true }, h('b', {}, f.title)), h('span', { class: 'quiet' }, `${f.area} · ${f.prio}`))), 'Alles Wichtige ist umgesetzt.'));
+}
+// The status marker is the control: click opens the five states.
+function statusButton(f, what) {
+  const b = h('button', { type: 'button', class: 'mk-btn', 'aria-haspopup': 'listbox', 'aria-label': `Status von ${what}: ${LABEL[f.status]}. Ändern`, onclick: () => {
+    popover(b, STATUS.map(([k, l]) => [k, l, k]), f.status, (v) => pickStatus(f.path, f.status, v, f.evidence, (x) => { b.parentElement?.setAttribute('data-s', x); }), 'Status wählen');
+  } }, h('span', { class: 'mk', 'aria-hidden': 'true' }));
+  return b;
+}
+function pickStatus(path, prev, v, evidence, apply) {
+  if (v === 'built' && !String(evidence || '').trim() && !confirm('Für "Gebaut" fehlt ein Nachweis. Trotzdem setzen?')) return;
+  change(path, 'status', v, prev, apply);
 }
 function chips(options, current, onPick) {
   return h('div', { class: 'legend' }, options.map(([v, l]) => h('button', { type: 'button', class: `chip plainchip${current === v ? ' on' : ''}`, 'aria-pressed': String(current === v), onclick: () => onPick(v) }, l)));
 }
+function rowActions(...btns) { return h('span', { class: 'ract' }, btns); }
 let findState = 'open';
 function findingsTab(a, root, name) {
   const list = a.findings.filter((f) => !findState || f.state === findState).sort((x, y) => (SEV_RANK[x.severity] ?? 9) - (SEV_RANK[y.severity] ?? 9) || x.title.localeCompare(y.title));
-  root.append(h('div', { class: 'bar' }, chips([['open', 'Offen'], ['', 'Alle']], findState, (v) => { findState = v; appView(name); }), addButton('+ Neuer Befund', name)));
-  if (showNew) root.append(createForm('Neuer Befund', name, '/api/finding', [
-    ['title', 'Titel', h('input', { required: true, maxlength: 80, placeholder: 'Was ist das Problem?' })],
-    ['severity', 'Schwere', h('select', {}, SEVERITIES.map((v) => h('option', { value: v, selected: v === 'Gap' }, v)))],
+  root.append(h('div', { class: 'bar' }, chips([['open', 'Offen'], ['', 'Alle']], findState, (v) => { findState = v; appView(name); })));
+  root.append(list.length ? h('ul', { class: 'items' }, list.map((f) => {
+    const sev = h('button', { type: 'button', class: 'sev', 'aria-haspopup': 'listbox', 'aria-label': `Schwere ${f.severity}. Ändern`, onclick: () => popover(sev, SEVERITIES.map((v) => [v, v]), f.severity, (v) => change(f.path, 'severity', v, f.severity), 'Schwere wählen') }, f.severity);
+    return h('li', { class: `item sev-${f.severity}` }, sev,
+      h('a', { class: 'ltitle', href: noteHref(f), 'data-nav': true }, h('b', {}, f.title), f.where ? h('span', { class: 'quiet' }, f.where) : null),
+      f.state !== 'open' ? h('span', { class: 'quiet' }, (FSTATES.find(([v]) => v === f.state) || [0, f.state])[1]) : null,
+      rowActions(f.state === 'open' ? iconBtn('check', 'Als behoben markieren', () => change(f.path, 'state', 'fixed', 'open')) : iconBtn('undo', 'Wieder öffnen', () => change(f.path, 'state', 'open', f.state))));
+  })) : h('p', { class: 'quiet' }, 'Keine Befunde in dieser Ansicht.'));
+  root.append(quickAdd('Neuer Befund', name, '/api/finding', 'Neuer Befund: Was ist das Problem? Enter', [
+    ['severity', 'Schwere', segmented(SEVERITIES.map((v) => [v, v]), 'Gap', null, 'Schwere')],
     ['where', 'Wo', h('input', { maxlength: 300, placeholder: 'Datei oder Route' })],
   ]));
-  root.append(list.length ? h('ul', { class: 'items' }, list.map((f) => h('li', {}, h('a', { class: `item sev-${f.severity}`, href: noteHref(f) },
-    h('span', { class: 'sev' }, f.severity), h('b', {}, f.title), f.where ? h('span', { class: 'quiet' }, f.where) : null,
-    f.state !== 'open' ? h('span', { class: 'quiet' }, (FSTATES.find(([v]) => v === f.state) || [0, f.state])[1]) : null))))
-    : h('p', { class: 'quiet' }, 'Keine Befunde in dieser Ansicht.'));
 }
 let decState = 'open';
 function decisionsTab(a, root, name) {
   const list = a.decisions.filter((d) => !decState || d.state === decState).sort((x, y) => x.title.localeCompare(y.title));
-  root.append(h('div', { class: 'bar' }, chips([['open', 'Offen'], ['decided', 'Entschieden'], ['', 'Alle']], decState, (v) => { decState = v; appView(name); }), addButton('+ Neue Entscheidung', name)));
-  if (showNew) root.append(createForm('Neue Entscheidung', name, '/api/decision', [
-    ['title', 'Titel', h('input', { required: true, maxlength: 80, placeholder: 'z. B. Eigener oder zentraler Login' })],
+  root.append(h('div', { class: 'bar' }, chips([['open', 'Offen'], ['decided', 'Entschieden'], ['', 'Alle']], decState, (v) => { decState = v; appView(name); })));
+  root.append(list.length ? h('ul', { class: 'items' }, list.map((d) => h('li', { class: `item q ${d.state}` },
+    h('a', { class: 'ltitle', href: noteHref(d), 'data-nav': true }, h('b', { class: 'big' }, d.question || d.title), d.state === 'decided' ? h('span', { class: 'answer' }, `→ ${d.answer || 'entschieden'}`) : null, h('span', { class: 'quiet' }, d.title)))))
+    : h('p', { class: 'quiet' }, 'Keine Entscheidungen in dieser Ansicht.'));
+  root.append(quickAdd('Neue Entscheidung', name, '/api/decision', 'Neue Entscheidung: Titel tippen, Enter', [
     ['question', 'Frage', h('input', { maxlength: 300, placeholder: 'Was muss entschieden werden?' })],
   ]));
-  root.append(list.length ? h('ul', { class: 'items' }, list.map((d) => h('li', {}, h('a', { class: `item q ${d.state}`, href: noteHref(d) },
-    h('b', { class: 'big' }, d.question || d.title), d.state === 'decided' ? h('span', { class: 'answer' }, `→ ${d.answer || 'entschieden'}`) : null, h('span', { class: 'quiet' }, d.title)))))
-    : h('p', { class: 'quiet' }, 'Keine Entscheidungen in dieser Ansicht.'));
 }
-function createForm(title, appName, endpoint, fields, transform = (b) => b, extra = null) {
-  const inputs = {};
-  const rows = fields.map(([key, label, el]) => { inputs[key] = el; return h('label', { class: 'fld' }, h('span', {}, label), el); });
-  const form = h('form', { class: 'create' }, h('h3', {}, title), h('div', { class: 'fgrid' }, rows), extra, h('button', { class: 'plain strong', type: 'submit' }, 'Anlegen'));
+// One line at the end of the list. Enter creates; "Mehr" opens the optional fields. fields: [key, label, el, alwaysVisible?]
+function quickAdd(title, appName, endpoint, placeholder, fields, transform = (b) => b, extra = null) {
+  const titleIn = h('input', { class: 'quick-in', required: true, maxlength: 80, placeholder, 'aria-label': title });
+  const inputs = { title: titleIn }; const visible = []; const more = [];
+  for (const [key, label, el, vis] of fields) { inputs[key] = el; const row = h('label', { class: 'fld' }, h('span', {}, label), el); (vis ? visible : more).push(row); }
+  const morePanel = h('div', { class: 'fgrid quick-more', hidden: true }, more);
+  const moreBtn = h('button', { type: 'button', class: 'plain', 'aria-expanded': 'false', onclick: () => { const open = morePanel.hasAttribute('hidden'); if (open) morePanel.removeAttribute('hidden'); else morePanel.setAttribute('hidden', ''); moreBtn.setAttribute('aria-expanded', String(open)); } }, 'Mehr');
+  const form = h('form', { class: 'quick', 'aria-label': title }, icon('plus', 20), titleIn, ...visible, more.length ? moreBtn : null, h('button', { class: 'ibtn go', type: 'submit', 'aria-label': 'Anlegen', title: 'Anlegen (Enter)' }, icon('check', 18)), morePanel, extra);
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     try {
       const body = { app: appName }; for (const [k, el] of Object.entries(inputs)) body[k] = el.value;
       const r = await api(endpoint, { method: 'POST', body: JSON.stringify(transform(body)) });
-      showNew = false; await load(); renderSide(); location.hash = noteHref({ path: r.path });
+      await load(); renderSide(); location.hash = noteHref({ path: r.path });
     } catch (err) { toast(err.message); }
   });
   return form;
@@ -221,42 +409,33 @@ function createForm(title, appName, endpoint, fields, transform = (b) => b, extr
 /* ---------- note view (read first, edit tucked away) ---------- */
 const MANAGED = ['flow', 'finding', 'decision'];
 let editBody = false;
+let manageOpen = false;
 let lastNote = null;
+const kv = (label, node) => h('div', { class: 'kv' }, h('span', { class: 'quiet' }, label), node);
 function managePanel(path, note, appName) {
   const t = note.meta.type;
   if (!MANAGED.includes(t)) return null;
-  const m = note.meta; const inputs = {}; const orig = {}; const rows = [];
-  const text = (key, label, val, ph = '') => { inputs[key] = h('input', { value: val || '', placeholder: ph, maxlength: 300 }); rows.push(h('label', { class: 'fld' }, h('span', {}, label), inputs[key])); };
-  const pick = (key, label, pairs, val) => { inputs[key] = h('select', {}, pairs.map(([v, l]) => h('option', { value: v, selected: val === v }, l))); rows.push(h('label', { class: 'fld' }, h('span', {}, label), inputs[key])); };
+  const m = note.meta; const rows = [];
+  const text = (key, label, val, ph = '', list = false) => rows.push(kv(label, inlineText({ value: list ? (val || []).join(', ') : val, placeholder: ph || 'Hinzufügen', label,
+    onSave: (v) => change(path, key, list ? splitList(v) : v, val || (list ? [] : '')) })));
+  const sw = (key, label, pairs, val) => rows.push(kv(label, segmented(pairs, val, (v) => change(path, key, v, val), label)));
   if (t === 'flow') {
-    pick('status', 'Status', STATUS, m.status); pick('prio', 'Prio', PRIOS.map((v) => [v, v]), m.prio);
-    text('reason', 'Begründung (bei "Nicht nötig")', m.reason, 'Warum braucht diese App das nicht?');
-    text('screens', 'Screens', (m.screens || []).join(', '), 'Komma trennt'); text('endpoints', 'Endpoints', (m.endpoints || []).join(', '), 'Komma trennt');
-    text('evidence', 'Nachweis (für "Gebaut")', m.evidence, 'Test, Gate oder Link');
+    text('reason', 'Begründung', m.reason, 'Warum nicht nötig?'); text('screens', 'Screens', m.screens, '/login, /forgot', true);
+    text('endpoints', 'Endpoints', m.endpoints, 'POST /api/…', true); text('evidence', 'Nachweis', m.evidence, 'Test, Gate oder Link');
   } else if (t === 'decision') {
-    pick('state', 'Status', DSTATES, m.state); text('question', 'Frage', m.question); text('answer', 'Antwort', m.answer);
+    sw('state', 'Status', DSTATES, m.state); text('question', 'Frage', m.question, 'Was ist zu entscheiden?'); text('answer', 'Antwort', m.answer, 'Noch offen');
   } else {
-    pick('state', 'Status', FSTATES, m.state); pick('severity', 'Schwere', SEVERITIES.map((v) => [v, v]), m.severity); text('where', 'Wo', m.where);
+    sw('state', 'Status', FSTATES, m.state); sw('severity', 'Schwere', SEVERITIES.map((v) => [v, v]), m.severity); text('where', 'Wo', m.where, 'Datei oder Route');
   }
-  for (const k of Object.keys(inputs)) orig[k] = inputs[k].value;
-  const value = (k) => (k === 'screens' || k === 'endpoints' ? splitList(inputs[k].value) : inputs[k].value);
-  const save = h('button', { type: 'button', class: 'plain strong' }, 'Speichern');
-  save.addEventListener('click', async () => {
-    const changed = Object.keys(inputs).filter((k) => inputs[k].value !== orig[k]);
-    if (!changed.length) { toast('Nichts geändert'); return; }
-    if (changed.includes('status') && inputs.status.value === 'built' && !inputs.evidence.value.trim() && !confirm('Für "Gebaut" fehlt ein Nachweis. Trotzdem speichern?')) return;
-    try {
-      for (const k of changed.filter((x) => x !== 'status')) await api('/api/note', { method: 'PATCH', body: JSON.stringify({ path, field: k, value: value(k) }) });
-      if (changed.includes('status')) await api('/api/note', { method: 'PATCH', body: JSON.stringify({ path, field: 'status', value: value('status') }) });
-      await load(); renderSide(); toast('Gespeichert'); await route();
-    } catch (e) { toast(e.message); }
-  });
-  const edit = h('button', { type: 'button', class: 'plain', onclick: () => { editBody = true; route(); } }, 'Text bearbeiten');
   const arch = h('button', { type: 'button', class: 'plain danger', onclick: async () => {
     if (!confirm('Notiz archivieren? Sie verschwindet aus der Übersicht und liegt im Ordner _Archiv der App.')) return;
     try { await api('/api/note', { method: 'DELETE', body: JSON.stringify({ path }) }); await load(); renderSide(); toast('Archiviert'); location.hash = appName ? `#/app/${encodeURIComponent(appName)}` : '#/'; } catch (e) { toast(e.message); }
-  } }, 'Archivieren');
-  return h('details', { class: 'manage' }, h('summary', {}, 'Bearbeiten'), h('div', { class: 'fgrid' }, rows), h('div', { class: 'actions' }, save, edit, arch));
+  } }, icon('archive', 18), 'Archivieren');
+  const edit = h('button', { type: 'button', class: 'plain', onclick: () => { editBody = true; route(); } }, icon('pencil', 18), 'Text bearbeiten');
+  const a = data.apps.find((x) => x.name === appName);
+  const det = h('details', { class: 'manage glass', open: manageOpen }, a ? artBox(a, 'panel-art') : null, h('summary', {}, icon('pencil', 18), 'Bearbeiten'), h('div', { class: 'kvs' }, rows), h('div', { class: 'actions' }, edit, arch));
+  det.addEventListener('toggle', () => { manageOpen = det.open; });
+  return det;
 }
 function bodyEditor(path, note) {
   const ta = h('textarea', { class: 'editor', rows: 22, spellcheck: 'false', 'aria-label': 'Notiztext (Markdown)' });
@@ -431,9 +610,9 @@ function flowCanvas(g, onEdit) {
   };
   const zoomAt = (f, cx, cy) => { const k2 = Math.max(0.3, Math.min(2, k * f)); x = cx - (cx - x) * (k2 / k); y = cy - (cy - y) * (k2 / k); k = k2; apply(); };
   const ctl = h('div', { class: 'fctl' },
-    h('button', { type: 'button', 'aria-label': 'Verkleinern', onclick: () => zoomAt(0.85, (stage.clientWidth || 900) / 2, (stage.clientHeight || 480) / 2) }, '−'),
-    h('button', { type: 'button', 'aria-label': 'Vergrößern', onclick: () => zoomAt(1.18, (stage.clientWidth || 900) / 2, (stage.clientHeight || 480) / 2) }, '+'),
-    h('button', { type: 'button', onclick: fit }, 'Einpassen'));
+    h('button', { type: 'button', 'aria-label': 'Verkleinern', title: 'Verkleinern (−)', onclick: () => zoomAt(0.85, (stage.clientWidth || 900) / 2, (stage.clientHeight || 480) / 2) }, icon('zoomOut', 22)),
+    h('button', { type: 'button', 'aria-label': 'Vergrößern', title: 'Vergrößern (+)', onclick: () => zoomAt(1.18, (stage.clientWidth || 900) / 2, (stage.clientHeight || 480) / 2) }, icon('zoomIn', 22)),
+    h('button', { type: 'button', 'aria-label': 'Einpassen', title: 'Einpassen (0)', onclick: fit }, icon('fit', 22)));
   stage.append(ctl);
   let drag = null;
   stage.addEventListener('pointerdown', (e) => { if (e.target.closest && e.target.closest('.fctl')) return; drag = { sx: e.clientX - x, sy: e.clientY - y }; stage.classList.add('grab'); stage.setPointerCapture?.(e.pointerId); });
@@ -468,9 +647,12 @@ async function flowPage(path, note, body, appName) {
   const m = note.meta; const a = data.apps.find((x) => x.name === appName);
   const { pre, secs } = splitSections(body);
   const { code, rest } = takeMermaid(pre);
-  const head = h('header', { class: 'fp-head', 'data-s': m.status }, h('span', { class: 'mk big', 'aria-hidden': 'true' }),
-    h('div', {}, h('h1', {}, m.title || path.split('/').pop().replace(/\.md$/, '')),
-      h('p', { class: 'flowmeta' }, `${LABEL[m.status] || m.status} · ${m.area || ''} · ${m.prio || ''}${m.reason ? ` · ${m.reason}` : ''}`)));
+  const statusLabel = h('span', {}, LABEL[m.status] || m.status);
+  const head = h('header', { class: 'fp-head', 'data-s': m.status });
+  const sbtn = h('button', { type: 'button', class: 'mk-btn big', 'aria-haspopup': 'listbox', 'aria-label': `Status: ${LABEL[m.status] || m.status}. Ändern`, onclick: () => popover(sbtn, STATUS.map(([k, l]) => [k, l, k]), m.status, (v) => pickStatus(path, m.status, v, m.evidence, (x) => { head.setAttribute('data-s', x); statusLabel.textContent = LABEL[x] || x; }), 'Status wählen') }, h('span', { class: 'mk big', 'aria-hidden': 'true' }));
+  const prioSw = segmented(PRIOS.map((v) => [v, v]), m.prio, (v) => change(path, 'prio', v, m.prio), 'Priorität');
+  head.append(sbtn, h('div', {}, h('h1', {}, m.title || path.split('/').pop().replace(/\.md$/, '')),
+    h('div', { class: 'flowmeta' }, statusLabel, m.area ? h('span', {}, `· ${m.area}`) : null, prioSw, m.reason ? h('span', {}, `· ${m.reason}`) : null)));
   const drawn = code ? parseFlow(code) : { nodes: [], edges: [] };
   const derived = !drawn.nodes.length ? sollChain(m.title || '', secs) : null;
   const canvas = flowCanvas(derived || drawn, () => { editBody = true; route(); });
@@ -480,7 +662,7 @@ async function flowPage(path, note, body, appName) {
   return { head, canvas, derived: !!derived, facts: facts.length ? h('div', { class: 'facts' }, facts) : null, mini, rest, secs };
 }
 async function noteView(path) {
-  if (lastNote !== path) { editBody = false; lastNote = path; }
+  if (lastNote !== path) { editBody = false; manageOpen = false; lastNote = path; }
   const parts = path.split('/');
   const appName = parts[0] === 'Apps' ? parts[1] : null;
   crumbs([{ label: 'Apps', href: '#/' }, ...(appName ? [{ label: appName, href: `#/app/${encodeURIComponent(appName)}` }] : []), { label: parts.at(-1).replace(/\.md$/, '') }]);
@@ -516,7 +698,7 @@ async function noteView(path) {
 
 /* ---------- routing ---------- */
 async function route() {
-  renderSide();
+  renderSide(); setBackdrop();
   const hash = location.hash.replace(/^#\/?/, '');
   try {
     if (hash.startsWith('app/')) appView(decodeURIComponent(hash.slice(4)));
@@ -524,6 +706,7 @@ async function route() {
     else homeView();
   } catch (e) { $view.replaceChildren(h('p', { class: 'quiet' }, e.message)); }
 }
+document.getElementById('search')?.addEventListener('click', openPalette);
 document.getElementById('refresh').addEventListener('click', async () => { try { await load(); await route(); toast('Aktualisiert'); } catch (e) { toast(e.message); } });
 window.addEventListener('hashchange', route);
 load().then(route).catch((e) => $view.replaceChildren(h('p', { class: 'quiet' }, `Daten konnten nicht geladen werden: ${e.message}`)));

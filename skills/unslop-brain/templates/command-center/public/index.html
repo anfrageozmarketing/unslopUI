@@ -12,10 +12,12 @@
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
 </head>
 <body>
+<div id="backdrop" aria-hidden="true"></div>
 <header class="top">
   <a class="brand" href="#/">Command Center</a>
   <nav id="crumbs" aria-label="Pfad"></nav>
-  <button id="refresh" class="ghost" type="button">Aktualisieren</button>
+  <button id="search" class="ghost" type="button" aria-label="Suchen und springen" title="Suchen (Strg/Cmd+K)"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.5-4.5"/></svg><span class="lbl">Suchen</span><kbd>Strg K</kbd></button>
+  <button id="refresh" class="ghost" type="button" aria-label="Aktualisieren" title="Aktualisieren"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg></button>
 </header>
 <div class="shell">
   <aside id="side" aria-label="Apps"></aside>
